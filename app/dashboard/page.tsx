@@ -6,7 +6,7 @@ import {
   CheckCircle, ShieldCheck, Sliders, RefreshCw,
   Send, Navigation, CreditCard, Lock, Unlock,
   ExternalLink, Download, Printer, Mail,
-  MessageSquare, Sparkles, Check, Building, Copy
+  MessageSquare, Sparkles, Check, Building, Copy, Globe, Webhook
 } from 'lucide-react';
 
 interface MaterialItem {
@@ -98,8 +98,8 @@ const DEFAULT_LEADS: LeadItem[] = [
   },
   {
     id: 'lead-3',
-    source: 'Fairfield County Homeowner Trade Board',
-    sourceUrl: 'https://www.facebook.com/groups/search/groups/?q=Fairfield%20CT%20Homeowners',
+    source: 'Thumbtack Pro Webhook • Fairfield County',
+    sourceUrl: 'https://www.thumbtack.com/pro/leads',
     time: '1 hour ago',
     author: 'David Kowalski',
     phone: '(203) 555-0164',
@@ -115,8 +115,8 @@ const DEFAULT_LEADS: LeadItem[] = [
   },
   {
     id: 'lead-4',
-    source: 'Facebook Group • Wilton Community Exchange',
-    sourceUrl: 'https://www.facebook.com/groups/search/groups/?q=Wilton%20CT',
+    source: 'Angi / HomeAdvisor Webhook • Wilton, CT',
+    sourceUrl: 'https://office.angi.com/',
     time: '2 hours ago',
     author: 'Rachel Vance',
     phone: '(203) 555-0177',
@@ -128,23 +128,6 @@ const DEFAULT_LEADS: LeadItem[] = [
     desc: 'Need licensed electrician to upgrade 100A panel to 200A service and run conduit to patio outdoor kitchen.',
     budget: '$4,200 - $6,000',
     urgency: 'Immediate',
-    claimed: false
-  },
-  {
-    id: 'lead-5',
-    source: 'Nextdoor • New Canaan & Ridgefield',
-    sourceUrl: 'https://nextdoor.com/find-neighborhood/ct/new-canaan/',
-    time: '3 hours ago',
-    author: 'Thomas Grant',
-    phone: '(203) 555-0199',
-    email: 'thomas.grant@yahoo.com',
-    location: 'New Canaan, CT',
-    distanceMiles: 14.6,
-    trade: 'Plumbing & Mechanical',
-    title: 'Tankless Navien Boiler Conversion & Radiant Zone Manifold',
-    desc: 'Looking to replace old cast iron boiler with high-efficiency wall-hung combi unit before winter.',
-    budget: '$7,500 - $11,000',
-    urgency: 'Flexible',
     claimed: false
   }
 ];
@@ -164,11 +147,26 @@ export default function JobAlliesDashboard() {
   const [pendingLeadForTrialModal, setPendingLeadForTrialModal] = useState<LeadItem | null>(null);
   const [showBillingModal, setShowBillingModal] = useState(false);
 
-  const [radarZip, setRadarZip] = useState('06883 (Weston, CT)');
-  const [radarRadius, setRadarRadius] = useState<number>(20);
+  const [radarZip, setRadarZip] = useState('Weston, CT, USA');
+  const [geoInfo, setGeoInfo] = useState<{ resolvedCity: string; countryCode: string; lat: number; lon: number; currency: string }>({
+    resolvedCity: 'Weston, Connecticut, US',
+    countryCode: 'US',
+    lat: 41.2009,
+    lon: -73.3807,
+    currency: '$'
+  });
+  const [marketplaces, setMarketplaces] = useState<{ name: string; url: string }[]>([
+    { name: 'Facebook Groups', url: 'https://www.facebook.com/search/posts?q=contractor%20Weston%20CT' },
+    { name: 'Nextdoor', url: 'https://nextdoor.com/news_feed/' },
+    { name: 'Thumbtack Pro', url: 'https://www.thumbtack.com/pro/leads' },
+    { name: 'Angi / HomeAdvisor', url: 'https://office.angi.com/' },
+    { name: 'Bark.com Global', url: 'https://www.bark.com/' }
+  ]);
+  const [radarRadius, setRadarRadius] = useState<number>(25);
   const [tradeFilter, setTradeFilter] = useState<string>('ALL');
   const [leads, setLeads] = useState<LeadItem[]>(DEFAULT_LEADS);
   const [showImportDrawer, setShowImportDrawer] = useState(false);
+  const [showWebhookDrawer, setShowWebhookDrawer] = useState(false);
   const [rawPostInput, setRawPostInput] = useState('');
   const [rawPostUrl, setRawPostUrl] = useState('');
   const [rawPostPhone, setRawPostPhone] = useState('');
@@ -238,11 +236,11 @@ export default function JobAlliesDashboard() {
   const [invEmail, setInvEmail] = useState('');
 
   const [integrations, setIntegrations] = useState([
-    { id: 'hdp', name: 'Home Depot Pro Xtra', category: 'Live SKU Search & CSV Bulk Cart Upload', connected: true },
-    { id: 'lowes', name: "Lowe's Pro Supply", category: 'Live Catalog Deep-Linking & PO Export', connected: true },
-    { id: 'siteone', name: 'SiteOne Landscape Supply', category: 'Hardscape & Nursery Wholesale Sync', connected: true },
+    { id: 'thumbtack', name: 'Thumbtack Pro Webhooks', category: 'Global Lead Ingestion (/api/webhooks/leads?source=thumbtack)', connected: true },
+    { id: 'angi', name: 'Angi / HomeAdvisor Webhooks', category: 'Direct Lead Push (/api/webhooks/leads?source=angi)', connected: true },
+    { id: 'bark', name: 'Bark.com / Checkatrade / Hipages / HomeStars', category: 'International Lead Webhooks (US, UK, CA, AU, EU)', connected: true },
+    { id: 'hdp', name: 'Home Depot Pro Xtra & Lowe\'s Pro', category: 'Live SKU Search & CSV Bulk Cart Upload', connected: true },
     { id: 'qbo', name: 'QuickBooks Online', category: 'Accounting & CSV Invoice Export', connected: true },
-    { id: 'twilio', name: 'Twilio / Native SMS Dispatch', category: 'Instant Client Text Proposals & Invites', connected: true },
     { id: 'stripe', name: 'Stripe 14-Day Trial & Escrow Engine', category: 'Pay-On-Success Subscription & Escrow', connected: true }
   ]);
 
@@ -259,6 +257,20 @@ export default function JobAlliesDashboard() {
       const savedEsc = localStorage.getItem('ja_esc_v5');
       if (savedEsc) setEscrowContracts(JSON.parse(savedEsc));
     } catch (e) {}
+
+    // Poll server webhook buffer for any incoming Thumbtack/Angi/Bark leads
+    fetch('/api/webhooks/leads')
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data.leads) && data.leads.length > 0) {
+          setLeads(prev => {
+            const ids = new Set(prev.map(l => l.id));
+            const fresh = data.leads.filter((l: LeadItem) => !ids.has(l.id));
+            return fresh.length > 0 ? [...fresh, ...prev] : prev;
+          });
+        }
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -274,6 +286,71 @@ export default function JobAlliesDashboard() {
   const triggerToast = (msg: string, type: 'success' | 'info' | 'amber' = 'success') => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 4500);
+  };
+
+  // --- SIMULATE OR TEST LIVE PLATFORM WEBHOOK (Thumbtack, Angi, Bark, Checkatrade, Hipages) ---
+  const triggerTestPlatformWebhook = async (platform: 'thumbtack' | 'angi' | 'bark' | 'checkatrade' | 'hipages') => {
+    const samplePayloads: Record<string, any> = {
+      thumbtack: {
+        customer: { name: 'lucas.miller@gmail.com (Lucas Miller)', phone: '+1 (512) 555-0194' },
+        request: {
+          category: 'Masonry & Concrete',
+          location: { city: radarZip.split(',')[0], state: '' },
+          description: `Need a 400 sq ft stamped concrete patio and firepit pad installed in ${radarZip}. Ready to hire this week.`,
+          budget: `${geoInfo.currency}6,500 - ${geoInfo.currency}9,500`
+        }
+      },
+      angi: {
+        firstName: 'Samantha',
+        lastName: ' Brooks',
+        primaryPhone: '+1 (312) 555-0149',
+        email: 'sbrooks@homeowner.org',
+        city: radarZip.split(',')[0],
+        taskName: '200A Electrical Service Panel & EV Charger Installation',
+        comments: `Homeowner in ${radarZip} requested immediate quote via Angi Leads for 200A panel upgrade.`,
+        budget: `${geoInfo.currency}3,800 - ${geoInfo.currency}5,200`
+      },
+      bark: {
+        buyer_name: 'Oliver Kensington',
+        buyer_phone: '+44 20 7946 0823',
+        buyer_email: 'oliver.k@bark-leads.co.uk',
+        location: radarZip,
+        service_name: 'Full Garden Landscaping & Excavated Drainage',
+        details: `Verified Bark.com buyer in ${radarZip} seeking full garden re-grading, French drain, and natural stone paving.`,
+        budget: `${geoInfo.currency}7,500 - ${geoInfo.currency}11,000`
+      },
+      checkatrade: {
+        buyer_name: 'Arthur Pendelton',
+        buyer_phone: '+44 20 7946 0311',
+        location: radarZip,
+        service_name: 'Boiler Replacement & Central Heating Manifold',
+        details: `Checkatrade UK homeowner in ${radarZip} requesting Combi Boiler installation.`,
+        budget: '£3,400 - £4,800'
+      },
+      hipages: {
+        buyer_name: 'Liam O\'Connor',
+        buyer_phone: '+61 2 9876 5432',
+        location: radarZip,
+        service_name: 'Hardwood Merbau Decking & Pergola Framing',
+        details: `hipages Australia lead in ${radarZip} looking for 45 sqm outdoor timber deck.`,
+        budget: 'A$9,500 - A$14,000'
+      }
+    };
+
+    try {
+      const res = await fetch(`/api/webhooks/leads?source=${platform}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(samplePayloads[platform])
+      });
+      const data = await res.json();
+      if (data.lead) {
+        setLeads(prev => [data.lead, ...prev]);
+        triggerToast(`Ingested live ${data.lead.source} lead for ${data.lead.location}!`, 'success');
+      }
+    } catch (e) {
+      triggerToast('Webhook test failed.', 'amber');
+    }
   };
 
   const handleLeadAcceptClick = (lead: LeadItem) => {
@@ -342,7 +419,7 @@ export default function JobAlliesDashboard() {
           rawPostText: rawPostInput,
           sourceUrl: rawPostUrl,
           contactPhone: rawPostPhone,
-          zip: radarZip
+          zip: geoInfo.resolvedCity || radarZip
         })
       });
       const data = await res.json();
@@ -352,7 +429,7 @@ export default function JobAlliesDashboard() {
         setRawPostUrl('');
         setRawPostPhone('');
         setShowImportDrawer(false);
-        triggerToast(`Extracted & added "${data.lead.title}" to your Geofenced Radar!`, 'success');
+        triggerToast(`Extracted & added "${data.lead.title}" to your Global Radar!`, 'success');
       }
     } catch (err) {
       triggerToast('Failed to parse post text.', 'amber');
@@ -368,21 +445,27 @@ export default function JobAlliesDashboard() {
         body: JSON.stringify({ action: 'scan_live_public', zip: radarZip, radius: radarRadius })
       });
       const data = await res.json();
+      if (data.geocoded) {
+        setGeoInfo(data.geocoded);
+      }
+      if (Array.isArray(data.marketplaces)) {
+        setMarketplaces(data.marketplaces);
+      }
       if (Array.isArray(data.leads) && data.leads.length > 0) {
         const existingIds = new Set(leads.map(l => l.id));
         const newItems = data.leads.filter((l: LeadItem) => !existingIds.has(l.id));
         if (newItems.length > 0) {
           setLeads([...newItems, ...leads]);
-          triggerToast(`Pulled ${newItems.length} live public homeowner threads into your radar!`, 'success');
+          triggerToast(`Geocoded ${data.geocoded?.resolvedCity || radarZip} & pulled ${newItems.length} live regional leads!`, 'success');
           setIsScanning(false);
           return;
         }
       }
-    } catch (e) {}
-    setTimeout(() => {
-      setIsScanning(false);
-      triggerToast(`Radar synced within ${radarRadius} miles of ${radarZip}.`, 'info');
-    }, 500);
+      triggerToast(`Geocoded ${data.geocoded?.resolvedCity || radarZip} (${data.geocoded?.countryCode || 'Global'}) & synced regional feeds.`, 'info');
+    } catch (e) {
+      triggerToast('Synced global radar.', 'info');
+    }
+    setIsScanning(false);
   };
 
   const toggleRecording = () => {
@@ -654,7 +737,7 @@ export default function JobAlliesDashboard() {
           </span>
           <span className="text-slate-300">
             {billing.planStatus === 'FREE_EXPLORER'
-              ? 'Free to browse leads, use TradeVoice quoting, and invite partners. 14-day trial starts ONLY when you accept your 1st lead.'
+              ? 'Free to browse global leads, use TradeVoice quoting, and invite partners. 14-day trial starts ONLY when you accept your 1st lead.'
               : `Triggered by accepting "${billing.triggerLeadTitle || 'First Lead'}". $0 billed today — $49/mo begins after 14-day trial.`}
           </span>
         </div>
@@ -678,33 +761,30 @@ export default function JobAlliesDashboard() {
                 JobAllies <span className="text-emerald-400">PRO OS</span>
               </h1>
               <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                Full-Stack v5.0
+                Global v5.5
               </span>
             </div>
-            <p className="text-xs text-slate-400">Geofenced Lead Radar, Live NLP Quoting, Retailer Carts & P2P Escrow</p>
+            <p className="text-xs text-slate-400">Worldwide Lead Webhooks, OpenStreetMap Geocoding, NLP Quoting & Escrow</p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="hidden md:flex items-center gap-4 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs">
             <div>
+              <span className="text-slate-500 block text-[10px] uppercase font-bold">Active Territory</span>
+              <span className="text-emerald-400 font-bold flex items-center gap-1">
+                <Globe className="w-3 h-3" /> {geoInfo.resolvedCity.slice(0, 22)} ({geoInfo.countryCode})
+              </span>
+            </div>
+            <div className="w-px h-6 bg-slate-800"></div>
+            <div>
               <span className="text-slate-500 block text-[10px] uppercase font-bold">Matched Leads</span>
               <span className="text-amber-400 font-bold">{filteredLeads.length} in {radarRadius}mi</span>
             </div>
             <div className="w-px h-6 bg-slate-800"></div>
             <div>
-              <span className="text-slate-500 block text-[10px] uppercase font-bold">Accepted Leads</span>
-              <span className="text-emerald-400 font-bold">{billing.acceptedLeadsCount} Claimed</span>
-            </div>
-            <div className="w-px h-6 bg-slate-800"></div>
-            <div>
               <span className="text-slate-500 block text-[10px] uppercase font-bold">Locked Escrow</span>
               <span className="text-sky-400 font-bold">${totalLockedEscrow.toFixed(2)}</span>
-            </div>
-            <div className="w-px h-6 bg-slate-800"></div>
-            <div>
-              <span className="text-slate-500 block text-[10px] uppercase font-bold">Trade Allies</span>
-              <span className="text-white font-bold">{network.length} Partners</span>
             </div>
           </div>
         </div>
@@ -718,8 +798,8 @@ export default function JobAlliesDashboard() {
               activeTab === 'radar' ? 'bg-emerald-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
             }`}
           >
-            <Navigation className="w-4 h-4" />
-            <span>1. Geofenced Lead Radar</span>
+            <Globe className="w-4 h-4" />
+            <span>1. Global Lead Radar & Webhooks</span>
             <span className="ml-1 bg-slate-950/20 px-2 py-0.5 rounded-full text-[10px]">{filteredLeads.length}</span>
           </button>
           <button
@@ -752,18 +832,18 @@ export default function JobAlliesDashboard() {
           </button>
         </nav>
 
-        {/* TAB 1: GEOFENCED LEAD RADAR */}
+        {/* TAB 1: GLOBAL LEAD RADAR & PLATFORM WEBHOOKS */}
         {activeTab === 'radar' && (
           <div className="space-y-6">
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 lg:p-6 shadow-xl space-y-4">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    <Navigation className="w-5 h-5 text-amber-400" />
-                    Geofenced Community Lead Radar & Live Web Scanner
+                    <Globe className="w-5 h-5 text-amber-400" />
+                    Worldwide Geofenced Lead Radar & Marketplace Webhook Receiver
                   </h2>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    Pull live public homeowner threads, launch targeted Facebook Group / Nextdoor searches, or paste any community post to extract contact & scope.
+                    Enter ANY city, postal code, or country worldwide (e.g. London UK, Toronto ON, Sydney AU, Austin TX) to geocode & pull leads, or connect your Thumbtack/Angi/Bark webhooks.
                   </p>
                 </div>
 
@@ -772,7 +852,8 @@ export default function JobAlliesDashboard() {
                     type="text"
                     value={radarZip}
                     onChange={(e) => setRadarZip(e.target.value)}
-                    className="bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl px-3 py-2 text-xs text-white focus:outline-none w-44"
+                    placeholder="City, Postal Code, or Country..."
+                    className="bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl px-3 py-2 text-xs text-white focus:outline-none w-52"
                   />
                   <div className="bg-slate-950 border border-slate-800 px-3 py-2 rounded-xl flex items-center gap-2 text-xs">
                     <Sliders className="w-3.5 h-3.5 text-amber-400" />
@@ -780,70 +861,184 @@ export default function JobAlliesDashboard() {
                     <input
                       type="range"
                       min="2"
-                      max="40"
+                      max="50"
                       value={radarRadius}
                       onChange={(e) => setRadarRadius(Number(e.target.value))}
-                      className="accent-amber-500 w-24 cursor-pointer"
+                      className="accent-amber-500 w-20 cursor-pointer"
                     />
                   </div>
-                  <button
-                    onClick={() => setShowImportDrawer(!showImportDrawer)}
-                    className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Import FB / Nextdoor Post</span>
-                  </button>
                   <button
                     onClick={handleRescanRadar}
                     className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${isScanning ? 'animate-spin' : ''}`} />
-                    <span>{isScanning ? 'Pulling Live Feeds...' : 'Pull Live Web Leads'}</span>
+                    <span>{isScanning ? 'Geocoding...' : 'Scan Global Location'}</span>
+                  </button>
+                  <button
+                    onClick={() => { setShowWebhookDrawer(!showWebhookDrawer); setShowImportDrawer(false); }}
+                    className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all"
+                  >
+                    <Webhook className="w-4 h-4" />
+                    <span>Connect Lead Platforms</span>
+                  </button>
+                  <button
+                    onClick={() => { setShowImportDrawer(!showImportDrawer); setShowWebhookDrawer(false); }}
+                    className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Paste Post</span>
                   </button>
                 </div>
               </div>
 
+              {/* Quick Global City Presets */}
               <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/80 text-xs">
-                <div className="flex flex-wrap gap-1.5">
-                  {['ALL', 'Masonry & Concrete', 'Landscaping & Excavation', 'Framing & Carpentry', 'Electrical', 'Plumbing & Mechanical'].map(t => (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-[11px] text-slate-500 font-bold mr-1">Global Test Regions:</span>
+                  {['Weston, CT, USA', 'Austin, TX, USA', 'London, UK', 'Toronto, Canada', 'Sydney, Australia'].map(city => (
                     <button
-                      key={t}
-                      onClick={() => setTradeFilter(t)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                        tradeFilter === t ? 'bg-amber-500 text-slate-950' : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
-                      }`}
+                      key={city}
+                      onClick={() => { setRadarZip(city); }}
+                      className="bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 px-2.5 py-1 rounded-lg text-[11px]"
                     >
-                      {t}
+                      {city}
                     </button>
                   ))}
                 </div>
-                <div className="flex items-center gap-2">
-                  <a
-                    href={`https://www.facebook.com/search/posts?q=${encodeURIComponent((tradeFilter === 'ALL' ? 'contractor recommendation' : tradeFilter) + ' ' + radarZip)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-slate-950 hover:bg-slate-800 text-sky-400 border border-slate-800 px-2.5 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1"
-                  >
-                    <span>Search Live FB Posts</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                  <a
-                    href="https://nextdoor.com/news_feed/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-slate-950 hover:bg-slate-800 text-emerald-400 border border-slate-800 px-2.5 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1"
-                  >
-                    <span>Open Nextdoor Feed</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {marketplaces.map((mp, i) => (
+                    <a
+                      key={i}
+                      href={mp.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-slate-950 hover:bg-slate-800 text-sky-400 border border-slate-800 px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1"
+                    >
+                      <span>{mp.name}</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ))}
                 </div>
               </div>
+
+              {/* Trade Filters */}
+              <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-800/80">
+                {['ALL', 'Masonry & Concrete', 'Landscaping & Excavation', 'Framing & Carpentry', 'Electrical', 'Plumbing & Mechanical'].map(t => (
+                  <button
+                    key={t}
+                    onClick={() => setTradeFilter(t)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      tradeFilter === t ? 'bg-amber-500 text-slate-950' : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                    }`}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+
+              {/* LIVE PLATFORM WEBHOOK CONNECTOR DRAWER */}
+              {showWebhookDrawer && (
+                <div className="bg-slate-950 border border-sky-500/40 rounded-xl p-4 space-y-4 text-xs">
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div>
+                      <h4 className="font-bold text-sky-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <Webhook className="w-4 h-4" /> Global Lead Platform Webhook Endpoints (Live Receiver)
+                      </h4>
+                      <p className="text-slate-400 text-[11px] mt-0.5">
+                        Paste your unique Webhook URL into Thumbtack, Angi, Bark.com, Checkatrade (UK), Hipages (AU), HomeStars (CA), or Zapier so leads appear here automatically worldwide.
+                      </p>
+                    </div>
+                    <button onClick={() => setShowWebhookDrawer(false)} className="text-slate-400 hover:text-white font-bold">Close ✕</button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="bg-slate-900 border border-slate-800 p-3 rounded-xl space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="font-bold text-white">Thumbtack Pro Webhook URL</span>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText('https://joballies.com/api/webhooks/leads?source=thumbtack');
+                            triggerToast('Copied Thumbtack Webhook URL!', 'success');
+                          }}
+                          className="text-sky-400 hover:underline text-[11px] flex items-center gap-1"
+                        >
+                          <Copy className="w-3 h-3" /> Copy URL
+                        </button>
+                      </div>
+                      <code className="block bg-slate-950 p-2 rounded text-[11px] text-emerald-400 font-mono truncate">
+                        https://joballies.com/api/webhooks/leads?source=thumbtack
+                      </code>
+                      <p className="text-[11px] text-slate-400">In Thumbtack Pro: Select Apps → Manage Webhooks → Create Webhook.</p>
+                    </div>
+
+                    <div className="bg-slate-900 border border-slate-800 p-3 rounded-xl space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="font-bold text-white">Angi / HomeAdvisor Webhook URL</span>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText('https://joballies.com/api/webhooks/leads?source=angi');
+                            triggerToast('Copied Angi Webhook URL!', 'success');
+                          }}
+                          className="text-sky-400 hover:underline text-[11px] flex items-center gap-1"
+                        >
+                          <Copy className="w-3 h-3" /> Copy URL
+                        </button>
+                      </div>
+                      <code className="block bg-slate-950 p-2 rounded text-[11px] text-emerald-400 font-mono truncate">
+                        https://joballies.com/api/webhooks/leads?source=angi
+                      </code>
+                      <p className="text-[11px] text-slate-400">In Angi Business Center: Lead Integration Setup Wizard → JSON Webhook.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800">
+                    <span className="text-slate-400 font-bold">Test Live Webhook Ingestion into Your Radar:</span>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => triggerTestPlatformWebhook('thumbtack')}
+                        className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3 py-1.5 rounded-lg text-[11px]"
+                      >
+                        + Test Thumbtack Lead
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => triggerTestPlatformWebhook('angi')}
+                        className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-3 py-1.5 rounded-lg text-[11px]"
+                      >
+                        + Test Angi Lead
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => triggerTestPlatformWebhook('bark')}
+                        className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-black px-3 py-1.5 rounded-lg text-[11px]"
+                      >
+                        + Test Bark.com (Global)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => triggerTestPlatformWebhook('checkatrade')}
+                        className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] border border-slate-700"
+                      >
+                        + Test Checkatrade (UK)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => triggerTestPlatformWebhook('hipages')}
+                        className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] border border-slate-700"
+                      >
+                        + Test hipages (AU)
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {showImportDrawer && (
                 <form onSubmit={handleImportCommunityPost} className="bg-slate-950 border border-emerald-500/40 rounded-xl p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-                      <Sparkles className="w-4 h-4" /> Paste Live Facebook Group / Nextdoor Post Text
+                      <Sparkles className="w-4 h-4" /> Paste Live Facebook Group / Nextdoor / Bark Post Text
                     </h4>
                     <button type="button" onClick={() => setShowImportDrawer(false)} className="text-xs text-slate-400 hover:text-white">Close ✕</button>
                   </div>
@@ -852,7 +1047,7 @@ export default function JobAlliesDashboard() {
                     value={rawPostInput}
                     onChange={(e) => setRawPostInput(e.target.value)}
                     required
-                    placeholder="Paste raw post text here, e.g.: 'Looking for a licensed electrician in Westport to install a 240V Tesla charger and replace 6 outdoor floodlights ASAP. Budget around $1,800. Text me at 203-555-0194.'"
+                    placeholder="Paste raw post text from any platform worldwide..."
                     className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-emerald-500"
                   />
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -899,7 +1094,7 @@ export default function JobAlliesDashboard() {
                         rel="noopener noreferrer"
                         className="text-[11px] text-sky-400 hover:underline flex items-center gap-1 shrink-0"
                       >
-                        <span>View Post</span>
+                        <span>View Source</span>
                         <ExternalLink className="w-3 h-3" />
                       </a>
                     </div>
@@ -913,7 +1108,7 @@ export default function JobAlliesDashboard() {
                         <span className="font-bold text-white">{lead.author}</span>
                       </div>
                       <div>
-                        <span className="text-slate-500 block text-[10px] uppercase font-bold">Proximity & Budget</span>
+                        <span className="text-slate-500 block text-[10px] uppercase font-bold">Location & Budget</span>
                         <span className="font-bold text-emerald-400">{lead.location} ({lead.distanceMiles} mi) • {lead.budget}</span>
                       </div>
                       <div className="col-span-2 pt-2 border-t border-slate-800/80 flex items-center justify-between">
@@ -1304,10 +1499,10 @@ export default function JobAlliesDashboard() {
               <div>
                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
                   <Link2 className="w-5 h-5 text-emerald-400" />
-                  Retailer, Accounting & Messaging API Hub
+                  Global Lead Webhooks, Retailer Carts & Accounting Hub
                 </h2>
                 <p className="text-xs text-slate-400 mt-1">
-                  Export invoices directly to QuickBooks CSV or connect optional cloud API keys in Vercel Environment Variables.
+                  Export invoices directly to QuickBooks CSV or copy your live Webhook URLs for Thumbtack, Angi, and Bark.com.
                 </p>
               </div>
               <button
@@ -1394,7 +1589,7 @@ export default function JobAlliesDashboard() {
               </p>
               <p className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span><strong>Next 14 Days ($0.00):</strong> Unlimited lead claims, SMS/email proposals, and retailer cart exports.</span>
+                <span><strong>Next 14 Days ($0.00):</strong> Unlimited global lead claims, SMS/email proposals, and retailer cart exports.</span>
               </p>
               <p className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -1473,7 +1668,7 @@ export default function JobAlliesDashboard() {
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(formatProposalText(activeProposalLog));
-                  triggerToast('Copied formatted proposal for Facebook Messenger / Nextdoor DM!', 'success');
+                  triggerToast('Copied formatted proposal for Facebook Messenger / Nextdoor / Thumbtack DM!', 'success');
                 }}
                 className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5"
               >
