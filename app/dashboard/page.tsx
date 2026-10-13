@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import {
   MapPin, Mic, Users, Link2, Plus,
-  CheckCircle, ShieldCheck, Sliders, RefreshCw,
-  Send, Navigation, CreditCard, Lock, Unlock,
+  CheckCircle, ShieldCheck, RefreshCw,
+  Send, Navigation, CreditCard, Lock,
   ExternalLink, Download, Printer, Mail,
-  MessageSquare, Sparkles, Check, Building, Copy, Globe, Webhook
+  MessageSquare, Sparkles, Check, Building, Copy, Phone, Calendar, Edit3, Trash2
 } from 'lucide-react';
 
 interface MaterialItem {
@@ -37,19 +37,21 @@ interface DictationLog {
 interface LeadItem {
   id: string;
   source: string;
-  sourceUrl: string;
-  time: string;
+  postedAt: string;
   author: string;
   phone: string;
   email: string;
   location: string;
   distanceMiles: number;
+  estimatedValue: number;
   trade: string;
   title: string;
   desc: string;
   budget: string;
   urgency: string;
   claimed: boolean;
+  quoteMaterials: MaterialItem[];
+  quoteLabor: LaborItem[];
 }
 
 interface BillingState {
@@ -64,73 +66,175 @@ interface BillingState {
 const DEFAULT_LEADS: LeadItem[] = [
   {
     id: 'lead-1',
-    source: 'Facebook Group • Weston & Westport Neighbors',
-    sourceUrl: 'https://www.facebook.com/groups/search/groups/?q=Weston%20CT%20Neighbors',
-    time: '12 mins ago',
+    source: 'Verified Local Request',
+    postedAt: 'Oct 13, 2026 • 4:42 PM',
     author: 'Mark Henderson',
     phone: '(203) 555-0142',
     email: 'm.henderson.weston@gmail.com',
     location: 'Weston, CT',
     distanceMiles: 2.4,
+    estimatedValue: 10200,
     trade: 'Masonry & Concrete',
     title: 'Full Backyard Bluestone Patio & Retaining Wall (350 sq ft)',
     desc: 'Looking for a licensed mason/hardscape contractor to install a 350 sq ft paver patio with a low fieldstone sitting wall and steps.',
     budget: '$8,500 - $12,000',
     urgency: 'Immediate',
-    claimed: false
+    claimed: false,
+    quoteMaterials: [
+      { item: 'Natural Bluestone Thermal Pavers (350 sq ft)', qty: 350, cost: 9.50, vendor: 'SiteOne Supply', sku: 'S1-BLU-350' },
+      { item: 'Fieldstone Retaining Wall Block (Pallet)', qty: 3, cost: 420.00, vendor: 'SiteOne Supply', sku: 'S1-FLD-PAL' },
+      { item: '3/4" Crushed Stone Base & Polymeric Sand (Tons)', qty: 6, cost: 48.00, vendor: 'SiteOne Supply', sku: 'S1-CRB-06' }
+    ],
+    quoteLabor: [
+      { tier: 'Master Mason & Hardscape Crew', hours: 40, rate: 95.00 }
+    ]
   },
   {
     id: 'lead-2',
-    source: 'Nextdoor • Greens Farms & Westport',
-    sourceUrl: 'https://nextdoor.com/find-neighborhood/ct/westport/',
-    time: '38 mins ago',
+    source: 'Verified Local Request',
+    postedAt: 'Oct 13, 2026 • 4:15 PM',
     author: 'Elena Rostova',
     phone: '(203) 555-0189',
     email: 'elena.rostova@outlook.com',
     location: 'Westport, CT',
     distanceMiles: 4.1,
+    estimatedValue: 4000,
     trade: 'Landscaping & Excavation',
     title: 'Emergency Oak Limb Clearing & 120ft Curtain Drain Excavation',
     desc: 'Large oak branch down near driveway plus standing water pooling by foundation. Need crew with chipper and mini-excavator.',
     budget: '$3,200 - $4,800',
     urgency: 'Emergency / ASAP',
-    claimed: false
+    claimed: false,
+    quoteMaterials: [
+      { item: '4" Perforated PVC Pipe & Filter Fabric (120 ft)', qty: 12, cost: 28.00, vendor: 'SiteOne Supply', sku: 'S1-DRN-120' },
+      { item: 'Washed Drainage Stone #57 (Tons)', qty: 8, cost: 44.00, vendor: 'SiteOne Supply', sku: 'S1-STN-57' }
+    ],
+    quoteLabor: [
+      { tier: 'Excavation & Tree Removal Crew', hours: 24, rate: 110.00 }
+    ]
   },
   {
     id: 'lead-3',
-    source: 'Thumbtack Pro Webhook • Fairfield County',
-    sourceUrl: 'https://www.thumbtack.com/pro/leads',
-    time: '1 hour ago',
+    source: 'Verified Local Request',
+    postedAt: 'Oct 13, 2026 • 3:30 PM',
     author: 'David Kowalski',
     phone: '(203) 555-0164',
     email: 'dkowalski@fairfieldprop.com',
     location: 'Fairfield, CT',
     distanceMiles: 6.8,
+    estimatedValue: 11800,
     trade: 'Framing & Carpentry',
     title: 'Custom Cedar Timber Pergola & Deck Rebuild (16x20)',
     desc: 'Replacing rotted pressure-treated deck boards and building a heavy cedar pergola with recessed low-voltage lighting.',
     budget: '$9,000 - $14,500',
     urgency: 'This Week',
-    claimed: false
+    claimed: false,
+    quoteMaterials: [
+      { item: '6x6x12 Western Red Cedar Posts & Beams', qty: 14, cost: 92.00, vendor: 'Home Depot Pro', sku: 'HD-CED-6612' },
+      { item: 'Composite Decking Boards 16ft (Grooved)', qty: 48, cost: 44.00, vendor: 'Home Depot Pro', sku: 'HD-TREX-16' },
+      { item: 'Low-Voltage LED Post Cap Lights & Transformer', qty: 8, cost: 34.00, vendor: 'Home Depot Pro', sku: 'HD-LED-LV8' }
+    ],
+    quoteLabor: [
+      { tier: 'Senior Finish Carpentry Crew', hours: 56, rate: 85.00 }
+    ]
   },
   {
     id: 'lead-4',
-    source: 'Angi / HomeAdvisor Webhook • Wilton, CT',
-    sourceUrl: 'https://office.angi.com/',
-    time: '2 hours ago',
+    source: 'Verified Local Request',
+    postedAt: 'Oct 13, 2026 • 2:10 PM',
     author: 'Rachel Vance',
     phone: '(203) 555-0177',
     email: 'rachel.vance@me.com',
     location: 'Wilton, CT',
     distanceMiles: 8.2,
+    estimatedValue: 5100,
     trade: 'Electrical',
     title: '200A Panel Upgrade + Level 2 EV Charger & Outdoor Kitchen Subpanel',
     desc: 'Need licensed electrician to upgrade 100A panel to 200A service and run conduit to patio outdoor kitchen.',
     budget: '$4,200 - $6,000',
     urgency: 'Immediate',
-    claimed: false
+    claimed: false,
+    quoteMaterials: [
+      { item: 'Square D QO 200A 40-Space Main Breaker Panel', qty: 1, cost: 345.00, vendor: 'Home Depot Pro', sku: 'HD-SQD-200' },
+      { item: '60A Outdoor Subpanel & 80ft Copper Feeder Conduit', qty: 1, cost: 480.00, vendor: 'Home Depot Pro', sku: 'HD-SUB-60A' },
+      { item: 'NEMA 14-50 Comercial EV Charger Circuit Kit', qty: 1, cost: 195.00, vendor: 'Home Depot Pro', sku: 'HD-EV-1450' }
+    ],
+    quoteLabor: [
+      { tier: 'Licensed Master Electrician', hours: 22, rate: 125.00 }
+    ]
+  },
+  {
+    id: 'lead-5',
+    source: 'Verified Local Request',
+    postedAt: 'Oct 13, 2026 • 12:45 PM',
+    author: 'Thomas Grant',
+    phone: '(203) 555-0199',
+    email: 'thomas.grant@yahoo.com',
+    location: 'New Canaan, CT',
+    distanceMiles: 14.6,
+    estimatedValue: 9200,
+    trade: 'Plumbing & Mechanical',
+    title: 'Tankless Navien Boiler Conversion & Radiant Zone Manifold',
+    desc: 'Looking to replace old cast iron boiler with high-efficiency wall-hung combi unit before winter.',
+    budget: '$7,500 - $11,000',
+    urgency: 'Flexible',
+    claimed: false,
+    quoteMaterials: [
+      { item: 'Navien NCB-240/130H High-Efficiency Combi Boiler', qty: 1, cost: 2450.00, vendor: 'Ferguson Pro', sku: 'FG-NAV-240' },
+      { item: '4-Zone Copper Radiant Manifold & Circulator Pumps', qty: 1, cost: 680.00, vendor: 'Ferguson Pro', sku: 'FG-MAN-4Z' },
+      { item: 'Schedule 40 PVC Venting & Condensate Neutralizer Kit', qty: 1, cost: 220.00, vendor: 'Ferguson Pro', sku: 'FG-VNT-40' }
+    ],
+    quoteLabor: [
+      { tier: 'Licensed Master Plumber & HVAC Tech', hours: 32, rate: 115.00 }
+    ]
   }
 ];
+
+function buildAutoQuoteFromLead(title: string, desc: string, trade: string): { materials: MaterialItem[]; labor: LaborItem[] } {
+  const text = `${title} ${desc}`.toLowerCase();
+  const sqFtMatch = text.match(/(\d+)\s*(?:sq\s*ft|sqft)/i);
+  const lnFtMatch = text.match(/(\d+)\s*(?:ft|feet|linear)/i);
+
+  if (trade === 'Masonry & Concrete' || text.includes('patio') || text.includes('paver') || text.includes('stone')) {
+    const area = sqFtMatch ? Number(sqFtMatch[1]) : 300;
+    return {
+      materials: [
+        { item: `Natural Stone / Pavers (${area} sq ft)`, qty: area, cost: 9.25, vendor: 'SiteOne Supply', sku: 'S1-PAV-100' },
+        { item: 'Crushed Stone Base & Polymeric Sand (Tons)', qty: Math.max(3, Math.round(area / 60)), cost: 46.00, vendor: 'SiteOne Supply', sku: 'S1-BASE-01' }
+      ],
+      labor: [{ tier: 'Master Mason & Hardscape Crew', hours: Math.max(16, Math.round(area / 10)), rate: 95.00 }]
+    };
+  }
+
+  if (trade === 'Electrical' || text.includes('panel') || text.includes('charger') || text.includes('light')) {
+    return {
+      materials: [
+        { item: `Primary Electrical Equipment (${title.slice(0, 32)})`, qty: 1, cost: 420.00, vendor: 'Home Depot Pro', sku: 'HD-ELC-200' },
+        { item: 'THHN Copper Wiring, Conduit & Breakers', qty: 1, cost: 285.00, vendor: 'Home Depot Pro', sku: 'HD-WIR-80' }
+      ],
+      labor: [{ tier: 'Licensed Master Electrician', hours: 16, rate: 120.00 }]
+    };
+  }
+
+  if (trade === 'Plumbing & Mechanical' || text.includes('boiler') || text.includes('heater') || text.includes('pipe')) {
+    return {
+      materials: [
+        { item: `Plumbing / Heating Unit (${title.slice(0, 32)})`, qty: 1, cost: 1450.00, vendor: 'Ferguson Pro', sku: 'FG-PLB-500' },
+        { item: 'Copper Fittings, Valves & Venting Kit', qty: 1, cost: 340.00, vendor: 'Ferguson Pro', sku: 'FG-FIT-12' }
+      ],
+      labor: [{ tier: 'Licensed Master Plumber', hours: 20, rate: 115.00 }]
+    };
+  }
+
+  const footage = lnFtMatch ? Number(lnFtMatch[1]) : 100;
+  return {
+    materials: [
+      { item: `Project Materials (${title.slice(0, 35)})`, qty: 10, cost: 65.00, vendor: 'Home Depot Pro', sku: 'HD-PRO-101' },
+      { item: `Fasteners, Supplies & Site Consumables (${footage} ft)`, qty: 4, cost: 45.00, vendor: 'Home Depot Pro', sku: 'HD-SUP-04' }
+    ],
+    labor: [{ tier: 'Skilled Trade Crew Labor', hours: 20, rate: 85.00 }]
+  };
+}
 
 export default function JobAlliesDashboard() {
   const [activeTab, setActiveTab] = useState<'radar' | 'voice' | 'network' | 'sync'>('radar');
@@ -144,34 +248,31 @@ export default function JobAlliesDashboard() {
     triggerLeadTitle: null,
     monthlyRate: 49.00
   });
-  const [pendingLeadForTrialModal, setPendingLeadForTrialModal] = useState<LeadItem | null>(null);
   const [showBillingModal, setShowBillingModal] = useState(false);
 
-  const [radarZip, setRadarZip] = useState('Weston, CT, USA');
-  const [geoInfo, setGeoInfo] = useState<{ resolvedCity: string; countryCode: string; lat: number; lon: number; currency: string }>({
-    resolvedCity: 'Weston, Connecticut, US',
-    countryCode: 'US',
-    lat: 41.2009,
-    lon: -73.3807,
-    currency: '$'
-  });
-  const [marketplaces, setMarketplaces] = useState<{ name: string; url: string }[]>([
-    { name: 'Facebook Groups', url: 'https://www.facebook.com/search/posts?q=contractor%20Weston%20CT' },
-    { name: 'Nextdoor', url: 'https://nextdoor.com/news_feed/' },
-    { name: 'Thumbtack Pro', url: 'https://www.thumbtack.com/pro/leads' },
-    { name: 'Angi / HomeAdvisor', url: 'https://office.angi.com/' },
-    { name: 'Bark.com Global', url: 'https://www.bark.com/' }
-  ]);
-  const [radarRadius, setRadarRadius] = useState<number>(25);
-  const [tradeFilter, setTradeFilter] = useState<string>('ALL');
+  // Filters: Location, Job Type, Job Distance, Job Value
+  const [radarZip, setRadarZip] = useState('Weston, CT');
+  const [jobTypeFilter, setJobTypeFilter] = useState<string>('ALL');
+  const [jobDistanceFilter, setJobDistanceFilter] = useState<number>(25);
+  const [jobValueFilter, setJobValueFilter] = useState<string>('ALL');
+
   const [leads, setLeads] = useState<LeadItem[]>(DEFAULT_LEADS);
   const [showImportDrawer, setShowImportDrawer] = useState(false);
-  const [showWebhookDrawer, setShowWebhookDrawer] = useState(false);
   const [rawPostInput, setRawPostInput] = useState('');
   const [rawPostUrl, setRawPostUrl] = useState('');
-  const [rawPostPhone, setRawPostPhone] = useState('');
   const [isScanning, setIsScanning] = useState(false);
 
+  // Editable Auto-Quote & Approval State
+  const [editingLeadQuote, setEditingLeadQuote] = useState<LeadItem | null>(null);
+  const [editableMaterials, setEditableMaterials] = useState<MaterialItem[]>([]);
+  const [editableLabor, setEditableLabor] = useState<LaborItem[]>([]);
+  const [quoteApproved, setQuoteApproved] = useState(false);
+
+  // Platform Relay Contact Modal State (No Phone/Email Exposed)
+  const [platformContactModal, setPlatformContactModal] = useState<{ lead: LeadItem; mode: 'phone' | 'email' } | null>(null);
+  const [relayMessage, setRelayMessage] = useState('');
+
+  // Tab 2: Voice Quotes & Retailer Carts
   const [globalMarkup, setGlobalMarkup] = useState<number>(20);
   const [voiceInput, setVoiceInput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
@@ -179,11 +280,9 @@ export default function JobAlliesDashboard() {
   const [dictationLogs, setDictationLogs] = useState<DictationLog[]>([
     {
       id: 'log-101',
-      timestamp: '10 mins ago',
+      timestamp: 'Oct 13, 2026 • 4:30 PM',
       rawText: 'We need 12 pressure treated 4x4x10 wood posts at $28 each from Home Depot Pro, 15 bags of Quikrete high early concrete at $7.50, and 16 hours of senior crew labor at $65 an hour for a deck rebuild in Weston.',
       clientName: 'Sarah Jenkins • Westport Deck Rebuild',
-      clientPhone: '(203) 555-0133',
-      clientEmail: 'sarah.jenkins@westport.org',
       materials: [
         { item: '4x4x10 Pressure Treated Wood Posts', qty: 12, cost: 28.00, vendor: 'Home Depot Pro', sku: 'HD-PT-4410' },
         { item: 'Quikrete 80lb High Early Concrete', qty: 15, cost: 7.50, vendor: 'Home Depot Pro', sku: 'HD-QK-80' }
@@ -192,11 +291,9 @@ export default function JobAlliesDashboard() {
     },
     {
       id: 'log-102',
-      timestamp: '1 hour ago',
+      timestamp: 'Oct 13, 2026 • 3:15 PM',
       rawText: '14 Unilock Dublin Cobble stone pavers at $18.50 per unit from SiteOne Supply, 3 tons of crushed stone base at $42, plus 8 hours site lead supervision at $95 an hour.',
       clientName: 'Mark Henderson • Weston Bluestone Patio',
-      clientPhone: '(203) 555-0142',
-      clientEmail: 'm.henderson.weston@gmail.com',
       materials: [
         { item: 'Unilock Dublin Cobble Pavers (Pallet)', qty: 14, cost: 18.50, vendor: 'SiteOne Supply', sku: 'S1-UNI-DC' },
         { item: '3/4" Crushed Stone Base (Tons)', qty: 3, cost: 42.00, vendor: 'SiteOne Supply', sku: 'S1-CRB-34' }
@@ -205,16 +302,14 @@ export default function JobAlliesDashboard() {
     }
   ]);
 
-  const [activeProposalLog, setActiveProposalLog] = useState<DictationLog | null>(null);
   const [activePoLog, setActivePoLog] = useState<DictationLog | null>(null);
-  const [proposalPhone, setProposalPhone] = useState('');
-  const [proposalEmail, setProposalEmail] = useState('');
 
+  // Tab 3: Trade Network & P2P Escrow
   const [network, setNetwork] = useState([
-    { id: 'net-1', name: 'Mike Callahan', company: 'Callahan Plumbing & HVAC', trade: 'Plumbing & Mechanical', phone: '(203) 555-0192', email: 'mike@callahanplumbing.com', feePercent: 10, status: 'Verified Ally', referredJobs: 3, lifetimeShared: 1450.00 },
-    { id: 'net-2', name: 'Dan Sparks', company: 'Voltage Masters Electrical LLC', trade: 'Electrical', phone: '(203) 555-0841', email: 'dan@voltagemasters.com', feePercent: 10, status: 'Verified Ally', referredJobs: 2, lifetimeShared: 1200.00 },
-    { id: 'net-3', name: 'Tony Russo', company: 'Tri-State Masonry & Pavers', trade: 'Masonry & Concrete', phone: '(203) 555-9921', email: 'tony@tristatemasonry.com', feePercent: 12.5, status: 'Verified Ally', referredJobs: 4, lifetimeShared: 2800.00 },
-    { id: 'net-4', name: 'Carlos Mendez', company: 'Apex Tree & Excavation', trade: 'Landscaping & Excavation', phone: '(203) 555-3301', email: 'carlos@apextree.com', feePercent: 10, status: 'Pending Invite', referredJobs: 0, lifetimeShared: 0.00 }
+    { id: 'net-1', name: 'Mike Callahan', company: 'Callahan Plumbing & HVAC', trade: 'Plumbing & Mechanical', feePercent: 10, status: 'Verified Ally', referredJobs: 3, lifetimeShared: 1450.00 },
+    { id: 'net-2', name: 'Dan Sparks', company: 'Voltage Masters Electrical LLC', trade: 'Electrical', feePercent: 10, status: 'Verified Ally', referredJobs: 2, lifetimeShared: 1200.00 },
+    { id: 'net-3', name: 'Tony Russo', company: 'Tri-State Masonry & Pavers', trade: 'Masonry & Concrete', feePercent: 12.5, status: 'Verified Ally', referredJobs: 4, lifetimeShared: 2800.00 },
+    { id: 'net-4', name: 'Carlos Mendez', company: 'Apex Tree & Excavation', trade: 'Landscaping & Excavation', feePercent: 10, status: 'Pending Invite', referredJobs: 0, lifetimeShared: 0.00 }
   ]);
 
   const [escrowContracts, setEscrowContracts] = useState([
@@ -236,175 +331,188 @@ export default function JobAlliesDashboard() {
   const [invEmail, setInvEmail] = useState('');
 
   const [integrations, setIntegrations] = useState([
-    { id: 'thumbtack', name: 'Thumbtack Pro Webhooks', category: 'Global Lead Ingestion (/api/webhooks/leads?source=thumbtack)', connected: true },
-    { id: 'angi', name: 'Angi / HomeAdvisor Webhooks', category: 'Direct Lead Push (/api/webhooks/leads?source=angi)', connected: true },
-    { id: 'bark', name: 'Bark.com / Checkatrade / Hipages / HomeStars', category: 'International Lead Webhooks (US, UK, CA, AU, EU)', connected: true },
     { id: 'hdp', name: 'Home Depot Pro Xtra & Lowe\'s Pro', category: 'Live SKU Search & CSV Bulk Cart Upload', connected: true },
+    { id: 'siteone', name: 'SiteOne Landscape Supply', category: 'Hardscape & Nursery Wholesale Sync', connected: true },
+    { id: 'ferguson', name: 'Ferguson Pro', category: 'Plumbing & Mechanical Wholesale Sync', connected: true },
     { id: 'qbo', name: 'QuickBooks Online', category: 'Accounting & CSV Invoice Export', connected: true },
     { id: 'stripe', name: 'Stripe 14-Day Trial & Escrow Engine', category: 'Pay-On-Success Subscription & Escrow', connected: true }
   ]);
 
   useEffect(() => {
     try {
-      const savedBilling = localStorage.getItem('ja_billing_v5');
+      const savedBilling = localStorage.getItem('ja_billing_v6');
       if (savedBilling) setBilling(JSON.parse(savedBilling));
-      const savedLeads = localStorage.getItem('ja_leads_v5');
+      const savedLeads = localStorage.getItem('ja_leads_v6');
       if (savedLeads) setLeads(JSON.parse(savedLeads));
-      const savedLogs = localStorage.getItem('ja_logs_v5');
+      const savedLogs = localStorage.getItem('ja_logs_v6');
       if (savedLogs) setDictationLogs(JSON.parse(savedLogs));
-      const savedNet = localStorage.getItem('ja_net_v5');
-      if (savedNet) setNetwork(JSON.parse(savedNet));
-      const savedEsc = localStorage.getItem('ja_esc_v5');
-      if (savedEsc) setEscrowContracts(JSON.parse(savedEsc));
     } catch (e) {}
-
-    // Poll server webhook buffer for any incoming Thumbtack/Angi/Bark leads
-    fetch('/api/webhooks/leads')
-      .then(r => r.json())
-      .then(data => {
-        if (Array.isArray(data.leads) && data.leads.length > 0) {
-          setLeads(prev => {
-            const ids = new Set(prev.map(l => l.id));
-            const fresh = data.leads.filter((l: LeadItem) => !ids.has(l.id));
-            return fresh.length > 0 ? [...fresh, ...prev] : prev;
-          });
-        }
-      })
-      .catch(() => {});
   }, []);
 
   useEffect(() => {
     try {
-      localStorage.setItem('ja_billing_v5', JSON.stringify(billing));
-      localStorage.setItem('ja_leads_v5', JSON.stringify(leads));
-      localStorage.setItem('ja_logs_v5', JSON.stringify(dictationLogs));
-      localStorage.setItem('ja_net_v5', JSON.stringify(network));
-      localStorage.setItem('ja_esc_v5', JSON.stringify(escrowContracts));
+      localStorage.setItem('ja_billing_v6', JSON.stringify(billing));
+      localStorage.setItem('ja_leads_v6', JSON.stringify(leads));
+      localStorage.setItem('ja_logs_v6', JSON.stringify(dictationLogs));
     } catch (e) {}
-  }, [billing, leads, dictationLogs, network, escrowContracts]);
+  }, [billing, leads, dictationLogs]);
 
   const triggerToast = (msg: string, type: 'success' | 'info' | 'amber' = 'success') => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 4500);
   };
 
-  // --- SIMULATE OR TEST LIVE PLATFORM WEBHOOK (Thumbtack, Angi, Bark, Checkatrade, Hipages) ---
-  const triggerTestPlatformWebhook = async (platform: 'thumbtack' | 'angi' | 'bark' | 'checkatrade' | 'hipages') => {
-    const samplePayloads: Record<string, any> = {
-      thumbtack: {
-        customer: { name: 'lucas.miller@gmail.com (Lucas Miller)', phone: '+1 (512) 555-0194' },
-        request: {
-          category: 'Masonry & Concrete',
-          location: { city: radarZip.split(',')[0], state: '' },
-          description: `Need a 400 sq ft stamped concrete patio and firepit pad installed in ${radarZip}. Ready to hire this week.`,
-          budget: `${geoInfo.currency}6,500 - ${geoInfo.currency}9,500`
-        }
-      },
-      angi: {
-        firstName: 'Samantha',
-        lastName: ' Brooks',
-        primaryPhone: '+1 (312) 555-0149',
-        email: 'sbrooks@homeowner.org',
-        city: radarZip.split(',')[0],
-        taskName: '200A Electrical Service Panel & EV Charger Installation',
-        comments: `Homeowner in ${radarZip} requested immediate quote via Angi Leads for 200A panel upgrade.`,
-        budget: `${geoInfo.currency}3,800 - ${geoInfo.currency}5,200`
-      },
-      bark: {
-        buyer_name: 'Oliver Kensington',
-        buyer_phone: '+44 20 7946 0823',
-        buyer_email: 'oliver.k@bark-leads.co.uk',
-        location: radarZip,
-        service_name: 'Full Garden Landscaping & Excavated Drainage',
-        details: `Verified Bark.com buyer in ${radarZip} seeking full garden re-grading, French drain, and natural stone paving.`,
-        budget: `${geoInfo.currency}7,500 - ${geoInfo.currency}11,000`
-      },
-      checkatrade: {
-        buyer_name: 'Arthur Pendelton',
-        buyer_phone: '+44 20 7946 0311',
-        location: radarZip,
-        service_name: 'Boiler Replacement & Central Heating Manifold',
-        details: `Checkatrade UK homeowner in ${radarZip} requesting Combi Boiler installation.`,
-        budget: '£3,400 - £4,800'
-      },
-      hipages: {
-        buyer_name: 'Liam O\'Connor',
-        buyer_phone: '+61 2 9876 5432',
-        location: radarZip,
-        service_name: 'Hardwood Merbau Decking & Pergola Framing',
-        details: `hipages Australia lead in ${radarZip} looking for 45 sqm outdoor timber deck.`,
-        budget: 'A$9,500 - A$14,000'
-      }
-    };
+  // --- OPEN AUTO-GENERATED QUOTE EDITOR FOR ANY LEAD ---
+  const openLeadAutoQuoteEditor = (lead: LeadItem) => {
+    const hasPresetQuote = Array.isArray(lead.quoteMaterials) && lead.quoteMaterials.length > 0;
+    const generated = hasPresetQuote
+      ? { materials: lead.quoteMaterials, labor: lead.quoteLabor }
+      : buildAutoQuoteFromLead(lead.title, lead.desc, lead.trade);
 
-    try {
-      const res = await fetch(`/api/webhooks/leads?source=${platform}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(samplePayloads[platform])
-      });
-      const data = await res.json();
-      if (data.lead) {
-        setLeads(prev => [data.lead, ...prev]);
-        triggerToast(`Ingested live ${data.lead.source} lead for ${data.lead.location}!`, 'success');
-      }
-    } catch (e) {
-      triggerToast('Webhook test failed.', 'amber');
-    }
+    setEditingLeadQuote(lead);
+    setEditableMaterials(generated.materials.map(m => ({ ...m })));
+    setEditableLabor(generated.labor.map(l => ({ ...l })));
+    setQuoteApproved(false);
   };
 
-  const handleLeadAcceptClick = (lead: LeadItem) => {
-    if (billing.planStatus === 'FREE_EXPLORER' && billing.acceptedLeadsCount === 0 && !lead.claimed) {
-      setPendingLeadForTrialModal(lead);
-      return;
-    }
-    completeLeadClaimAndDraftQuote(lead, false);
+  const handleMaterialEdit = (index: number, field: keyof MaterialItem, value: string | number) => {
+    setQuoteApproved(false);
+    setEditableMaterials(prev => prev.map((m, i) => i === index ? { ...m, [field]: value } : m));
   };
 
-  const confirmFirstLeadAndStartTrial = async () => {
-    if (!pendingLeadForTrialModal) return;
-    const lead = pendingLeadForTrialModal;
+  const handleAddMaterialRow = () => {
+    setQuoteApproved(false);
+    setEditableMaterials(prev => [
+      ...prev,
+      { item: 'Additional Material Item', qty: 1, cost: 45.00, vendor: 'Home Depot Pro', sku: 'HD-ADD-01' }
+    ]);
+  };
+
+  const handleRemoveMaterialRow = (index: number) => {
+    setQuoteApproved(false);
+    setEditableMaterials(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleLaborEdit = (index: number, field: keyof LaborItem, value: string | number) => {
+    setQuoteApproved(false);
+    setEditableLabor(prev => prev.map((l, i) => i === index ? { ...l, [field]: value } : l));
+  };
+
+  const handleAddLaborRow = () => {
+    setQuoteApproved(false);
+    setEditableLabor(prev => [
+      ...prev,
+      { tier: 'Additional Crew Labor', hours: 4, rate: 75.00 }
+    ]);
+  };
+
+  const handleRemoveLaborRow = (index: number) => {
+    setQuoteApproved(false);
+    setEditableLabor(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const approveEditedQuote = () => {
+    if (!editingLeadQuote) return;
+    setQuoteApproved(true);
+
+    // Save edited quote onto the lead and start 14-day free trial if first lead accepted
     const now = new Date();
     const ends = new Date(now.getTime() + 14 * 86400000);
-
-    try {
-      const res = await fetch('/api/billing', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'start_trial_subscription', originUrl: window.location.origin })
+    if (billing.planStatus === 'FREE_EXPLORER') {
+      setBilling({
+        planStatus: 'TRIAL_ACTIVE',
+        acceptedLeadsCount: 1,
+        firstLeadAcceptedAt: now.toISOString(),
+        trialEndsAt: ends.toISOString(),
+        triggerLeadTitle: editingLeadQuote.title,
+        monthlyRate: 49.00
       });
-      const data = await res.json();
-      if (data.url) window.open(data.url, '_blank');
-    } catch (e) {}
-
-    setBilling({
-      planStatus: 'TRIAL_ACTIVE',
-      acceptedLeadsCount: 1,
-      firstLeadAcceptedAt: now.toISOString(),
-      trialEndsAt: ends.toISOString(),
-      triggerLeadTitle: lead.title,
-      monthlyRate: 49.00
-    });
-
-    setPendingLeadForTrialModal(null);
-    completeLeadClaimAndDraftQuote(lead, true);
-  };
-
-  const completeLeadClaimAndDraftQuote = (lead: LeadItem, startedTrial: boolean) => {
-    setLeads(leads.map(l => l.id === lead.id ? { ...l, claimed: true } : l));
-    if (!startedTrial && !lead.claimed) {
+    } else if (!editingLeadQuote.claimed) {
       setBilling(prev => ({ ...prev, acceptedLeadsCount: prev.acceptedLeadsCount + 1 }));
     }
 
-    const draftPrompt = `10 units of primary jobsite materials at $45 each from Home Depot Pro, 12 hours of senior crew labor at $75 an hour for ${lead.author}`;
-    setVoiceInput(draftPrompt);
-    setActiveTab('voice');
+    setLeads(prev => prev.map(l => l.id === editingLeadQuote.id ? {
+      ...l,
+      claimed: true,
+      quoteMaterials: editableMaterials,
+      quoteLabor: editableLabor
+    } : l));
 
-    if (startedTrial) {
-      triggerToast(`14-Day Free Trial Activated ($0 today)! Unlocked contact info for ${lead.author} & loaded quote builder.`, 'success');
-    } else {
-      triggerToast(`Accepted lead from ${lead.author}! Contact info unlocked & loaded into TradeVoice.`, 'success');
-    }
+    // Also add/sync into Voice Quotes & Retailer Carts tab
+    const syncedLog: DictationLog = {
+      id: 'quote-' + editingLeadQuote.id,
+      timestamp: 'Approved Just Now',
+      rawText: `${editingLeadQuote.title} — ${editingLeadQuote.desc}`,
+      clientName: `${editingLeadQuote.author} • ${editingLeadQuote.location}`,
+      materials: editableMaterials,
+      labor: editableLabor
+    };
+    setDictationLogs(prev => [syncedLog, ...prev.filter(x => x.id !== syncedLog.id)]);
+    triggerToast(`Quote approved for ${editingLeadQuote.author}! Select Text or Email below to send through JobAllies.`, 'success');
+  };
+
+  const sendApprovedQuoteThroughPlatform = async (channel: 'sms' | 'email') => {
+    if (!editingLeadQuote || !quoteApproved) return;
+    const rawMat = editableMaterials.reduce((s, m) => s + m.cost * m.qty, 0);
+    const markedMat = rawMat * (1 + globalMarkup / 100);
+    const laborTotal = editableLabor.reduce((s, l) => s + l.hours * l.rate, 0);
+    const grandTotal = markedMat + laborTotal;
+
+    const matLines = editableMaterials.map(m => `• ${m.qty}x ${m.item}: $${(m.cost * m.qty * (1 + globalMarkup / 100)).toFixed(2)}`).join('\n');
+    const labLines = editableLabor.map(l => `• ${l.tier} (${l.hours} hrs): $${(l.hours * l.rate).toFixed(2)}`).join('\n');
+    const messageBody = `ESTIMATE & PROPOSAL (${editingLeadQuote.title})\nPrepared for ${editingLeadQuote.author} via JobAllies\n\nMATERIALS:\n${matLines}\n\nLABOR:\n${labLines}\n\nTOTAL ESTIMATE: $${grandTotal.toFixed(2)}\nReply YES to approve this scope and schedule work.`;
+
+    try {
+      await fetch('/api/dispatch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          channel,
+          to: channel === 'sms' ? editingLeadQuote.phone : editingLeadQuote.email,
+          subject: `Estimate for ${editingLeadQuote.title}`,
+          message: messageBody
+        })
+      });
+    } catch (e) {}
+
+    triggerToast(
+      `Approved quote ($${grandTotal.toFixed(2)}) sent to ${editingLeadQuote.author} via JobAllies ${channel === 'sms' ? 'Text Relay' : 'Email Relay'}!`,
+      'success'
+    );
+    setEditingLeadQuote(null);
+  };
+
+  // --- PLATFORM-MEDIATED PHONE / EMAIL RELAY (NO RAW PHONE/EMAIL EXPOSED) ---
+  const openPlatformContact = (lead: LeadItem, mode: 'phone' | 'email') => {
+    setPlatformContactModal({ lead, mode });
+    setRelayMessage(`Hi ${lead.author}, I reviewed your "${lead.title}" request in ${lead.location} and can help. When is a good time to discuss?`);
+  };
+
+  const executePlatformRelayContact = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!platformContactModal) return;
+    const { lead, mode } = platformContactModal;
+
+    try {
+      await fetch('/api/dispatch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          channel: mode === 'phone' ? 'sms' : 'email',
+          to: mode === 'phone' ? lead.phone : lead.email,
+          subject: `Regarding your project: ${lead.title}`,
+          message: relayMessage
+        })
+      });
+    } catch (err) {}
+
+    setPlatformContactModal(null);
+    triggerToast(
+      mode === 'phone'
+        ? `Connected call & SMS bridge to ${lead.author} through JobAllies Platform Relay!`
+        : `Dispatched encrypted platform email to ${lead.author} via JobAllies Relay!`,
+      'success'
+    );
   };
 
   const handleImportCommunityPost = async (e: React.FormEvent) => {
@@ -418,18 +526,25 @@ export default function JobAlliesDashboard() {
           action: 'parse_raw_post',
           rawPostText: rawPostInput,
           sourceUrl: rawPostUrl,
-          contactPhone: rawPostPhone,
-          zip: geoInfo.resolvedCity || radarZip
+          zip: radarZip
         })
       });
       const data = await res.json();
       if (data.lead) {
-        setLeads([data.lead, ...leads]);
+        const autoQ = buildAutoQuoteFromLead(data.lead.title, data.lead.desc, data.lead.trade);
+        const nowStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' • ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        const enriched: LeadItem = {
+          ...data.lead,
+          postedAt: nowStr,
+          estimatedValue: 4500,
+          quoteMaterials: autoQ.materials,
+          quoteLabor: autoQ.labor
+        };
+        setLeads([enriched, ...leads]);
         setRawPostInput('');
         setRawPostUrl('');
-        setRawPostPhone('');
         setShowImportDrawer(false);
-        triggerToast(`Extracted & added "${data.lead.title}" to your Global Radar!`, 'success');
+        triggerToast(`Added "${enriched.title}" with an auto-generated quote!`, 'success');
       }
     } catch (err) {
       triggerToast('Failed to parse post text.', 'amber');
@@ -442,28 +557,34 @@ export default function JobAlliesDashboard() {
       const res = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'scan_live_public', zip: radarZip, radius: radarRadius })
+        body: JSON.stringify({ action: 'scan_live_public', zip: radarZip, radius: jobDistanceFilter })
       });
       const data = await res.json();
-      if (data.geocoded) {
-        setGeoInfo(data.geocoded);
-      }
-      if (Array.isArray(data.marketplaces)) {
-        setMarketplaces(data.marketplaces);
-      }
       if (Array.isArray(data.leads) && data.leads.length > 0) {
         const existingIds = new Set(leads.map(l => l.id));
-        const newItems = data.leads.filter((l: LeadItem) => !existingIds.has(l.id));
+        const nowStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' • ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        const newItems = data.leads
+          .filter((l: any) => !existingIds.has(l.id))
+          .map((l: any) => {
+            const autoQ = buildAutoQuoteFromLead(l.title, l.desc, l.trade);
+            return {
+              ...l,
+              postedAt: nowStr,
+              estimatedValue: 4200,
+              quoteMaterials: autoQ.materials,
+              quoteLabor: autoQ.labor
+            };
+          });
         if (newItems.length > 0) {
           setLeads([...newItems, ...leads]);
-          triggerToast(`Geocoded ${data.geocoded?.resolvedCity || radarZip} & pulled ${newItems.length} live regional leads!`, 'success');
+          triggerToast(`Found ${newItems.length} new leads near ${radarZip}!`, 'success');
           setIsScanning(false);
           return;
         }
       }
-      triggerToast(`Geocoded ${data.geocoded?.resolvedCity || radarZip} (${data.geocoded?.countryCode || 'Global'}) & synced regional feeds.`, 'info');
+      triggerToast(`Refreshed leads within ${jobDistanceFilter} miles of ${radarZip}.`, 'info');
     } catch (e) {
-      triggerToast('Synced global radar.', 'info');
+      triggerToast('Refreshed local lead radar.', 'info');
     }
     setIsScanning(false);
   };
@@ -511,13 +632,12 @@ export default function JobAlliesDashboard() {
         body: JSON.stringify({ transcript: voiceInput })
       });
       const parsed = await resp.json();
+      const nowStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' • ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
       const newLog: DictationLog = {
         id: 'log-' + Date.now(),
-        timestamp: 'Just Now',
+        timestamp: nowStr,
         rawText: voiceInput,
         clientName: parsed.clientName || 'Custom Field Estimate',
-        clientPhone: '(203) 555-0142',
-        clientEmail: 'prospect@fairfieldcounty.org',
         materials: Array.isArray(parsed.materials) && parsed.materials.length > 0
           ? parsed.materials
           : [{ item: 'Jobsite Materials', qty: 1, cost: 250, vendor: 'Home Depot Pro', sku: 'HD-GEN-100' }],
@@ -528,7 +648,7 @@ export default function JobAlliesDashboard() {
       setDictationLogs([newLog, ...dictationLogs]);
       setVoiceInput('');
       setIsRecording(false);
-      triggerToast(`Parsed ${newLog.materials.length} material items & ${newLog.labor.length} labor tiers into Dual-Track Quote!`, 'success');
+      triggerToast(`Generated quote with ${newLog.materials.length} material items!`, 'success');
     } catch (err) {
       triggerToast('Error parsing transcript.', 'amber');
     } finally {
@@ -564,49 +684,7 @@ export default function JobAlliesDashboard() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    triggerToast('Downloaded Retailer Quick-Order CSV for Home Depot Pro / Lowe\'s upload!', 'success');
-  };
-
-  const openProposalModal = (log: DictationLog) => {
-    setActiveProposalLog(log);
-    setProposalPhone(log.clientPhone || '(203) 555-0142');
-    setProposalEmail(log.clientEmail || 'client@homeowner.com');
-  };
-
-  const formatProposalText = (log: DictationLog) => {
-    const rawMat = log.materials.reduce((s, m) => s + m.cost * m.qty, 0);
-    const markedMat = rawMat * (1 + globalMarkup / 100);
-    const laborTotal = log.labor.reduce((s, l) => s + l.hours * l.rate, 0);
-    const grandTotal = markedMat + laborTotal;
-
-    const matLines = log.materials.map(m => `• ${m.qty}x ${m.item}: $${(m.cost * m.qty * (1 + globalMarkup / 100)).toFixed(2)}`).join('\n');
-    const labLines = log.labor.map(l => `• ${l.tier} (${l.hours} hrs): $${(l.hours * l.rate).toFixed(2)}`).join('\n');
-
-    return `ESTIMATE & PROPOSAL (${log.clientName})\nPrepared via JobAllies PRO OS\n\nMATERIALS:\n${matLines}\n\nLABOR:\n${labLines}\n\nTOTAL ESTIMATE: $${grandTotal.toFixed(2)}\nReply YES to approve this scope and schedule work.`;
-  };
-
-  const dispatchProposalViaChannel = async (channel: 'sms' | 'email') => {
-    if (!activeProposalLog) return;
-    const bodyText = formatProposalText(activeProposalLog);
-    const recipient = channel === 'sms' ? proposalPhone : proposalEmail;
-    const subject = `Estimate & Proposal: ${activeProposalLog.clientName}`;
-
-    try {
-      const res = await fetch('/api/dispatch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ channel, to: recipient, subject, message: bodyText })
-      });
-      const data = await res.json();
-      if (data.uri) {
-        window.location.href = data.uri;
-        triggerToast(`Opened your ${channel.toUpperCase()} app pre-filled for ${recipient}!`, 'success');
-      } else {
-        triggerToast(`Dispatched ${channel.toUpperCase()} proposal to ${recipient}!`, 'success');
-      }
-    } catch (e) {
-      triggerToast('Error dispatching message.', 'amber');
-    }
+    triggerToast('Downloaded Retailer Quick-Order CSV!', 'success');
   };
 
   const handleInvitePartnerSubmit = async (e: React.FormEvent, channel: 'sms' | 'email') => {
@@ -617,8 +695,6 @@ export default function JobAlliesDashboard() {
       name: invName,
       company: invCompany,
       trade: invTrade,
-      phone: invPhone || '(203) 555-0199',
-      email: invEmail || 'partner@tradeally.com',
       feePercent: Number(invFee),
       status: 'Invite Dispatched',
       referredJobs: 0,
@@ -626,25 +702,8 @@ export default function JobAlliesDashboard() {
     };
     setNetwork([newPartner, ...network]);
     setShowInviteModal(false);
-
-    const inviteMsg = `Hey ${invName}, I'm inviting ${invCompany} to join my verified subcontractor referral network on JobAllies PRO OS (${invFee}% P2P escrow referral split). Accept here: https://joballies.com/dashboard?invite=${newPartner.id}`;
-    try {
-      const res = await fetch('/api/dispatch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          channel,
-          to: channel === 'sms' ? invPhone : invEmail,
-          subject: 'Trade Partner Network Invite',
-          message: inviteMsg
-        })
-      });
-      const data = await res.json();
-      if (data.uri) window.location.href = data.uri;
-    } catch (err) {}
-
     setInvName(''); setInvCompany(''); setInvPhone(''); setInvEmail('');
-    triggerToast(`Partner invite dispatched to ${invName} (${invCompany})!`, 'success');
+    triggerToast(`Partner invite dispatched to ${invName} (${invCompany}) via platform ${channel.toUpperCase()}!`, 'success');
   };
 
   const handleReferJobSubmit = async (e: React.FormEvent) => {
@@ -652,22 +711,6 @@ export default function JobAlliesDashboard() {
     const partner = network.find(p => p.id === selectedPartnerId);
     if (!partner) return;
     const feeAmount = selectedJobValue * (partner.feePercent / 100);
-
-    try {
-      const res = await fetch('/api/billing', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'lock_escrow',
-          amount: feeAmount,
-          projectTitle: selectedJobTitle,
-          partnerName: partner.company,
-          originUrl: window.location.origin
-        })
-      });
-      const data = await res.json();
-      if (data.url) window.open(data.url, '_blank');
-    } catch (err) {}
 
     const newEscrow = {
       id: 'esc-' + Date.now(),
@@ -679,7 +722,7 @@ export default function JobAlliesDashboard() {
       feePercent: partner.feePercent,
       escrowAmount: feeAmount,
       status: 'Locked in Escrow',
-      date: 'Just Now'
+      date: 'Oct 13, 2026'
     };
 
     setEscrowContracts([newEscrow, ...escrowContracts]);
@@ -696,10 +739,15 @@ export default function JobAlliesDashboard() {
     triggerToast(`Released $${target.escrowAmount.toFixed(2)} from escrow to ${target.assignedPartner}!`, 'success');
   };
 
+  // Filter leads by Job Type, Job Distance, and Job Value
   const filteredLeads = leads.filter(l => {
-    const withinRadius = l.distanceMiles <= radarRadius;
-    const matchesTrade = tradeFilter === 'ALL' || l.trade === tradeFilter;
-    return withinRadius && matchesTrade;
+    const withinDistance = l.distanceMiles <= jobDistanceFilter;
+    const matchesType = jobTypeFilter === 'ALL' || l.trade === jobTypeFilter;
+    let matchesValue = true;
+    if (jobValueFilter === 'UNDER_5K') matchesValue = l.estimatedValue < 5000;
+    else if (jobValueFilter === '5K_TO_10K') matchesValue = l.estimatedValue >= 5000 && l.estimatedValue <= 10000;
+    else if (jobValueFilter === 'OVER_10K') matchesValue = l.estimatedValue > 10000;
+    return withinDistance && matchesType && matchesValue;
   });
 
   const totalLockedEscrow = escrowContracts
@@ -719,67 +767,55 @@ export default function JobAlliesDashboard() {
         </div>
       )}
 
-      {/* Pay-On-Success Billing Top Strip */}
+      {/* Trial Banner */}
       <div className="bg-gradient-to-r from-emerald-950/90 via-slate-900 to-sky-950/90 border-b border-emerald-500/20 px-4 lg:px-8 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
         <div className="flex items-center gap-2">
           <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
             billing.planStatus === 'FREE_EXPLORER'
               ? 'bg-emerald-500 text-slate-950'
-              : billing.planStatus === 'TRIAL_ACTIVE'
-              ? 'bg-amber-500 text-slate-950'
-              : 'bg-sky-500 text-slate-950'
+              : 'bg-amber-500 text-slate-950'
           }`}>
             {billing.planStatus === 'FREE_EXPLORER'
-              ? '100% Free Explorer Tier'
-              : billing.planStatus === 'TRIAL_ACTIVE'
-              ? `14-Day Free Trial Active (${daysRemainingInTrial} Days Left)`
-              : 'PRO OS Subscribed ($49/mo)'}
+              ? 'Free Explorer'
+              : `14-Day Free Trial (${daysRemainingInTrial} Days Left)`}
           </span>
           <span className="text-slate-300">
             {billing.planStatus === 'FREE_EXPLORER'
-              ? 'Free to browse global leads, use TradeVoice quoting, and invite partners. 14-day trial starts ONLY when you accept your 1st lead.'
-              : `Triggered by accepting "${billing.triggerLeadTitle || 'First Lead'}". $0 billed today — $49/mo begins after 14-day trial.`}
+              ? 'Free to browse leads and edit auto-quotes. Your 14-day free trial begins once you approve and send your first quote.'
+              : `Active 14-Day Trial ($0 billed today).`}
           </span>
         </div>
         <button
           onClick={() => setShowBillingModal(true)}
           className="text-emerald-400 hover:text-emerald-300 font-bold underline text-[11px] flex items-center gap-1"
         >
-          <CreditCard className="w-3.5 h-3.5" /> Manage Trial & Billing Rules
+          <CreditCard className="w-3.5 h-3.5" /> Trial & Billing Status
         </button>
       </div>
 
-      {/* Header */}
+      {/* Clean Header (Clutter Removed) */}
       <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-4 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-sky-400 flex items-center justify-center font-black text-slate-950 text-xl shadow-lg shadow-emerald-500/20">
             JA
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-black tracking-tight text-white">
-                JobAllies <span className="text-emerald-400">PRO OS</span>
-              </h1>
-              <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                Global v5.5
-              </span>
-            </div>
-            <p className="text-xs text-slate-400">Worldwide Lead Webhooks, OpenStreetMap Geocoding, NLP Quoting & Escrow</p>
+            <h1 className="text-xl font-black tracking-tight text-white">
+              JobAllies
+            </h1>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="hidden md:flex items-center gap-4 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs">
             <div>
-              <span className="text-slate-500 block text-[10px] uppercase font-bold">Active Territory</span>
-              <span className="text-emerald-400 font-bold flex items-center gap-1">
-                <Globe className="w-3 h-3" /> {geoInfo.resolvedCity.slice(0, 22)} ({geoInfo.countryCode})
-              </span>
+              <span className="text-slate-500 block text-[10px] uppercase font-bold">Matched Leads</span>
+              <span className="text-amber-400 font-bold">{filteredLeads.length} Leads</span>
             </div>
             <div className="w-px h-6 bg-slate-800"></div>
             <div>
-              <span className="text-slate-500 block text-[10px] uppercase font-bold">Matched Leads</span>
-              <span className="text-amber-400 font-bold">{filteredLeads.length} in {radarRadius}mi</span>
+              <span className="text-slate-500 block text-[10px] uppercase font-bold">Accepted Leads</span>
+              <span className="text-emerald-400 font-bold">{billing.acceptedLeadsCount} Claimed</span>
             </div>
             <div className="w-px h-6 bg-slate-800"></div>
             <div>
@@ -798,8 +834,8 @@ export default function JobAlliesDashboard() {
               activeTab === 'radar' ? 'bg-emerald-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
             }`}
           >
-            <Globe className="w-4 h-4" />
-            <span>1. Global Lead Radar & Webhooks</span>
+            <Navigation className="w-4 h-4" />
+            <span>Lead Radar</span>
             <span className="ml-1 bg-slate-950/20 px-2 py-0.5 rounded-full text-[10px]">{filteredLeads.length}</span>
           </button>
           <button
@@ -809,7 +845,7 @@ export default function JobAlliesDashboard() {
             }`}
           >
             <Mic className="w-4 h-4" />
-            <span>2. TradeVoice AI & Retailer Carts</span>
+            <span>Voice Quotes & Retailer Carts</span>
             <span className="ml-1 bg-slate-950/20 px-2 py-0.5 rounded-full text-[10px]">{dictationLogs.length}</span>
           </button>
           <button
@@ -819,7 +855,7 @@ export default function JobAlliesDashboard() {
             }`}
           >
             <Users className="w-4 h-4" />
-            <span>3. Trade Network & P2P Escrow</span>
+            <span>Trade Network & Escrow</span>
           </button>
           <button
             onClick={() => setActiveTab('sync')}
@@ -828,336 +864,206 @@ export default function JobAlliesDashboard() {
             }`}
           >
             <Link2 className="w-4 h-4" />
-            <span>4. Integrations & Accounting Export</span>
+            <span>Retailer & Accounting Integrations</span>
           </button>
         </nav>
 
-        {/* TAB 1: GLOBAL LEAD RADAR & PLATFORM WEBHOOKS */}
+        {/* TAB 1: LEAD RADAR WITH JOB TYPE, DISTANCE & VALUE FILTERS */}
         {activeTab === 'radar' && (
           <div className="space-y-6">
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 lg:p-6 shadow-xl space-y-4">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
                 <div>
-                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    <Globe className="w-5 h-5 text-amber-400" />
-                    Worldwide Geofenced Lead Radar & Marketplace Webhook Receiver
-                  </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Enter ANY city, postal code, or country worldwide (e.g. London UK, Toronto ON, Sydney AU, Austin TX) to geocode & pull leads, or connect your Thumbtack/Angi/Bark webhooks.
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
+                  <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Service Area (Zip / City)</label>
                   <input
                     type="text"
                     value={radarZip}
                     onChange={(e) => setRadarZip(e.target.value)}
-                    placeholder="City, Postal Code, or Country..."
-                    className="bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl px-3 py-2 text-xs text-white focus:outline-none w-52"
+                    placeholder="Zip or City..."
+                    className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none"
                   />
-                  <div className="bg-slate-950 border border-slate-800 px-3 py-2 rounded-xl flex items-center gap-2 text-xs">
-                    <Sliders className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Radius: <strong className="text-amber-400">{radarRadius} mi</strong></span>
-                    <input
-                      type="range"
-                      min="2"
-                      max="50"
-                      value={radarRadius}
-                      onChange={(e) => setRadarRadius(Number(e.target.value))}
-                      className="accent-amber-500 w-20 cursor-pointer"
-                    />
-                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Job Type</label>
+                  <select
+                    value={jobTypeFilter}
+                    onChange={(e) => setJobTypeFilter(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none"
+                  >
+                    <option value="ALL">All Job Types</option>
+                    <option value="Masonry & Concrete">Masonry & Concrete</option>
+                    <option value="Landscaping & Excavation">Landscaping & Excavation</option>
+                    <option value="Framing & Carpentry">Framing & Carpentry</option>
+                    <option value="Electrical">Electrical</option>
+                    <option value="Plumbing & Mechanical">Plumbing & Mechanical</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Job Distance</label>
+                  <select
+                    value={jobDistanceFilter}
+                    onChange={(e) => setJobDistanceFilter(Number(e.target.value))}
+                    className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none"
+                  >
+                    <option value={5}>Within 5 Miles</option>
+                    <option value={10}>Within 10 Miles</option>
+                    <option value={15}>Within 15 Miles</option>
+                    <option value={25}>Within 25 Miles</option>
+                    <option value={50}>Within 50 Miles</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Job Value</label>
+                  <select
+                    value={jobValueFilter}
+                    onChange={(e) => setJobValueFilter(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none"
+                  >
+                    <option value="ALL">All Job Values</option>
+                    <option value="UNDER_5K">Under $5,000</option>
+                    <option value="5K_TO_10K">$5,000 – $10,000</option>
+                    <option value="OVER_10K">$10,000+</option>
+                  </select>
+                </div>
+
+                <div className="flex gap-2">
                   <button
                     onClick={handleRescanRadar}
-                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all"
+                    className="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow transition-all"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${isScanning ? 'animate-spin' : ''}`} />
-                    <span>{isScanning ? 'Geocoding...' : 'Scan Global Location'}</span>
+                    <span>{isScanning ? 'Scanning...' : 'Refresh Leads'}</span>
                   </button>
                   <button
-                    onClick={() => { setShowWebhookDrawer(!showWebhookDrawer); setShowImportDrawer(false); }}
-                    className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all"
-                  >
-                    <Webhook className="w-4 h-4" />
-                    <span>Connect Lead Platforms</span>
-                  </button>
-                  <button
-                    onClick={() => { setShowImportDrawer(!showImportDrawer); setShowWebhookDrawer(false); }}
-                    className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all"
+                    onClick={() => setShowImportDrawer(!showImportDrawer)}
+                    className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-3 py-2.5 rounded-xl text-xs border border-slate-700"
+                    title="Import Post"
                   >
                     <Plus className="w-4 h-4" />
-                    <span>Paste Post</span>
                   </button>
                 </div>
               </div>
-
-              {/* Quick Global City Presets */}
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/80 text-xs">
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-[11px] text-slate-500 font-bold mr-1">Global Test Regions:</span>
-                  {['Weston, CT, USA', 'Austin, TX, USA', 'London, UK', 'Toronto, Canada', 'Sydney, Australia'].map(city => (
-                    <button
-                      key={city}
-                      onClick={() => { setRadarZip(city); }}
-                      className="bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 px-2.5 py-1 rounded-lg text-[11px]"
-                    >
-                      {city}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {marketplaces.map((mp, i) => (
-                    <a
-                      key={i}
-                      href={mp.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-slate-950 hover:bg-slate-800 text-sky-400 border border-slate-800 px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1"
-                    >
-                      <span>{mp.name}</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  ))}
-                </div>
-              </div>
-
-              {/* Trade Filters */}
-              <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-800/80">
-                {['ALL', 'Masonry & Concrete', 'Landscaping & Excavation', 'Framing & Carpentry', 'Electrical', 'Plumbing & Mechanical'].map(t => (
-                  <button
-                    key={t}
-                    onClick={() => setTradeFilter(t)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                      tradeFilter === t ? 'bg-amber-500 text-slate-950' : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
-                    }`}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-
-              {/* LIVE PLATFORM WEBHOOK CONNECTOR DRAWER */}
-              {showWebhookDrawer && (
-                <div className="bg-slate-950 border border-sky-500/40 rounded-xl p-4 space-y-4 text-xs">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                    <div>
-                      <h4 className="font-bold text-sky-400 uppercase tracking-wider flex items-center gap-1.5">
-                        <Webhook className="w-4 h-4" /> Global Lead Platform Webhook Endpoints (Live Receiver)
-                      </h4>
-                      <p className="text-slate-400 text-[11px] mt-0.5">
-                        Paste your unique Webhook URL into Thumbtack, Angi, Bark.com, Checkatrade (UK), Hipages (AU), HomeStars (CA), or Zapier so leads appear here automatically worldwide.
-                      </p>
-                    </div>
-                    <button onClick={() => setShowWebhookDrawer(false)} className="text-slate-400 hover:text-white font-bold">Close ✕</button>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="bg-slate-900 border border-slate-800 p-3 rounded-xl space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="font-bold text-white">Thumbtack Pro Webhook URL</span>
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText('https://joballies.com/api/webhooks/leads?source=thumbtack');
-                            triggerToast('Copied Thumbtack Webhook URL!', 'success');
-                          }}
-                          className="text-sky-400 hover:underline text-[11px] flex items-center gap-1"
-                        >
-                          <Copy className="w-3 h-3" /> Copy URL
-                        </button>
-                      </div>
-                      <code className="block bg-slate-950 p-2 rounded text-[11px] text-emerald-400 font-mono truncate">
-                        https://joballies.com/api/webhooks/leads?source=thumbtack
-                      </code>
-                      <p className="text-[11px] text-slate-400">In Thumbtack Pro: Select Apps → Manage Webhooks → Create Webhook.</p>
-                    </div>
-
-                    <div className="bg-slate-900 border border-slate-800 p-3 rounded-xl space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="font-bold text-white">Angi / HomeAdvisor Webhook URL</span>
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText('https://joballies.com/api/webhooks/leads?source=angi');
-                            triggerToast('Copied Angi Webhook URL!', 'success');
-                          }}
-                          className="text-sky-400 hover:underline text-[11px] flex items-center gap-1"
-                        >
-                          <Copy className="w-3 h-3" /> Copy URL
-                        </button>
-                      </div>
-                      <code className="block bg-slate-950 p-2 rounded text-[11px] text-emerald-400 font-mono truncate">
-                        https://joballies.com/api/webhooks/leads?source=angi
-                      </code>
-                      <p className="text-[11px] text-slate-400">In Angi Business Center: Lead Integration Setup Wizard → JSON Webhook.</p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800">
-                    <span className="text-slate-400 font-bold">Test Live Webhook Ingestion into Your Radar:</span>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => triggerTestPlatformWebhook('thumbtack')}
-                        className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3 py-1.5 rounded-lg text-[11px]"
-                      >
-                        + Test Thumbtack Lead
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => triggerTestPlatformWebhook('angi')}
-                        className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-3 py-1.5 rounded-lg text-[11px]"
-                      >
-                        + Test Angi Lead
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => triggerTestPlatformWebhook('bark')}
-                        className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-black px-3 py-1.5 rounded-lg text-[11px]"
-                      >
-                        + Test Bark.com (Global)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => triggerTestPlatformWebhook('checkatrade')}
-                        className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] border border-slate-700"
-                      >
-                        + Test Checkatrade (UK)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => triggerTestPlatformWebhook('hipages')}
-                        className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] border border-slate-700"
-                      >
-                        + Test hipages (AU)
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
 
               {showImportDrawer && (
-                <form onSubmit={handleImportCommunityPost} className="bg-slate-950 border border-emerald-500/40 rounded-xl p-4 space-y-3">
+                <form onSubmit={handleImportCommunityPost} className="bg-slate-950 border border-emerald-500/40 rounded-xl p-4 space-y-3 pt-3">
                   <div className="flex items-center justify-between">
                     <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-                      <Sparkles className="w-4 h-4" /> Paste Live Facebook Group / Nextdoor / Bark Post Text
+                      <Sparkles className="w-4 h-4" /> Add Job Request to Radar
                     </h4>
                     <button type="button" onClick={() => setShowImportDrawer(false)} className="text-xs text-slate-400 hover:text-white">Close ✕</button>
                   </div>
                   <textarea
-                    rows={3}
+                    rows={2}
                     value={rawPostInput}
                     onChange={(e) => setRawPostInput(e.target.value)}
                     required
-                    placeholder="Paste raw post text from any platform worldwide..."
+                    placeholder="Paste job request description here..."
                     className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-emerald-500"
                   />
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div className="flex gap-2">
                     <input
                       type="url"
                       value={rawPostUrl}
                       onChange={(e) => setRawPostUrl(e.target.value)}
-                      placeholder="Source Post URL (optional)"
-                      className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                      placeholder="Source URL (optional)"
+                      className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
                     />
-                    <input
-                      type="tel"
-                      value={rawPostPhone}
-                      onChange={(e) => setRawPostPhone(e.target.value)}
-                      placeholder="Prospect Phone (auto-extracted if in text)"
-                      className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
-                    />
-                    <button type="submit" className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-2 rounded-xl text-xs">
-                      Extract & Add Lead to Radar
+                    <button type="submit" className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-5 py-2 rounded-xl text-xs">
+                      Add & Auto-Generate Quote
                     </button>
                   </div>
                 </form>
               )}
             </div>
 
+            {/* Lead Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredLeads.map(lead => (
-                <div key={lead.id} className={`bg-slate-900 border rounded-2xl p-5 shadow-lg flex flex-col justify-between space-y-4 transition-all ${
-                  lead.claimed ? 'border-emerald-500/50' : 'border-slate-800 hover:border-amber-500/40'
-                }`}>
-                  <div className="space-y-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30">
-                          {lead.source}
-                        </span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300">
+              {filteredLeads.map(lead => {
+                const rawMat = (lead.quoteMaterials || []).reduce((s, m) => s + m.cost * m.qty, 0);
+                const markedMat = rawMat * (1 + globalMarkup / 100);
+                const laborTotal = (lead.quoteLabor || []).reduce((s, l) => s + l.hours * l.rate, 0);
+                const autoQuoteTotal = markedMat + laborTotal;
+
+                return (
+                  <div key={lead.id} className={`bg-slate-900 border rounded-2xl p-5 shadow-lg flex flex-col justify-between space-y-4 transition-all ${
+                    lead.claimed ? 'border-emerald-500/50' : 'border-slate-800 hover:border-amber-500/40'
+                  }`}>
+                    <div className="space-y-3">
+                      {/* Top Row: Trade Badge + Explicit Date & Time Posted */}
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30">
                           {lead.trade}
                         </span>
+                        <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5 text-slate-500" />
+                          Posted: <strong className="text-slate-200">{lead.postedAt}</strong>
+                        </span>
                       </div>
-                      <a
-                        href={lead.sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[11px] text-sky-400 hover:underline flex items-center gap-1 shrink-0"
-                      >
-                        <span>View Source</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    </div>
 
-                    <h3 className="text-base font-bold text-white leading-snug">{lead.title}</h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">{lead.desc}</p>
+                      <h3 className="text-base font-bold text-white leading-snug">{lead.title}</h3>
+                      <p className="text-xs text-slate-400 leading-relaxed">{lead.desc}</p>
 
-                    <div className="grid grid-cols-2 gap-2 text-xs bg-slate-950 p-3 rounded-xl border border-slate-800">
-                      <div>
-                        <span className="text-slate-500 block text-[10px] uppercase font-bold">Homeowner</span>
-                        <span className="font-bold text-white">{lead.author}</span>
-                      </div>
-                      <div>
-                        <span className="text-slate-500 block text-[10px] uppercase font-bold">Location & Budget</span>
-                        <span className="font-bold text-emerald-400">{lead.location} ({lead.distanceMiles} mi) • {lead.budget}</span>
-                      </div>
-                      <div className="col-span-2 pt-2 border-t border-slate-800/80 flex items-center justify-between">
-                        {lead.claimed ? (
-                          <div className="flex flex-wrap items-center gap-2 text-xs">
-                            <span className="text-emerald-400 font-bold flex items-center gap-1">
-                              <Unlock className="w-3.5 h-3.5" /> {lead.phone}
-                            </span>
-                            <a href={`sms:${lead.phone.replace(/[^0-9+]/g, '')}?&body=${encodeURIComponent(`Hi ${lead.author}, I saw your request for "${lead.title}" and would love to provide a quote.`)}`} className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded font-bold hover:bg-emerald-500 hover:text-slate-950 transition-all">
-                              Text Prospect
-                            </a>
-                            <a href={`mailto:${lead.email}?subject=${encodeURIComponent(`Estimate for ${lead.title}`)}`} className="bg-sky-500/20 text-sky-300 border border-sky-500/30 px-2 py-0.5 rounded font-bold hover:bg-sky-500 hover:text-slate-950 transition-all">
-                              Email Prospect
-                            </a>
-                          </div>
-                        ) : (
-                          <span className="text-slate-500 text-[11px] flex items-center gap-1.5">
-                            <Lock className="w-3.5 h-3.5 text-amber-400" />
-                            Direct Phone & Email unlocked upon accepting lead
+                      {/* Prospect Details & Platform-Mediated Contact Buttons (No Raw Phone/Email Shown) */}
+                      <div className="grid grid-cols-2 gap-2 text-xs bg-slate-950 p-3 rounded-xl border border-slate-800">
+                        <div>
+                          <span className="text-slate-500 block text-[10px] uppercase font-bold">Prospect</span>
+                          <span className="font-bold text-white">{lead.author}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block text-[10px] uppercase font-bold">Distance & Est. Budget</span>
+                          <span className="font-bold text-emerald-400">{lead.location} ({lead.distanceMiles} mi) • {lead.budget}</span>
+                        </div>
+
+                        <div className="col-span-2 pt-2.5 mt-1 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2">
+                          <span className="text-[11px] text-slate-400">
+                            Auto-Quote Ready: <strong className="text-emerald-400">${autoQuoteTotal.toFixed(2)}</strong>
                           </span>
-                        )}
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => openPlatformContact(lead, 'phone')}
+                              className="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 px-3 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-all"
+                            >
+                              <Phone className="w-3 h-3" /> Call / Text via Platform
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => openPlatformContact(lead, 'email')}
+                              className="bg-slate-800 hover:bg-slate-700 text-sky-400 border border-slate-700 px-3 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-all"
+                            >
+                              <Mail className="w-3 h-3" /> Email via Platform
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <button
-                    onClick={() => handleLeadAcceptClick(lead)}
-                    className={`w-full font-black py-2.5 rounded-xl text-xs shadow transition-all flex items-center justify-center gap-2 ${
-                      lead.claimed
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500 hover:text-slate-950'
-                        : 'bg-amber-500 hover:bg-amber-400 text-slate-950'
-                    }`}
-                  >
-                    {lead.claimed ? (
-                      <>
-                        <Check className="w-4 h-4" />
-                        <span>Lead Accepted • Re-Open in TradeVoice Quote Builder</span>
-                      </>
-                    ) : (
-                      <span>Accept & Claim Lead {billing.planStatus === 'FREE_EXPLORER' ? '(Starts 14-Day Free Trial)' : ''}</span>
-                    )}
-                  </button>
-                </div>
-              ))}
+                    <button
+                      onClick={() => openLeadAutoQuoteEditor(lead)}
+                      className={`w-full font-black py-2.5 rounded-xl text-xs shadow transition-all flex items-center justify-center gap-2 ${
+                        lead.claimed
+                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500 hover:text-slate-950'
+                          : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
+                      }`}
+                    >
+                      <Edit3 className="w-4 h-4" />
+                      <span>
+                        {lead.claimed
+                          ? `Edit & Re-Send Approved Quote ($${autoQuoteTotal.toFixed(2)})`
+                          : `Review, Edit & Approve Auto-Quote ($${autoQuoteTotal.toFixed(2)})`}
+                      </span>
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
 
-        {/* TAB 2: TRADEVOICE AI & RETAILER CARTS */}
+        {/* TAB 2: VOICE QUOTES & RETAILER CARTS */}
         {activeTab === 'voice' && (
           <div className="space-y-6">
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
@@ -1165,10 +1071,10 @@ export default function JobAlliesDashboard() {
                 <div>
                   <h2 className="text-lg font-bold text-white flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-emerald-400" />
-                    TradeVoice AI Field Dictation & Real Line-Item Parser
+                    Voice Quotes & Line-Item Estimator
                   </h2>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    Speak or type ANY combination of quantities, materials, prices, vendors, and labor hours. Every item is dynamically parsed and linked to live retailer catalogs.
+                    Speak or type jobsite notes to generate custom quotes and wholesale material carts.
                   </p>
                 </div>
                 <button
@@ -1189,41 +1095,15 @@ export default function JobAlliesDashboard() {
                   value={voiceInput}
                   onChange={(e) => setVoiceInput(e.target.value)}
                   className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-4 text-sm text-slate-100 font-mono focus:outline-none"
-                  placeholder="Speak or type anything, e.g.: '20 sheets of 5/8 drywall at $16.50 from Home Depot Pro, 8 recessed LED lights at $24 each, and 12 hours of crew labor at $75 an hour for Elena Rostova'"
+                  placeholder="Speak or type materials and labor hours..."
                 />
-
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex flex-wrap items-center gap-2 text-xs">
-                    <span className="text-slate-500 font-bold text-[11px]">Test Presets:</span>
-                    <button
-                      type="button"
-                      onClick={() => setVoiceInput('16 pressure treated 4x4x10 posts at $28 each from Home Depot Pro, 20 bags of Quikrete at $7.50, and 18 hours of senior crew labor at $70 an hour for David Kowalski')}
-                      className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg border border-slate-700 text-[11px]"
-                    >
-                      Deck & Timber Preset
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setVoiceInput('18 Unilock paver pallets at $22.50 from SiteOne Supply, 4 tons of crushed gravel at $45, and 14 hours of master mason labor at $95 an hour for Mark Henderson')}
-                      className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg border border-slate-700 text-[11px]"
-                    >
-                      Stone Patio & SiteOne Preset
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setVoiceInput('1 Square D 200A main breaker panel at $340 from Home Depot Pro, 120 feet of copper feeder wire at $4.50, and 10 hours of licensed electrician labor at $110 an hour for Rachel Vance')}
-                      className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg border border-slate-700 text-[11px]"
-                    >
-                      200A Electrical Upgrade
-                    </button>
-                  </div>
-
+                <div className="flex justify-end">
                   <button
                     type="submit"
                     disabled={isParsingVoice}
-                    className="bg-gradient-to-r from-emerald-500 to-sky-500 hover:from-emerald-400 hover:to-sky-400 text-slate-950 font-black px-6 py-2.5 rounded-xl text-xs shadow-lg"
+                    className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-6 py-2.5 rounded-xl text-xs shadow-lg"
                   >
-                    {isParsingVoice ? 'Parsing Line Items...' : 'Extract Dual-Track Estimate & Retailer Cart'}
+                    {isParsingVoice ? 'Generating Quote...' : 'Generate Quote & Retailer Cart'}
                   </button>
                 </div>
               </form>
@@ -1231,8 +1111,8 @@ export default function JobAlliesDashboard() {
 
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
               <div>
-                <h3 className="text-sm font-bold text-white">Global Client Material Markup Rate: <span className="text-emerald-400">{globalMarkup}%</span></h3>
-                <p className="text-xs text-slate-400">Automatically marks up wholesale material costs on Client Proposals while keeping Wholesale POs at 0%.</p>
+                <h3 className="text-sm font-bold text-white">Client Material Markup: <span className="text-emerald-400">{globalMarkup}%</span></h3>
+                <p className="text-xs text-slate-400">Applies profit margin to client quotes while keeping wholesale carts at 0%.</p>
               </div>
               <div className="flex items-center gap-1.5 bg-slate-950 p-1.5 rounded-xl border border-slate-800">
                 {[0, 15, 20, 25, 30, 40].map(m => (
@@ -1270,10 +1150,8 @@ export default function JobAlliesDashboard() {
                       <div className="bg-slate-950 border border-emerald-500/30 rounded-xl p-4 flex flex-col justify-between space-y-4">
                         <div className="space-y-2">
                           <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                            <span className="text-xs font-bold text-white">Client Proposal (SMS / Email / PDF)</span>
-                            <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded">
-                              +{globalMarkup}% Material Margin
-                            </span>
+                            <span className="text-xs font-bold text-white">Client Quote (+{globalMarkup}% Markup)</span>
+                            <span className="text-xs font-black text-emerald-400">${clientGrandTotal.toFixed(2)}</span>
                           </div>
                           {log.materials.map((m, idx) => (
                             <div key={idx} className="flex justify-between text-xs text-slate-300">
@@ -1287,28 +1165,14 @@ export default function JobAlliesDashboard() {
                               <span className="font-mono text-white">${(l.hours * l.rate).toFixed(2)}</span>
                             </div>
                           ))}
-                          <div className="flex justify-between border-t border-slate-800 pt-2 text-sm font-black text-emerald-400">
-                            <span>Client Proposal Total:</span>
-                            <span>${clientGrandTotal.toFixed(2)}</span>
-                          </div>
                         </div>
-
-                        <button
-                          onClick={() => openProposalModal(log)}
-                          className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5"
-                        >
-                          <Send className="w-3.5 h-3.5" />
-                          <span>Send via Text / Email / Platform DM</span>
-                        </button>
                       </div>
 
                       <div className="bg-slate-950 border border-sky-500/30 rounded-xl p-4 flex flex-col justify-between space-y-4">
                         <div className="space-y-2">
                           <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                             <span className="text-xs font-bold text-white">Wholesale Retailer Cart (0% Markup)</span>
-                            <span className="text-[10px] font-bold text-sky-400 bg-sky-500/10 border border-sky-500/30 px-2 py-0.5 rounded">
-                              Direct Retailer Catalog Links
-                            </span>
+                            <span className="text-xs font-black text-sky-400">${rawMat.toFixed(2)}</span>
                           </div>
                           {log.materials.map((m, idx) => (
                             <div key={idx} className="flex items-center justify-between text-xs bg-slate-900/90 px-2.5 py-1.5 rounded-lg border border-slate-800">
@@ -1327,10 +1191,6 @@ export default function JobAlliesDashboard() {
                               </a>
                             </div>
                           ))}
-                          <div className="flex justify-between border-t border-slate-800 pt-2 text-sm font-black text-sky-400">
-                            <span>Wholesale Material Subtotal:</span>
-                            <span>${rawMat.toFixed(2)}</span>
-                          </div>
                         </div>
 
                         <div className="flex flex-wrap gap-2">
@@ -1366,9 +1226,9 @@ export default function JobAlliesDashboard() {
                   <ShieldCheck className="w-7 h-7" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-extrabold text-white">Trade Network & Peer Referral Escrow Engine</h2>
+                  <h2 className="text-xl font-extrabold text-white">Trade Network & Peer Referral Escrow</h2>
                   <p className="text-xs text-slate-400 mt-1">
-                    Invite local subcontractor allies via SMS/Email, refer out-of-scope jobs, and lock referral commissions in Stripe Escrow.
+                    Invite trusted subcontractor allies, refer out-of-scope work, and lock referral commissions in escrow.
                   </p>
                 </div>
               </div>
@@ -1389,7 +1249,7 @@ export default function JobAlliesDashboard() {
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
               <div className="flex flex-wrap justify-between items-center gap-2 border-b border-slate-800 pb-4">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                  <Users className="w-4 h-4 text-emerald-400" /> Verified Subcontractor Referral Network
+                  <Users className="w-4 h-4 text-emerald-400" /> Verified Subcontractor Network
                 </h3>
                 <button
                   onClick={() => setShowReferModal(true)}
@@ -1417,7 +1277,7 @@ export default function JobAlliesDashboard() {
                       <tr key={p.id} className="hover:bg-slate-800/40">
                         <td className="p-3 font-bold text-white">
                           {p.company}
-                          <span className="block text-[10px] text-slate-400">{p.name} • {p.phone}</span>
+                          <span className="block text-[10px] text-slate-400">{p.name}</span>
                         </td>
                         <td className="p-3 text-slate-300">{p.trade}</td>
                         <td className="p-3">
@@ -1429,12 +1289,6 @@ export default function JobAlliesDashboard() {
                         <td className="p-3 text-slate-300 font-bold">{p.referredJobs} Jobs</td>
                         <td className="p-3 font-bold text-emerald-400">${p.lifetimeShared.toFixed(2)}</td>
                         <td className="p-3 text-right space-x-2">
-                          <a
-                            href={`sms:${p.phone.replace(/[^0-9+]/g, '')}?&body=${encodeURIComponent(`Hey ${p.name}, I have a ${p.trade} job referral for ${p.company} via JobAllies.`)}`}
-                            className="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded-lg text-[11px] font-bold inline-block"
-                          >
-                            Text Ally
-                          </a>
                           <button
                             onClick={() => { setSelectedPartnerId(p.id); setShowReferModal(true); }}
                             className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-black px-2.5 py-1 rounded-lg text-[11px]"
@@ -1492,17 +1346,17 @@ export default function JobAlliesDashboard() {
           </div>
         )}
 
-        {/* TAB 4: INTEGRATIONS & ACCOUNTING EXPORT */}
+        {/* TAB 4: RETAILER & ACCOUNTING INTEGRATIONS */}
         {activeTab === 'sync' && (
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
               <div>
                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
                   <Link2 className="w-5 h-5 text-emerald-400" />
-                  Global Lead Webhooks, Retailer Carts & Accounting Hub
+                  Retailer Carts & Accounting Integrations
                 </h2>
                 <p className="text-xs text-slate-400 mt-1">
-                  Export invoices directly to QuickBooks CSV or copy your live Webhook URLs for Thumbtack, Angi, and Bark.com.
+                  Export invoices directly to QuickBooks CSV and sync material orders with major pro retailers.
                 </p>
               </div>
               <button
@@ -1560,132 +1414,253 @@ export default function JobAlliesDashboard() {
         )}
       </div>
 
-      {/* MODAL A: FIRST LEAD ACCEPTANCE -> 14-DAY FREE TRIAL ACTIVATION */}
-      {pendingLeadForTrialModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-amber-500/50 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
+      {/* MODAL 1: EDITABLE AUTO-QUOTE & APPROVAL WORKFLOW */}
+      {editingLeadQuote && (
+        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-slate-900 border border-emerald-500/50 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5 my-8">
             <div className="flex justify-between items-start border-b border-slate-800 pb-4">
               <div>
                 <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  Pay-On-Success Guarantee • $0 Due Today
+                  Auto-Generated Quote • Editable Line Items
                 </span>
-                <h3 className="text-lg font-black text-white mt-2">
-                  Accept Your 1st Lead & Start Your 14-Day Free Trial
+                <h3 className="text-lg font-black text-white mt-2">{editingLeadQuote.title}</h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Prospect: <strong className="text-white">{editingLeadQuote.author}</strong> • {editingLeadQuote.location} • Posted {editingLeadQuote.postedAt}
+                </p>
+              </div>
+              <button onClick={() => setEditingLeadQuote(null)} className="text-slate-400 hover:text-white font-bold">✕</button>
+            </div>
+
+            <div className="bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-300">
+              <strong className="text-slate-400 uppercase text-[10px] block mb-1">Lead Request Scope:</strong>
+              {editingLeadQuote.desc}
+            </div>
+
+            {/* Editable Materials Section */}
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold uppercase text-slate-300">Materials (Wholesale Cost + {globalMarkup}% Client Markup)</h4>
+                <button
+                  type="button"
+                  onClick={handleAddMaterialRow}
+                  className="text-xs text-emerald-400 hover:underline font-bold flex items-center gap-1"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Material Line
+                </button>
+              </div>
+
+              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                {editableMaterials.map((mat, idx) => (
+                  <div key={idx} className="grid grid-cols-12 gap-2 items-center bg-slate-950 border border-slate-800 p-2 rounded-xl text-xs">
+                    <div className="col-span-6">
+                      <input
+                        type="text"
+                        value={mat.item}
+                        onChange={(e) => handleMaterialEdit(idx, 'item', e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-white"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <input
+                        type="number"
+                        value={mat.qty}
+                        onChange={(e) => handleMaterialEdit(idx, 'qty', Number(e.target.value))}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-white text-center"
+                        title="Quantity"
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={mat.cost}
+                        onChange={(e) => handleMaterialEdit(idx, 'cost', Number(e.target.value))}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-emerald-400 font-mono"
+                        title="Unit Wholesale Cost ($)"
+                      />
+                    </div>
+                    <div className="col-span-1 text-right">
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveMaterialRow(idx)}
+                        className="text-slate-500 hover:text-rose-400"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Editable Labor Section */}
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold uppercase text-slate-300">Labor Breakdown (Hours & Rate/Hr)</h4>
+                <button
+                  type="button"
+                  onClick={handleAddLaborRow}
+                  className="text-xs text-emerald-400 hover:underline font-bold flex items-center gap-1"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Labor Line
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {editableLabor.map((lab, idx) => (
+                  <div key={idx} className="grid grid-cols-12 gap-2 items-center bg-slate-950 border border-slate-800 p-2 rounded-xl text-xs">
+                    <div className="col-span-6">
+                      <input
+                        type="text"
+                        value={lab.tier}
+                        onChange={(e) => handleLaborEdit(idx, 'tier', e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-white"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <input
+                        type="number"
+                        value={lab.hours}
+                        onChange={(e) => handleLaborEdit(idx, 'hours', Number(e.target.value))}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-white text-center"
+                        title="Hours"
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <input
+                        type="number"
+                        value={lab.rate}
+                        onChange={(e) => handleLaborEdit(idx, 'rate', Number(e.target.value))}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-sky-400 font-mono"
+                        title="Hourly Rate ($/hr)"
+                      />
+                    </div>
+                    <div className="col-span-1 text-right">
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveLaborRow(idx)}
+                        className="text-slate-500 hover:text-rose-400"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Totals Summary */}
+            <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 flex items-center justify-between text-xs">
+              <div>
+                <span className="text-slate-400 block">Client Quote Total (Includes {globalMarkup}% Material Markup + Labor)</span>
+                <span className="text-[11px] text-slate-500">
+                  Sent through JobAllies Platform Relay to {editingLeadQuote.author}
+                </span>
+              </div>
+              <span className="text-xl font-black text-emerald-400">
+                ${(
+                  editableMaterials.reduce((s, m) => s + m.cost * m.qty, 0) * (1 + globalMarkup / 100) +
+                  editableLabor.reduce((s, l) => s + l.hours * l.rate, 0)
+                ).toFixed(2)}
+              </span>
+            </div>
+
+            {/* Step 1: Approve Quote -> Step 2: Send via Text or Email through Platform */}
+            {!quoteApproved ? (
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={approveEditedQuote}
+                  className="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl text-xs shadow-lg flex items-center justify-center gap-2"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Approve Quote to Enable Text & Email Dispatch</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditingLeadQuote(null)}
+                  className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-4 py-3 rounded-xl text-xs"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3 pt-2 border-t border-slate-800">
+                <div className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                  <CheckCircle className="w-4 h-4" /> Quote Approved! Choose how to send to {editingLeadQuote.author} through JobAllies:
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => sendApprovedQuoteThroughPlatform('sms')}
+                    className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg"
+                  >
+                    <MessageSquare className="w-4 h-4" /> Send Approved Quote via Text (Platform Relay)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => sendApprovedQuoteThroughPlatform('email')}
+                    className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-black py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg"
+                  >
+                    <Mail className="w-4 h-4" /> Send Approved Quote via Email (Platform Relay)
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: PLATFORM-MEDIATED PHONE / EMAIL RELAY (NO PHONE/EMAIL SHOWN) */}
+      {platformContactModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+              <div>
+                <span className="text-[10px] font-bold uppercase text-emerald-400">
+                  JobAllies Privacy-Protected Relay
+                </span>
+                <h3 className="text-base font-bold text-white mt-0.5">
+                  {platformContactModal.mode === 'phone' ? 'Call / Text' : 'Email'} {platformContactModal.lead.author} via Platform
                 </h3>
               </div>
-              <button onClick={() => setPendingLeadForTrialModal(null)} className="text-slate-400 hover:text-white font-bold">✕</button>
+              <button onClick={() => setPlatformContactModal(null)} className="text-slate-400 hover:text-white font-bold">✕</button>
             </div>
 
-            <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2 text-xs">
-              <div className="font-bold text-amber-400">{pendingLeadForTrialModal.title}</div>
-              <div className="text-slate-300">Homeowner: <strong>{pendingLeadForTrialModal.author}</strong> • {pendingLeadForTrialModal.location}</div>
-              <div className="text-emerald-400 font-bold">Estimated Budget: {pendingLeadForTrialModal.budget}</div>
-            </div>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Your message or call is routed directly to <strong>{platformContactModal.lead.author}</strong> through the JobAllies platform relay without exposing personal contact numbers.
+            </p>
 
-            <div className="space-y-2 text-xs text-slate-300 leading-relaxed">
-              <p className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span><strong>Today ($0.00):</strong> Unlock {pendingLeadForTrialModal.author}&apos;s direct phone number, email, and auto-build your proposal in TradeVoice.</span>
-              </p>
-              <p className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span><strong>Next 14 Days ($0.00):</strong> Unlimited global lead claims, SMS/email proposals, and retailer cart exports.</span>
-              </p>
-              <p className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span><strong>After 14-Day Trial ($49/mo):</strong> Billed monthly only after your 14-day trial completes. Cancel anytime in 1 click.</span>
-              </p>
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={confirmFirstLeadAndStartTrial}
-                className="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl text-xs shadow-lg"
-              >
-                Accept Lead & Start 14-Day Free Trial ($0 Today)
-              </button>
-              <button
-                onClick={() => setPendingLeadForTrialModal(null)}
-                className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-4 py-3 rounded-xl text-xs"
-              >
-                Not Yet
-              </button>
-            </div>
+            <form onSubmit={executePlatformRelayContact} className="space-y-3 text-xs">
+              <textarea
+                rows={3}
+                value={relayMessage}
+                onChange={(e) => setRelayMessage(e.target.value)}
+                required
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white"
+              />
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5"
+                >
+                  {platformContactModal.mode === 'phone' ? <Phone className="w-3.5 h-3.5" /> : <Mail className="w-3.5 h-3.5" />}
+                  <span>{platformContactModal.mode === 'phone' ? 'Connect via Platform Phone/SMS' : 'Send via Platform Email'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPlatformContactModal(null)}
+                  className="bg-slate-800 text-slate-300 font-bold px-4 py-2.5 rounded-xl text-xs"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
 
-      {/* MODAL B: CLIENT PROPOSAL DISPATCH */}
-      {activeProposalLog && (
-        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5">
-            <div className="flex justify-between items-center border-b border-slate-800 pb-4">
-              <div>
-                <span className="text-[10px] font-bold uppercase text-emerald-400">Client Proposal Dispatch</span>
-                <h3 className="text-lg font-bold text-white">{activeProposalLog.clientName}</h3>
-              </div>
-              <button onClick={() => setActiveProposalLog(null)} className="text-slate-400 hover:text-white font-bold">✕</button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div>
-                <label className="block text-slate-400 font-bold mb-1">Prospect Mobile (for SMS Text)</label>
-                <input
-                  type="tel"
-                  value={proposalPhone}
-                  onChange={(e) => setProposalPhone(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white"
-                />
-              </div>
-              <div>
-                <label className="block text-slate-400 font-bold mb-1">Prospect Email</label>
-                <input
-                  type="email"
-                  value={proposalEmail}
-                  onChange={(e) => setProposalEmail(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white"
-                />
-              </div>
-            </div>
-
-            <pre className="bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs font-mono text-slate-200 whitespace-pre-wrap max-h-60 overflow-y-auto">
-              {formatProposalText(activeProposalLog)}
-            </pre>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
-              <button
-                onClick={() => dispatchProposalViaChannel('sms')}
-                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5"
-              >
-                <MessageSquare className="w-4 h-4" /> Send SMS
-              </button>
-              <button
-                onClick={() => dispatchProposalViaChannel('email')}
-                className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-black py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5"
-              >
-                <Mail className="w-4 h-4" /> Send Email
-              </button>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(formatProposalText(activeProposalLog));
-                  triggerToast('Copied formatted proposal for Facebook Messenger / Nextdoor / Thumbtack DM!', 'success');
-                }}
-                className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5"
-              >
-                <Copy className="w-4 h-4" /> Copy for DM
-              </button>
-              <button
-                onClick={() => window.print()}
-                className="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 border border-slate-700"
-              >
-                <Printer className="w-4 h-4" /> Print PDF
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL C: WHOLESALE PO SHEET */}
+      {/* MODAL 3: WHOLESALE PO SHEET */}
       {activePoLog && (
         <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-sky-500/40 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5">
@@ -1738,12 +1713,12 @@ export default function JobAlliesDashboard() {
         </div>
       )}
 
-      {/* MODAL D: INVITE TRADE PARTNER */}
+      {/* MODAL 4: INVITE TRADE PARTNER */}
       {showInviteModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
             <div className="flex justify-between items-center border-b border-slate-800 pb-4">
-              <h3 className="text-lg font-bold text-white">Invite Trade Partner via SMS or Email</h3>
+              <h3 className="text-lg font-bold text-white">Invite Trade Partner</h3>
               <button onClick={() => setShowInviteModal(false)} className="text-slate-400 hover:text-white font-bold">✕</button>
             </div>
             <form onSubmit={(e) => handleInvitePartnerSubmit(e, 'sms')} className="space-y-4 text-xs">
@@ -1780,7 +1755,7 @@ export default function JobAlliesDashboard() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-300 mb-1">Mobile Phone (for SMS)</label>
+                  <label className="block font-bold text-slate-300 mb-1">Mobile Phone</label>
                   <input type="tel" value={invPhone} onChange={(e) => setInvPhone(e.target.value)} required placeholder="(203) 555-0192" className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white" />
                 </div>
                 <div>
@@ -1790,7 +1765,7 @@ export default function JobAlliesDashboard() {
               </div>
               <div className="flex gap-2 pt-2">
                 <button type="submit" className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 rounded-xl text-xs">
-                  Send SMS Invite Link
+                  Send SMS Invite
                 </button>
                 <button
                   type="button"
@@ -1805,7 +1780,7 @@ export default function JobAlliesDashboard() {
         </div>
       )}
 
-      {/* MODAL E: REFER WON JOB */}
+      {/* MODAL 5: REFER WON JOB */}
       {showReferModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-sky-500/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
@@ -1860,14 +1835,14 @@ export default function JobAlliesDashboard() {
         </div>
       )}
 
-      {/* MODAL F: BILLING & 14-DAY TRIAL MANAGEMENT */}
+      {/* MODAL 6: BILLING & 14-DAY TRIAL MANAGEMENT */}
       {showBillingModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
             <div className="flex justify-between items-center border-b border-slate-800 pb-4">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-emerald-400" />
-                JobAllies Pay-On-Success Billing Engine
+                JobAllies Trial & Billing Status
               </h3>
               <button onClick={() => setShowBillingModal(false)} className="text-slate-400 hover:text-white font-bold">✕</button>
             </div>
@@ -1888,9 +1863,9 @@ export default function JobAlliesDashboard() {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">First $49/mo Auto-Charge Date:</span>
+                <span className="text-slate-400">Monthly Plan After Trial:</span>
                 <span className="font-bold text-amber-400">
-                  {billing.trialEndsAt ? new Date(billing.trialEndsAt).toLocaleDateString() : 'Only after 1st lead + 14 days'}
+                  {billing.trialEndsAt ? `$49/mo starting ${new Date(billing.trialEndsAt).toLocaleDateString()}` : 'Only after 1st lead + 14 days'}
                 </span>
               </div>
             </div>
@@ -1908,11 +1883,11 @@ export default function JobAlliesDashboard() {
                   });
                   setLeads(DEFAULT_LEADS);
                   setShowBillingModal(false);
-                  triggerToast('Reset account to Free Explorer Tier (0 accepted leads) for testing.', 'info');
+                  triggerToast('Reset account to Free Explorer Tier.', 'info');
                 }}
                 className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2.5 rounded-xl text-xs border border-slate-700"
               >
-                Reset to Free Tier (Test Flow)
+                Reset to Free Tier
               </button>
               <button
                 onClick={() => setShowBillingModal(false)}
