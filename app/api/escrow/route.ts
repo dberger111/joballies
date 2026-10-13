@@ -30,8 +30,8 @@ export async function POST(request: Request) {
       const paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round((amount || contract.escrow_amount || 50) * 100),
         currency: 'usd',
-        payment_method_types: ['card'],
         capture_method: 'manual',
+        automatic_payment_methods: { enabled: true },
         metadata: { referral_id, job_id: contract.job_id },
       });
 
