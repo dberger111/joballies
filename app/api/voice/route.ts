@@ -1,41 +1,87 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY || 'mock-key-for-build',
+});
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { contractor_id, transcript, job_id } = body;
+    const formData = await request.formData().catch(() => null);
+    let transcript = '';
+    let contractor_id = '';
+    let job_id = '';
+
+    if (formData) {
+      contractor_id = formData.get('contractor_id') as string;
+      job_id = formData.get('job_id') as string;
+      const audioFile = formData.get('file') as File;
+
+      if (audioFile && process.env.OPENAI_API_KEY) {
+        // Transcribe audio file with OpenAI Whisper
+        const transcription = await openai.audio.transcriptions.create({
+          file: audioFile,
+          model: 'whisper-1',
+        });
+        transcript = transcription.text;
+      } else {
+        transcript = (formData.get('transcript') as string) || '';
+      }
+    } else {
+      const body = await request.json();
+      contractor_id = body.contractor_id;
+      job_id = body.job_id;
+      transcript = body.transcript || '';
+    }
 
     if (!contractor_id || !transcript) {
       return NextResponse.json(
-        { error: 'Missing required parameters: contractor_id and transcript' },
+        { error: 'Missing required parameters: contractor_id and transcript/audio file' },
         { status: 400 }
       );
     }
 
-    // Mock AI material extraction logic (ready for OpenAI/Whisper integration)
-    const lower = transcript.toLowerCase();
-    const mockCart = [];
-    const vendors = [];
+    // Use GPT to structure materials into wholesale cart line items
+    let extractedCart = [];
+    let vendors = [];
 
-    if (lower.includes('paver') || lower.includes('stone') || lower.includes('patio')) {
-      mockCart.push({ item: 'Belgard Dublin Cobble Pavers', qty: '200 sq ft', category: 'Hardscape' });
-      mockCart.push({ item: 'Polymeric Sand (50lb bag)', qty: '4 bags', category: 'Jointing' });
-      vendors.push('SiteOne Landscape Supply');
+    if (process.env.OPENAI_API_KEY) {
+      const gptResponse = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: `You are an AI trade assistant for JobAllies. Extract required construction materials and categorize them for supplier ordering (SiteOne Landscape, Home Depot Pro, Ferguson Supply). Respond ONLY with valid JSON array of objects: [{"item": string, "qty": string, "category": string, "vendor": string}]`,
+          },
+          { role: 'user', content: transcript },
+        ],
+        response_format: { type: 'json_object' },
+      });
+
+      const parsed = JSON.parse(gptResponse.choices[0].message.content || '{}');
+      extractedCart = parsed.materials || parsed.items || [];
+      vendors = Array.from(new Set(extractedCart.map((i: any) => i.vendor).filter(Boolean)));
+    } else {
+      // Fallback structured extraction
+      const lower = transcript.toLowerCase();
+      if (lower.includes('paver') || lower.includes('patio') || lower.includes('stone')) {
+        extractedCart.push({ item: 'Belgard Dublin Cobble Pavers', qty: '250 sq ft', category: 'Hardscape', vendor: 'SiteOne Landscape Supply' });
+        extractedCart.push({ item: 'Polymeric Sand (50lb bag)', qty: '5 bags', category: 'Jointing', vendor: 'SiteOne Landscape Supply' });
+        vendors.push('SiteOne Landscape Supply');
+      }
+      if (lower.includes('irrigation') || lower.includes('sprinkler') || lower.includes('pipe')) {
+        extractedCart.push({ item: 'Hunter Pro-Spray Heads 4"', qty: '15 units', category: 'Irrigation', vendor: 'Home Depot Pro' });
+        extractedCart.push({ item: '1" Schedule 40 PVC Pipe 20ft', qty: '10 lengths', category: 'Piping', vendor: 'Home Depot Pro' });
+        vendors.push('Home Depot Pro');
+      }
+      if (vendors.length === 0) {
+        extractedCart.push({ item: 'Custom Field Materials Quote', qty: '1 lot', category: 'General Supply', vendor: 'Ferguson Supply' });
+        vendors.push('Ferguson Supply');
+      }
     }
 
-    if (lower.includes('irrigation') || lower.includes('pipe') || lower.includes('sprinkler')) {
-      mockCart.push({ item: 'Hunter PGJ Pop-Up Rotors', qty: '12 units', category: 'Irrigation' });
-      mockCart.push({ item: '1" Poly Pipe 100ft', qty: '2 rolls', category: 'Piping' });
-      vendors.push('Home Depot Pro');
-    }
-
-    if (vendors.length === 0) {
-      mockCart.push({ item: 'General Trade Materials Note', qty: '1 lot', category: 'Misc' });
-      vendors.push('Ferguson Supply');
-    }
-
-    // Store log entry in Supabase trade_voice_logs table
+    // Record in Supabase trade_voice_logs
     const { data, error } = await supabase
       .from('trade_voice_logs')
       .insert([
@@ -43,9 +89,9 @@ export async function POST(request: Request) {
           contractor_id,
           job_id: job_id || null,
           raw_transcript: transcript,
-          extracted_materials: mockCart,
-          vendor_targets: vendors
-        }
+          extracted_materials: extractedCart,
+          vendor_targets: vendors,
+        },
       ])
       .select();
 
@@ -57,16 +103,17 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       log: data[0],
+      transcript,
       cartSummary: {
-        itemCount: mockCart.length,
+        itemCount: extractedCart.length,
         vendors,
-        materials: mockCart
-      }
+        materials: extractedCart,
+      },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Voice Route Error:', error);
     return NextResponse.json(
-      { error: 'Failed to process voice transcript.' },
+      { error: error.message || 'Failed to process voice recording.' },
       { status: 500 }
     );
   }
