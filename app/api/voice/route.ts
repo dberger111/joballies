@@ -10,7 +10,9 @@ export async function POST(request: Request) {
 
     const lower = transcript.toLowerCase();
     const mockMaterials = [];
+    const laborBreakdown = [];
 
+    // --- Material Parsing ---
     if (lower.includes('concrete') || lower.includes('cement')) {
       mockMaterials.push({ item: 'Quikrete 80lb High Early Strength Concrete', qty: '2 tons (~50 bags)', category: 'Masonry & Concrete', vendor: 'SiteOne Supply' });
     }
@@ -22,13 +24,25 @@ export async function POST(request: Request) {
     }
 
     if (mockMaterials.length === 0) {
-      mockMaterials.push({ item: transcript, qty: '1 job lot', category: 'General Supplies', vendor: 'Wholesale Supplier' });
+      mockMaterials.push({ item: transcript, qty: '1 job lot', category: 'General Field Supplies', vendor: 'Home Depot Pro' });
+    }
+
+    // --- Labor & Crew Parsing ---
+    if (lower.includes('junior') || lower.includes('apprentice') || lower.includes('laborer')) {
+      laborBreakdown.push({ tier: 'Junior / General Laborer', hours: 4, ratePerHour: 45.00 });
+    } else {
+      laborBreakdown.push({ tier: 'Junior / General Laborer', hours: 2, ratePerHour: 45.00 });
+    }
+
+    if (lower.includes('senior') || lower.includes('supervisor') || lower.includes('master') || lower.includes('lead')) {
+      laborBreakdown.push({ tier: 'Senior Supervisor / Lead Tech', hours: 2, ratePerHour: 95.00 });
     }
 
     const newLog = {
       id: 'log-' + Date.now(),
       raw_transcript: transcript,
       extracted_materials: mockMaterials,
+      labor_breakdown: laborBreakdown,
       created_at: new Date().toISOString(),
     };
 
