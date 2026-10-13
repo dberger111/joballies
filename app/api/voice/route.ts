@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     const match = lower.match(/(one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s*(man hours|man time|hours|hrs|time)/);
     if (match) {
       const rawVal = match[1];
-      const hours = wordToNum[rawVal] || parseInt(rawVal, 10) || 6;
+      const hours = wordToNum[rawVal] || parseInt(rawVal, 10) || 2;
       
       if (lower.includes('senior') || lower.includes('lead') || lower.includes('supervisor')) {
         laborBreakdown.push({ id: 'l1', tier: 'Senior Lead Tech / Supervisor', hours, rate: 95 });
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
         laborBreakdown.push({ id: 'l3', tier: 'Standard Crew Tradesman', hours, rate: 65 });
       }
     } else if (lower.includes('labor') || lower.includes('crew') || lower.includes('hours') || lower.includes('man time')) {
-      laborBreakdown.push({ id: 'l3', tier: 'Standard Crew Tradesman', hours: 6, rate: 65 });
+      laborBreakdown.push({ id: 'l3', tier: 'Standard Crew Tradesman', hours: 2, rate: 65 });
     }
 
     // Fallback if nothing specific caught

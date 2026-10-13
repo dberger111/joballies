@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Mic, MicOff, ShoppingCart, Send, Building2, MapPin, DollarSign, Trash2, Plus, Users, Clock, CheckCircle2 } from 'lucide-react';
+import { Mic, MicOff, ShoppingCart, Send, Building2, MapPin, DollarSign, Trash2, Plus, Users, Clock } from 'lucide-react';
 
 export default function ContractorDashboard() {
   const [activeTab, setActiveTab] = useState<'leads' | 'voice' | 'escrow'>('voice');
@@ -10,7 +10,6 @@ export default function ContractorDashboard() {
   const [noteInput, setNoteInput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   
-  // Track active viewing tab per estimate card ('materials' or 'labor')
   const [cardTabs, setCardTabs] = useState<Record<string, 'materials' | 'labor'>>({});
 
   const recognitionRef = useRef<any>(null);
@@ -199,7 +198,6 @@ export default function ContractorDashboard() {
         {activeTab === 'voice' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             
-            {/* FULL-WIDTH VOICE AI INPUT */}
             <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                 <h2 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -229,7 +227,7 @@ export default function ContractorDashboard() {
               </div>
 
               <p style={{ fontSize: '12px', color: '#94a3b8', margin: '0 0 16px' }}>
-                Dictate materials and crew man-hours together (e.g. <i>"Need 6 pieces of wood, 14 tiles, and 7 hours of labor"</i>).
+                Dictate materials and crew man-hours together (e.g. <i>"Need 6 pieces of wood, 14 tiles, and 2 man hours"</i>).
               </p>
 
               <form onSubmit={handleVoiceSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -251,7 +249,6 @@ export default function ContractorDashboard() {
               </form>
             </div>
 
-            {/* EXTRACTED ESTIMATE CARDS */}
             <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '24px' }}>
               <h2 style={{ fontSize: '16px', fontWeight: 'bold', margin: '0 0 20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <ShoppingCart style={{ width: '18px', height: '18px', color: '#10b981' }} />
@@ -274,7 +271,6 @@ export default function ContractorDashboard() {
                         "{log.raw_transcript}"
                       </p>
 
-                      {/* TABS INSIDE EACH CARD */}
                       <div style={{ display: 'flex', gap: '12px', borderBottom: '1px solid #1e293b', paddingBottom: '12px', marginBottom: '16px' }}>
                         <button
                           onClick={() => setCardTabs((prev) => ({ ...prev, [log.id]: 'materials' }))}
@@ -317,7 +313,6 @@ export default function ContractorDashboard() {
                         </button>
                       </div>
 
-                      {/* TAB 1: MATERIALS CONTENT */}
                       {currentCardTab === 'materials' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                           {log.extracted_materials?.map((item: any, itemIdx: number) => (
@@ -351,7 +346,6 @@ export default function ContractorDashboard() {
                         </div>
                       )}
 
-                      {/* TAB 2: LABOR CONTENT */}
                       {currentCardTab === 'labor' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                           {(log.labor_breakdown || []).length === 0 ? (
