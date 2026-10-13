@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { 
   MapPin, Mic, DollarSign, ArrowRight, ShieldCheck, 
-  ShoppingCart, RefreshCw, Send 
+  ShoppingCart, RefreshCw, Send, CheckCircle2, Building2
 } from 'lucide-react';
 
 export default function ContractorDashboard() {
@@ -31,7 +31,7 @@ export default function ContractorDashboard() {
         setContractor({
           id: 'demo-contractor-uuid',
           business_name: 'Apex Landscaping & Field Trades',
-          primary_trade: 'landscaping',
+          primary_trade: 'Landscaping & Hardscape',
           service_radius_miles: 25,
           primary_language: 'EN',
         });
@@ -123,110 +123,152 @@ export default function ContractorDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center">
-        <RefreshCw className="w-8 h-8 text-emerald-400 animate-spin" />
+      <div style={{ minHeight: '100vh', backgroundColor: '#0f172a', color: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif' }}>
+        <RefreshCw style={{ width: '32px', height: '32px', color: '#10b981', animation: 'spin 1s linear infinite' }} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 font-sans">
-      <header className="border-b border-slate-800 bg-slate-950/80 sticky top-0 z-50 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-lg bg-emerald-500 flex items-center justify-center font-bold text-slate-950 text-xl shadow-lg shadow-emerald-500/20">
+    <div style={{ minHeight: '100vh', backgroundColor: '#090d16', color: '#f8fafc', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+      
+      {/* Header Bar */}
+      <header style={{ borderBottom: '1px solid #1e293b', backgroundColor: '#0f172a', position: 'sticky', top: 0, zIndex: 50, padding: '0 24px' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: '#10b981', color: '#090d16', fontWeight: 'bold', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               JA
             </div>
             <div>
-              <span className="text-xl font-bold tracking-tight text-white">JobAllies</span>
-              <span className="text-xs text-emerald-400 block -mt-1 font-medium">Dashboard</span>
+              <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#ffffff' }}>JobAllies</span>
+              <span style={{ fontSize: '11px', color: '#10b981', display: 'block', marginTop: '-2px', fontWeight: 600 }}>PRO DASHBOARD</span>
             </div>
           </div>
-          <span className="text-xs font-mono bg-slate-800 text-emerald-400 px-3 py-1 rounded-full border border-slate-700">
-            {contractor?.business_name || 'Active Contractor'}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#1e293b', border: '1px solid #334155', padding: '6px 14px', borderRadius: '20px', fontSize: '12px', color: '#10b981', fontWeight: 600 }}>
+            <Building2 style={{ width: '14px', height: '14px' }} />
+            <span>{contractor?.business_name || 'Apex Field Trades'}</span>
+          </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex space-x-2 border-b border-slate-800 pb-4 mb-8">
+      {/* Main Container */}
+      <main style={{ maxWidth: '1280px', margin: '0 auto', padding: '32px 24px' }}>
+        
+        {/* Navigation Tabs */}
+        <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid #1e293b', paddingBottom: '16px', marginBottom: '32px' }}>
           <button
             onClick={() => setActiveTab('leads')}
-            className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition ${
-              activeTab === 'leads' ? 'bg-emerald-500 text-slate-950' : 'bg-slate-950 text-slate-400 border border-slate-800'
-            }`}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 20px',
+              borderRadius: '10px',
+              fontWeight: 600,
+              fontSize: '14px',
+              cursor: 'pointer',
+              border: activeTab === 'leads' ? 'none' : '1px solid #1e293b',
+              backgroundColor: activeTab === 'leads' ? '#10b981' : '#0f172a',
+              color: activeTab === 'leads' ? '#090d16' : '#94a3b8',
+              transition: 'all 0.2s',
+            }}
           >
-            <MapPin className="w-4 h-4" />
+            <MapPin style={{ width: '16px', height: '16px' }} />
             <span>Geofenced Leads</span>
           </button>
+
           <button
             onClick={() => setActiveTab('voice')}
-            className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition ${
-              activeTab === 'voice' ? 'bg-emerald-500 text-slate-950' : 'bg-slate-950 text-slate-400 border border-slate-800'
-            }`}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 20px',
+              borderRadius: '10px',
+              fontWeight: 600,
+              fontSize: '14px',
+              cursor: 'pointer',
+              border: activeTab === 'voice' ? 'none' : '1px solid #1e293b',
+              backgroundColor: activeTab === 'voice' ? '#10b981' : '#0f172a',
+              color: activeTab === 'voice' ? '#090d16' : '#94a3b8',
+              transition: 'all 0.2s',
+            }}
           >
-            <Mic className="w-4 h-4" />
+            <Mic style={{ width: '16px', height: '16px' }} />
             <span>TradeVoice & Carts</span>
           </button>
+
           <button
             onClick={() => setActiveTab('escrow')}
-            className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition ${
-              activeTab === 'escrow' ? 'bg-emerald-500 text-slate-950' : 'bg-slate-950 text-slate-400 border border-slate-800'
-            }`}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 20px',
+              borderRadius: '10px',
+              fontWeight: 600,
+              fontSize: '14px',
+              cursor: 'pointer',
+              border: activeTab === 'escrow' ? 'none' : '1px solid #1e293b',
+              backgroundColor: activeTab === 'escrow' ? '#10b981' : '#0f172a',
+              color: activeTab === 'escrow' ? '#090d16' : '#94a3b8',
+              transition: 'all 0.2s',
+            }}
           >
-            <DollarSign className="w-4 h-4" />
+            <DollarSign style={{ width: '16px', height: '16px' }} />
             <span>P2P Referral Escrow</span>
           </button>
         </div>
 
+        {/* TAB 1: GEOFENCED LEADS */}
         {activeTab === 'leads' && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between bg-slate-950 border border-slate-800 p-6 rounded-2xl">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h2 className="text-xl font-bold text-white">Matching Leads in Service Zone</h2>
-                <p className="text-xs text-slate-400 mt-1">
-                  Filtered within your <span className="text-emerald-400 font-mono font-bold">{contractor?.service_radius_miles || 25} mile driving radius</span> via PostGIS spatial queries.
+                <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#ffffff', margin: 0 }}>Matching Leads in Service Zone</h2>
+                <p style={{ fontSize: '13px', color: '#94a3b8', marginTop: '4px', margin: 0 }}>
+                  Geofenced within your <strong style={{ color: '#10b981' }}>{contractor?.service_radius_miles || 25} mile driving radius</strong> via PostGIS spatial engine.
                 </p>
               </div>
               <button
                 onClick={loadLeads}
-                className="bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-200 px-4 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 transition"
+                style={{ backgroundColor: '#1e293b', border: '1px solid #334155', color: '#f8fafc', padding: '10px 18px', borderRadius: '10px', fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${loadingLeads ? 'animate-spin text-emerald-400' : ''}`} />
+                <RefreshCw style={{ width: '14px', height: '14px', color: '#10b981' }} />
                 <span>Refresh Leads</span>
               </button>
             </div>
 
             {leads.length === 0 ? (
-              <div className="bg-slate-950 border border-slate-800/80 rounded-2xl p-12 text-center">
-                <MapPin className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-white">No active leads match your radius yet</h3>
-                <p className="text-xs text-slate-400 max-w-md mx-auto mt-2">
-                  When homeowners or allied contractors submit jobs within {contractor?.service_radius_miles || 25} miles, they will automatically appear here.
+              <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '48px 24px', textAlign: 'center' }}>
+                <MapPin style={{ width: '48px', height: '48px', color: '#334155', margin: '0 auto 16px' }} />
+                <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#ffffff', margin: 0 }}>No active leads match your service zone right now</h3>
+                <p style={{ fontSize: '13px', color: '#94a3b8', maxWidth: '420px', margin: '8px auto 0' }}>
+                  When homeowners or allied contractors post jobs within {contractor?.service_radius_miles || 25} miles, they will automatically appear here.
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
                 {leads.map((lead: any) => (
-                  <div key={lead.job_id} className="bg-slate-950 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between">
+                  <div key={lead.job_id} style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <div>
-                      <div className="flex justify-between items-start mb-3">
-                        <span className="text-xs font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full uppercase">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                        <span style={{ fontSize: '11px', backgroundColor: 'rgba(16, 185, 129, 0.1)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '2px 8px', borderRadius: '12px', textTransform: 'uppercase', fontWeight: 600 }}>
                           {lead.trade_category}
                         </span>
-                        <span className="text-xs font-mono text-slate-400">{lead.distance_miles} miles away</span>
+                        <span style={{ fontSize: '12px', color: '#94a3b8' }}>{lead.distance_miles} miles away</span>
                       </div>
-                      <h3 className="font-bold text-lg text-white mb-2">{lead.title}</h3>
-                      <p className="text-xs text-slate-400 mb-4">{lead.description}</p>
+                      <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#ffffff', margin: '0 0 8px' }}>{lead.title}</h3>
+                      <p style={{ fontSize: '13px', color: '#94a3b8', margin: '0 0 16px', lineHeight: '1.4' }}>{lead.description}</p>
                     </div>
-                    <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between">
+                    <div style={{ paddingTop: '16px', borderTop: '1px solid #1e293b', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div>
-                        <span className="text-[10px] uppercase text-slate-500 block">Est. Value</span>
-                        <span className="font-bold font-mono text-emerald-400 text-sm">${lead.estimated_value || 'Quote'}</span>
+                        <span style={{ fontSize: '10px', color: '#64748b', textTransform: 'uppercase', display: 'block' }}>Est. Value</span>
+                        <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#10b981' }}>${lead.estimated_value || 'Quote'}</span>
                       </div>
-                      <button className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold px-3 py-2 rounded-lg transition flex items-center space-x-1">
+                      <button style={{ backgroundColor: '#10b981', color: '#090d16', border: 'none', padding: '8px 14px', borderRadius: '8px', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <span>Claim Lead</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
+                        <ArrowRight style={{ width: '14px', height: '14px' }} />
                       </button>
                     </div>
                   </div>
@@ -236,51 +278,64 @@ export default function ContractorDashboard() {
           </div>
         )}
 
+        {/* TAB 2: TRADEVOICE AI & CARTS */}
         {activeTab === 'voice' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6">
-              <h2 className="text-lg font-bold text-white mb-2 flex items-center space-x-2">
-                <Mic className="w-5 h-5 text-emerald-400" />
-                <span>Field Voice Logging</span>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '24px' }}>
+            <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '24px' }}>
+              <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#ffffff', margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Mic style={{ width: '18px', height: '18px', color: '#10b981' }} />
+                <span>Field Voice AI Assistant</span>
               </h2>
-              <form onSubmit={handleVoiceSubmit} className="space-y-4">
+              <p style={{ fontSize: '12px', color: '#94a3b8', margin: '0 0 20px' }}>
+                Type or dictate job site notes. OpenAI GPT-4o will parse items into wholesale supplier carts (SiteOne, Home Depot Pro, Ferguson).
+              </p>
+
+              <form onSubmit={handleVoiceSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <textarea
                   rows={4}
                   value={noteInput}
                   onChange={(e) => setNoteInput(e.target.value)}
-                  placeholder="e.g. Need 200 sq ft paver patio stone and 4 bags polymeric sand."
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-white"
+                  placeholder="e.g. Need 250 sq ft Dublin Cobble pavers, 5 bags polymeric sand, and 10 PVC schedule 40 pipes."
+                  style={{ width: '100%', backgroundColor: '#090d16', border: '1px solid #1e293b', borderRadius: '12px', padding: '12px', fontSize: '13px', color: '#ffffff', resize: 'vertical' }}
                 />
                 <button
                   type="submit"
                   disabled={transcribing || !noteInput}
-                  className="w-full bg-emerald-500 text-slate-950 font-bold py-3 rounded-xl text-xs flex items-center justify-center space-x-2"
+                  style={{ width: '100%', backgroundColor: '#10b981', color: '#090d16', border: 'none', padding: '12px', borderRadius: '10px', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: transcribing || !noteInput ? 0.6 : 1 }}
                 >
-                  <Send className="w-4 h-4" />
-                  <span>{transcribing ? 'Processing...' : 'Generate Cart'}</span>
+                  <Send style={{ width: '14px', height: '14px' }} />
+                  <span>{transcribing ? 'Generating Supplier Cart...' : 'Extract Wholesale Cart'}</span>
                 </button>
               </form>
             </div>
 
-            <div className="lg:col-span-2 space-y-4">
-              <h2 className="text-lg font-bold text-white flex items-center space-x-2">
-                <ShoppingCart className="w-5 h-5 text-emerald-400" />
-                <span>Generated Supplier Carts</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#ffffff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ShoppingCart style={{ width: '18px', height: '18px', color: '#10b981' }} />
+                <span>Generated Material Carts</span>
               </h2>
+
               {voiceLogs.length === 0 ? (
-                <div className="bg-slate-950 border border-slate-800 rounded-2xl p-8 text-center text-xs text-slate-500">
-                  No carts generated yet.
+                <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '32px', textAlign: 'center', fontSize: '13px', color: '#64748b' }}>
+                  No materials extracted yet. Submit field notes on the left to build wholesale supplier carts.
                 </div>
               ) : (
                 voiceLogs.map((log: any, idx: number) => (
-                  <div key={idx} className="bg-slate-950 border border-slate-800 rounded-2xl p-6">
-                    <p className="text-xs text-slate-400 font-mono mb-2">"{log.raw_transcript}"</p>
-                    {log.extracted_materials?.map((item: any, i: number) => (
-                      <div key={i} className="flex justify-between items-center bg-slate-900 p-3 rounded-xl text-xs border border-slate-800 my-1">
-                        <span className="text-white font-semibold">{item.item}</span>
-                        <span className="font-mono text-emerald-400 font-bold">{item.qty}</span>
-                      </div>
-                    ))}
+                  <div key={idx} style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '20px' }}>
+                    <p style={{ fontSize: '12px', color: '#94a3b8', margin: '0 0 12px', fontStyle: 'italic' }}>"{log.raw_transcript}"</p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {log.extracted_materials?.map((item: any, i: number) => (
+                        <div key={i} style={{ backgroundColor: '#090d16', border: '1px solid #1e293b', padding: '12px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div>
+                            <span style={{ fontSize: '13px', fontWeight: 600, color: '#ffffff', display: 'block' }}>{item.item}</span>
+                            <span style={{ fontSize: '11px', color: '#64748b' }}>{item.category} • {item.vendor || 'Wholesale Supplier'}</span>
+                          </div>
+                          <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', padding: '4px 10px', borderRadius: '6px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                            {item.qty}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))
               )}
@@ -288,32 +343,36 @@ export default function ContractorDashboard() {
           </div>
         )}
 
+        {/* TAB 3: P2P REFERRAL ESCROW */}
         {activeTab === 'escrow' && (
-          <div className="space-y-6">
-            <div className="bg-slate-950 border border-slate-800 p-6 rounded-2xl flex justify-between items-center">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h2 className="text-xl font-bold text-white">P2P Escrow Referral Contracts</h2>
-                <p className="text-xs text-slate-400 mt-1">Pass out-of-zone jobs to allies and claim 10% referral splits.</p>
+                <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#ffffff', margin: 0 }}>P2P Referral Escrow Hub</h2>
+                <p style={{ fontSize: '13px', color: '#94a3b8', marginTop: '4px', margin: 0 }}>
+                  Pass leads outside your driving zone to allied contractors and claim 10% referral payouts protected by Stripe Connect.
+                </p>
               </div>
-              <ShieldCheck className="w-8 h-8 text-emerald-400" />
+              <ShieldCheck style={{ width: '32px', height: '32px', color: '#10b981' }} />
             </div>
 
-            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 flex justify-between items-center">
+            <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h3 className="font-bold text-white text-sm">Weston Lawn & Paver Renovation</h3>
-                <p className="text-xs text-slate-400">Referred to Allied Contractor • Est. Split: $150.00</p>
+                <h3 style={{ fontSize: '15px', fontWeight: 'bold', color: '#ffffff', margin: '0 0 4px' }}>Weston Lawn & Paver Renovation</h3>
+                <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0 }}>Referred Contractor Split: <strong style={{ color: '#10b981' }}>$150.00 Fee</strong></p>
               </div>
               <button
                 onClick={() => handleHoldEscrow('sample-ref-123')}
                 disabled={!!processingEscrow}
-                className="bg-emerald-500 text-slate-950 font-bold text-xs px-4 py-2 rounded-xl"
+                style={{ backgroundColor: '#10b981', color: '#090d16', border: 'none', padding: '10px 20px', borderRadius: '10px', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}
               >
                 {processingEscrow ? 'Connecting Stripe...' : 'Hold $150 in Escrow'}
               </button>
             </div>
           </div>
         )}
-      </div>
+
+      </main>
     </div>
   );
 }
