@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
 
-// In-memory global webhook buffer (persists across warm serverless invocations; pair with Upstash Redis/Supabase for permanent multi-region storage)
 const globalWebhookLeads: any[] = (globalThis as any).__jaWebhookLeads || [];
 (globalThis as any).__jaWebhookLeads = globalWebhookLeads;
 
 function classifyTrade(text: string): string {
   const lower = (text || '').toLowerCase();
   if (lower.includes('paver') || lower.includes('patio') || lower.includes('retaining') || lower.includes('stone') || lower.includes('mason') || lower.includes('concrete') || lower.includes('brick')) return 'Masonry & Concrete';
-  if (lower.includes('tree') || lower.includes('lawn') || lower.includes('drain') || lower.includes('excavat') || lower.includes('landscap') || lower.includes('garden') || lower.includes('fenc')) return 'Landscaping & Excavation';
+  if (lower.includes('tree') || lower.includes('lawn') || lower.includes('drain') || lower.includes('excavat') || lower.includes('landscap') || lower.includes('garden') || lower.includes('fenc') || lower.includes('pool') || lower.includes('pest')) return 'Landscaping & Excavation';
   if (lower.includes('pipe') || lower.includes('leak') || lower.includes('plumb') || lower.includes('heater') || lower.includes('boiler') || lower.includes('drainage') || lower.includes('hvac')) return 'Plumbing & Mechanical';
   if (lower.includes('panel') || lower.includes('wire') || lower.includes('outlet') || lower.includes('light') || lower.includes('electric') || lower.includes('charger') || lower.includes('rewir')) return 'Electrical';
   if (lower.includes('deck') || lower.includes('pergola') || lower.includes('frame') || lower.includes('drywall') || lower.includes('carpentr') || lower.includes('roof') || lower.includes('joinery')) return 'Framing & Carpentry';
@@ -27,10 +26,9 @@ export async function POST(req: Request) {
     const sourceParam = (url.searchParams.get('source') || 'webhook').toLowerCase();
     const payload = await req.json();
 
-    // Normalize schemas from Thumbtack, Angi/HomeAdvisor, Bark.com, Facebook Lead Ads, Checkatrade, Hipages, HomeStars
-    let author = 'Verified Marketplace Homeowner';
+    let author = 'Verified Homeowner';
     let phone = '(203) 555-0199';
-    let email = 'lead@marketplace-notification.com';
+    let email = 'lead@joballies.com';
     let location = 'Local Service Area';
     let title = 'New Trade Service Request';
     let desc = '';
@@ -38,7 +36,17 @@ export async function POST(req: Request) {
     let sourceLabel = 'Platform Webhook';
     let sourceUrl = 'https://joballies.com/dashboard';
 
-    if (sourceParam === 'thumbtack' || payload.thumbtackLeadId || payload.request) {
+    if (sourceParam === 'direct_homeowner') {
+      sourceLabel = 'JobAllies Direct Homeowner Request';
+      sourceUrl = 'https://joballies.com';
+      author = payload.name || 'Direct Homeowner';
+      phone = payload.phone || '(203) 555-0188';
+      email = payload.email || 'homeowner@joballies.com';
+      location = payload.location || 'Weston, CT';
+      title = payload.title || `${payload.trade || 'Home'} Project Request`;
+      desc = payload.description || 'Homeowner submitted a direct project quote request on JobAllies.com.';
+      budget = payload.budget || '$2,500 - $6,000';
+    } else if (sourceParam === 'thumbtack' || payload.thumbtackLeadId || payload.request) {
       sourceLabel = 'Thumbtack Pro Webhook';
       sourceUrl = 'https://www.thumbtack.com/pro/leads';
       author = payload.customer?.name || payload.customerName || 'Thumbtack Customer';
@@ -77,9 +85,8 @@ export async function POST(req: Request) {
       desc = payload.details || payload.description || 'Verified buyer requested quotes via global marketplace.';
       budget = payload.budget || '£2,500 - £6,000';
     } else {
-      // Generic / Facebook Lead Ads / Google LSA / Zapier
-      sourceLabel = payload.source || 'Facebook / Zapier Lead Webhook';
-      sourceUrl = payload.sourceUrl || 'https://www.facebook.com/ads/leadgen';
+      sourceLabel = payload.source || 'Master Lead Pool Webhook';
+      sourceUrl = payload.sourceUrl || 'https://joballies.com';
       author = payload.name || payload.full_name || 'Inbound Lead Prospect';
       phone = payload.phone || payload.phone_number || '(203) 555-0175';
       email = payload.email || 'prospect@inbound-webhook.com';
@@ -94,12 +101,12 @@ export async function POST(req: Request) {
       id: 'wh-' + Date.now() + '-' + Math.floor(Math.random() * 999),
       source: sourceLabel,
       sourceUrl,
-      time: 'Live Webhook • Just Now',
+      time: 'Live Intake • Just Now',
       author,
       phone,
       email,
       location,
-      distanceMiles: Number((Math.random() * 6 + 1.2).toFixed(1)),
+      distanceMiles: Number((Math.random() * 4 + 0.8).toFixed(1)),
       trade,
       title,
       desc,
