@@ -7,9 +7,12 @@ export default function ContractorDashboard() {
   const [activeTab, setActiveTab] = useState<'leads' | 'voice' | 'escrow'>('voice');
   const [voiceLogs, setVoiceLogs] = useState<any[]>([]);
   const [transcribing, setTranscribing] = useState(false);
-  const [noteInput, setNoteInput] = useState('need 2 tons of concrete, 6 square pavers, and 7 wood beams');
+  const [noteInput, setNoteInput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
+  
+  // Refs to track recording session and preserve transcript history across pauses
   const recognitionRef = useRef<any>(null);
+  const baseNoteRef = useRef<string>('');
 
   const toggleRecording = () => {
     if (isRecording) {
@@ -26,19 +29,26 @@ export default function ContractorDashboard() {
     }
 
     try {
+      // Save any text already in the textarea before starting a new recording chunk
+      baseNoteRef.current = noteInput ? noteInput.trim() + ' ' : '';
+
       const recognition = new SpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = true;
       recognition.lang = 'en-US';
 
       recognition.onstart = () => setIsRecording(true);
+
       recognition.onresult = (event: any) => {
-        let currentTranscript = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          currentTranscript += event.results[i][0].transcript;
+        let sessionTranscript = '';
+        for (let i = 0; i < event.results.length; i++) {
+          sessionTranscript += event.results[i][0].transcript;
         }
-        if (currentTranscript) setNoteInput(currentTranscript);
+
+        // Append new spoken words onto base existing note instead of overwriting
+        setNoteInput(baseNoteRef.current + sessionTranscript);
       };
+
       recognition.onerror = () => setIsRecording(false);
       recognition.onend = () => setIsRecording(false);
 
@@ -65,6 +75,8 @@ export default function ContractorDashboard() {
       const json = await res.json();
       if (json.success && json.log) {
         setVoiceLogs((prev) => [json.log, ...prev]);
+        setNoteInput('');
+        baseNoteRef.current = '';
       } else {
         alert('Extraction failed: ' + (json.error || 'Server error'));
       }
@@ -144,7 +156,7 @@ export default function ContractorDashboard() {
                   rows={5}
                   value={noteInput}
                   onChange={(e) => setNoteInput(e.target.value)}
-                  placeholder="Need 2 tons of concrete, 6 square pavers, and 7 wood beams"
+                  placeholder="Need 2 tons of concrete, 6 square pavers, and 7 wood beams..."
                   style={{ width: '100%', backgroundColor: '#090d16', border: isRecording ? '2px solid #ef4444' : '1px solid #1e293b', borderRadius: '12px', padding: '12px', color: '#ffffff', fontSize: '14px' }}
                 />
                 <button
@@ -166,7 +178,7 @@ export default function ContractorDashboard() {
 
               {voiceLogs.length === 0 ? (
                 <div style={{ border: '1px dashed #1e293b', borderRadius: '12px', padding: '32px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
-                  No materials extracted yet. Click "Extract Wholesale Cart" on the left to extract.
+                  No materials extracted yet. Speak or type field notes, then click "Extract Wholesale Cart".
                 </div>
               ) : (
                 voiceLogs.map((log, idx) => (
