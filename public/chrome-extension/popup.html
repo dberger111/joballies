@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    body {
+      width: 320px;
+      margin: 0;
+      padding: 16px;
+      background: #090d16;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+    }
+    .logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #10b981, #0ea5e9);
+      color: #090d16;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      margin-bottom: 4px;
+      margin-top: 10px;
+    }
+    input, select {
+      width: 100%;
+      box-sizing: border-box;
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #fff;
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+    button {
+      width: 100%;
+      margin-top: 14px;
+      background: #10b981;
+      color: #090d16;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .status {
+      margin-top: 10px;
+      font-size: 11px;
+      color: #34d399;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">JA</div>
+    <div>
+      <div style="font-weight: 800; font-size: 14px;">JobAllies Scout Co-Pilot</div>
+      <div style="font-size: 11px; color: #94a3b8;">Facebook Group Lead & Vouch Helper</div>
+    </div>
+  </div>
+
+  <label>Your Company Name</label>
+  <input type="text" id="companyName" value="Apex Hardscapes & Trades" />
+
+  <label>Trusted Trade Ally to Vouch For</label>
+  <input type="text" id="allyName" value="Dan Sparks (Voltage Masters Electrical)" />
+
+  <label>Primary Service Town / Zip</label>
+  <input type="text" id="serviceArea" value="Weston & Westport, CT" />
+
+  <button id="saveBtn">Save Co-Pilot Settings</button>
+  <div id="statusMsg" class="status">Active on facebook.com/groups/*</div>
+  <script src="popup.js"></script>
+</body>
+</html>

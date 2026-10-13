@@ -7,7 +7,7 @@ import {
   CheckCircle, ShieldCheck, RefreshCw,
   Send, Navigation, CreditCard, Lock,
   ExternalLink, Download, Mail,
-  MessageSquare, Sparkles, Check, Building, Copy, Phone, Calendar, Edit3, Trash2, ShoppingCart, Settings
+  MessageSquare, Sparkles, Check, Building, Copy, Phone, Calendar, Edit3, Trash2, ShoppingCart, Settings, Share2, Chrome
 } from 'lucide-react';
 
 function BrandLogo() {
@@ -57,6 +57,7 @@ interface DictationLog {
 interface LeadItem {
   id: string;
   source: string;
+  sourceUrl?: string;
   postedAt: string;
   author: string;
   phone: string;
@@ -103,7 +104,8 @@ interface ConnectedLeadSources {
 const DEFAULT_LEADS: LeadItem[] = [
   {
     id: 'lead-1',
-    source: 'Verified Local Request',
+    source: 'Facebook Group • Weston & Westport Neighbors',
+    sourceUrl: 'https://www.facebook.com/groups/search/groups/?q=Weston%20CT%20Neighbors',
     postedAt: 'Oct 13, 2026 • 4:42 PM',
     author: 'Mark Henderson',
     phone: '(203) 555-0142',
@@ -128,7 +130,8 @@ const DEFAULT_LEADS: LeadItem[] = [
   },
   {
     id: 'lead-2',
-    source: 'Verified Local Request',
+    source: 'Nextdoor • Greens Farms & Westport',
+    sourceUrl: 'https://nextdoor.com/find-neighborhood/ct/westport/',
     postedAt: 'Oct 13, 2026 • 4:15 PM',
     author: 'Elena Rostova',
     phone: '(203) 555-0189',
@@ -152,7 +155,8 @@ const DEFAULT_LEADS: LeadItem[] = [
   },
   {
     id: 'lead-3',
-    source: 'Verified Local Request',
+    source: 'Facebook Group • Fairfield County Homeowners',
+    sourceUrl: 'https://www.facebook.com/groups/search/groups/?q=Fairfield%20CT%20Homeowners',
     postedAt: 'Oct 13, 2026 • 3:30 PM',
     author: 'David Kowalski',
     phone: '(203) 555-0164',
@@ -177,7 +181,8 @@ const DEFAULT_LEADS: LeadItem[] = [
   },
   {
     id: 'lead-4',
-    source: 'Verified Local Request',
+    source: 'Facebook Group • Wilton Community Exchange',
+    sourceUrl: 'https://www.facebook.com/groups/search/groups/?q=Wilton%20CT',
     postedAt: 'Oct 13, 2026 • 2:10 PM',
     author: 'Rachel Vance',
     phone: '(203) 555-0177',
@@ -202,7 +207,8 @@ const DEFAULT_LEADS: LeadItem[] = [
   },
   {
     id: 'lead-5',
-    source: 'Verified Local Request',
+    source: 'Nextdoor • New Canaan & Ridgefield',
+    sourceUrl: 'https://nextdoor.com/find-neighborhood/ct/new-canaan/',
     postedAt: 'Oct 13, 2026 • 12:45 PM',
     author: 'Thomas Grant',
     phone: '(203) 555-0199',
@@ -312,6 +318,13 @@ export default function JobAlliesDashboard() {
   const [newFbGroupUrl, setNewFbGroupUrl] = useState('');
   const [newFbGroupKeywords, setNewFbGroupKeywords] = useState('contractor, quote, repair, remodel');
 
+  // Optional Chrome Extension Modal & In-App FB Reference / Peer Vouch Modal
+  const [showExtensionModal, setShowExtensionModal] = useState(false);
+  const [fbReferenceLead, setFbReferenceLead] = useState<LeadItem | null>(null);
+  const [fbReferenceMode, setFbReferenceMode] = useState<'peer_vouch' | 'direct_reply'>('peer_vouch');
+  const [vouchingAllyId, setVouchingAllyId] = useState<string>('net-1');
+  const [fbDraftComment, setFbDraftComment] = useState<string>('');
+
   // Filters: Service Area, Job Type, Job Distance, Job Value
   const [radarZip, setRadarZip] = useState('Weston, CT');
   const [jobTypeFilter, setJobTypeFilter] = useState<string>('ALL');
@@ -369,10 +382,10 @@ export default function JobAlliesDashboard() {
 
   // Tab 3: Trade Network & P2P Escrow
   const [network, setNetwork] = useState([
-    { id: 'net-1', name: 'Mike Callahan', company: 'Callahan Plumbing & HVAC', trade: 'Plumbing & Mechanical', feePercent: 10, status: 'Verified Ally', referredJobs: 3, lifetimeShared: 1450.00 },
-    { id: 'net-2', name: 'Dan Sparks', company: 'Voltage Masters Electrical LLC', trade: 'Electrical', feePercent: 10, status: 'Verified Ally', referredJobs: 2, lifetimeShared: 1200.00 },
-    { id: 'net-3', name: 'Tony Russo', company: 'Tri-State Masonry & Pavers', trade: 'Masonry & Concrete', feePercent: 12.5, status: 'Verified Ally', referredJobs: 4, lifetimeShared: 2800.00 },
-    { id: 'net-4', name: 'Carlos Mendez', company: 'Apex Tree & Excavation', trade: 'Landscaping & Excavation', feePercent: 10, status: 'Pending Invite', referredJobs: 0, lifetimeShared: 0.00 }
+    { id: 'net-1', name: 'Mike Callahan', company: 'Callahan Plumbing & HVAC', trade: 'Plumbing & Mechanical', phone: '(203) 555-0192', feePercent: 10, status: 'Verified Ally', referredJobs: 3, lifetimeShared: 1450.00 },
+    { id: 'net-2', name: 'Dan Sparks', company: 'Voltage Masters Electrical LLC', trade: 'Electrical', phone: '(203) 555-0841', feePercent: 10, status: 'Verified Ally', referredJobs: 2, lifetimeShared: 1200.00 },
+    { id: 'net-3', name: 'Tony Russo', company: 'Tri-State Masonry & Pavers', trade: 'Masonry & Concrete', phone: '(203) 555-9921', feePercent: 12.5, status: 'Verified Ally', referredJobs: 4, lifetimeShared: 2800.00 },
+    { id: 'net-4', name: 'Carlos Mendez', company: 'Apex Tree & Excavation', trade: 'Landscaping & Excavation', phone: '(203) 555-3301', feePercent: 10, status: 'Pending Invite', referredJobs: 0, lifetimeShared: 0.00 }
   ]);
 
   const [escrowContracts, setEscrowContracts] = useState([
@@ -395,19 +408,18 @@ export default function JobAlliesDashboard() {
 
   useEffect(() => {
     try {
-      const savedBilling = localStorage.getItem('ja_billing_v7');
+      const savedBilling = localStorage.getItem('ja_billing_v8');
       if (savedBilling) setBilling(JSON.parse(savedBilling));
-      const savedLeads = localStorage.getItem('ja_leads_v7');
+      const savedLeads = localStorage.getItem('ja_leads_v8');
       if (savedLeads) setLeads(JSON.parse(savedLeads));
-      const savedLogs = localStorage.getItem('ja_logs_v7');
+      const savedLogs = localStorage.getItem('ja_logs_v8');
       if (savedLogs) setDictationLogs(JSON.parse(savedLogs));
-      const savedRetailers = localStorage.getItem('ja_retailers_v7');
+      const savedRetailers = localStorage.getItem('ja_retailers_v8');
       if (savedRetailers) setRetailerAccounts(JSON.parse(savedRetailers));
-      const savedSources = localStorage.getItem('ja_sources_v7');
+      const savedSources = localStorage.getItem('ja_sources_v8');
       if (savedSources) setLeadSources(JSON.parse(savedSources));
     } catch (e) {}
 
-    // Also pull any incoming webhook leads from Thumbtack/Angi/Bark/Homeowner portal
     fetch('/api/webhooks/leads')
       .then(r => r.json())
       .then(data => {
@@ -436,17 +448,75 @@ export default function JobAlliesDashboard() {
 
   useEffect(() => {
     try {
-      localStorage.setItem('ja_billing_v7', JSON.stringify(billing));
-      localStorage.setItem('ja_leads_v7', JSON.stringify(leads));
-      localStorage.setItem('ja_logs_v7', JSON.stringify(dictationLogs));
-      localStorage.setItem('ja_retailers_v7', JSON.stringify(retailerAccounts));
-      localStorage.setItem('ja_sources_v7', JSON.stringify(leadSources));
+      localStorage.setItem('ja_billing_v8', JSON.stringify(billing));
+      localStorage.setItem('ja_leads_v8', JSON.stringify(leads));
+      localStorage.setItem('ja_logs_v8', JSON.stringify(dictationLogs));
+      localStorage.setItem('ja_retailers_v8', JSON.stringify(retailerAccounts));
+      localStorage.setItem('ja_sources_v8', JSON.stringify(leadSources));
     } catch (e) {}
   }, [billing, leads, dictationLogs, retailerAccounts, leadSources]);
 
   const triggerToast = (msg: string, type: 'success' | 'info' | 'amber' = 'success') => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 4500);
+  };
+
+  // --- WORKFLOW 2 & C: FACEBOOK GROUP REFERENCE & PEER ALLY VOUCH GENERATOR ---
+  const openFbReferenceGenerator = (lead: LeadItem) => {
+    setFbReferenceLead(lead);
+    setFbReferenceMode('peer_vouch');
+    const matchedAlly = network.find(p => p.trade === lead.trade) || network[0];
+    setVouchingAllyId(matchedAlly.id);
+    updateFbDraftComment(lead, 'peer_vouch', matchedAlly);
+  };
+
+  const updateFbDraftComment = (lead: LeadItem, mode: 'peer_vouch' | 'direct_reply', allyObj?: any) => {
+    const rawMat = (lead.quoteMaterials || []).reduce((s, m) => s + m.cost * m.qty, 0);
+    const markedMat = rawMat * (1 + globalMarkup / 100);
+    const laborTotal = (lead.quoteLabor || []).reduce((s, l) => s + l.hours * l.rate, 0);
+    const estTotal = (markedMat + laborTotal).toFixed(0);
+    const ally = allyObj || network.find(p => p.id === vouchingAllyId) || network[0];
+
+    if (mode === 'peer_vouch') {
+      setFbDraftComment(
+        `Hi ${lead.author.split(' ')[0]}! Highly recommend reaching out to ${ally.name} at ${ally.company} for your ${lead.title.toLowerCase()}. We work with their crew on projects around ${lead.location} all the time — super reliable, licensed, and fair pricing (a typical scope like this runs around $${Number(estTotal).toLocaleString()}). You can view a breakdown or message them directly here: https://joballies.com/post-project`
+      );
+    } else {
+      setFbDraftComment(
+        `Hi ${lead.author.split(' ')[0]}! We're a licensed ${lead.trade.toLowerCase()} crew right here in ${lead.location} and just finished a very similar project nearby. Based on the details in your post, we put together a quick ballpark estimate (~$${Number(estTotal).toLocaleString()} including materials and labor) so you have a baseline. Happy to stop by and take a look! https://joballies.com/post-project`
+      );
+    }
+  };
+
+  const copyReferenceAndOpenFacebook = () => {
+    if (!fbReferenceLead) return;
+    navigator.clipboard.writeText(fbDraftComment);
+    const targetUrl = fbReferenceLead.sourceUrl || `https://www.facebook.com/search/posts?q=${encodeURIComponent(fbReferenceLead.title + ' ' + fbReferenceLead.location)}`;
+    window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    triggerToast('Copied reference comment to clipboard & opened Facebook thread! Just press Cmd+V to post.', 'success');
+  };
+
+  const requestAllyToPostVouch = async () => {
+    if (!fbReferenceLead) return;
+    const ally = network.find(p => p.id === vouchingAllyId) || network[0];
+    const targetUrl = fbReferenceLead.sourceUrl || 'https://www.facebook.com/groups/';
+    const smsPrompt = `Hey ${ally.name.split(' ')[0]}! Spotted a ${fbReferenceLead.trade} lead in ${fbReferenceLead.location} ("${fbReferenceLead.title}"). Here is a ready-to-paste vouch for the thread (${targetUrl}):\n\n"${fbDraftComment}"`;
+
+    try {
+      await fetch('/api/dispatch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          channel: 'sms',
+          to: ally.phone || '(203) 555-0192',
+          subject: 'Peer Vouch Request on Facebook',
+          message: smsPrompt
+        })
+      });
+    } catch (e) {}
+
+    triggerToast(`Dispatched 1-click Peer Vouch request to ${ally.name} (${ally.company}) via Platform Relay!`, 'success');
+    setFbReferenceLead(null);
   };
 
   // --- LIVE STRIPE CHECKOUT LAUNCHER ---
@@ -603,7 +673,6 @@ export default function JobAlliesDashboard() {
     setEditingLeadQuote(null);
   };
 
-  // --- RETAILER PRO ACCOUNT ORDERING FROM QUOTE ---
   const getRetailerAccountForVendor = (vendor: string) => {
     const v = vendor.toLowerCase();
     if (v.includes('lowe')) return retailerAccounts.lowesProId;
@@ -646,7 +715,6 @@ export default function JobAlliesDashboard() {
     triggerToast(`Exported Pro Order CSV (${poCode}) stamped with your Retailer Pro Account IDs!`, 'success');
   };
 
-  // --- PLATFORM-MEDIATED PHONE / EMAIL RELAY (NO RAW PHONE/EMAIL EXPOSED) ---
   const openPlatformContact = (lead: LeadItem, mode: 'phone' | 'email') => {
     setPlatformContactModal({ lead, mode });
     setRelayMessage(`Hi ${lead.author}, I reviewed your "${lead.title}" request in ${lead.location} and can help. When is a good time to discuss?`);
@@ -828,6 +896,7 @@ export default function JobAlliesDashboard() {
       name: invName,
       company: invCompany,
       trade: invTrade,
+      phone: invPhone || '(203) 555-0192',
       feePercent: Number(invFee),
       status: 'Invite Dispatched',
       referredJobs: 0,
@@ -910,7 +979,6 @@ export default function JobAlliesDashboard() {
     triggerToast(`Connected Facebook Group "${entry.name}" to your Lead Radar!`, 'success');
   };
 
-  // Filter leads by Job Type, Job Distance, and Job Value
   const filteredLeads = leads.filter(l => {
     const withinDistance = l.distanceMiles <= jobDistanceFilter;
     const matchesType = jobTypeFilter === 'ALL' || l.trade === jobTypeFilter;
@@ -985,6 +1053,14 @@ export default function JobAlliesDashboard() {
               <span className="text-sky-400 font-bold">${totalLockedEscrow.toFixed(2)}</span>
             </div>
           </div>
+
+          <button
+            onClick={() => setShowExtensionModal(true)}
+            className="bg-slate-900 hover:bg-slate-800 text-sky-400 border border-sky-500/30 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Optional FB Co-Pilot Extension</span>
+          </button>
 
           <button
             onClick={() => setActiveTab('sync')}
@@ -1138,7 +1214,7 @@ export default function JobAlliesDashboard() {
                       type="url"
                       value={rawPostUrl}
                       onChange={(e) => setRawPostUrl(e.target.value)}
-                      placeholder="Source URL (optional)"
+                      placeholder="Facebook Post URL (optional)"
                       className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
                     />
                     <button type="submit" className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-5 py-2 rounded-xl text-xs">
@@ -1175,7 +1251,7 @@ export default function JobAlliesDashboard() {
                       <h3 className="text-base font-bold text-white leading-snug">{lead.title}</h3>
                       <p className="text-xs text-slate-400 leading-relaxed">{lead.desc}</p>
 
-                      {/* Prospect Info & Platform-Mediated Contact Buttons (Zero Phone/Email Exposed) */}
+                      {/* Prospect Info & Platform-Mediated Contact + FB Peer Vouch Buttons */}
                       <div className="grid grid-cols-2 gap-2 text-xs bg-slate-950 p-3 rounded-xl border border-slate-800">
                         <div>
                           <span className="text-slate-500 block text-[10px] uppercase font-bold">Prospect</span>
@@ -1190,20 +1266,27 @@ export default function JobAlliesDashboard() {
                           <span className="text-[11px] text-slate-400">
                             Auto-Quote: <strong className="text-emerald-400">${autoQuoteTotal.toFixed(2)}</strong>
                           </span>
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-1.5">
                             <button
                               type="button"
                               onClick={() => openPlatformContact(lead, 'phone')}
-                              className="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 px-3 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-all"
+                              className="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 px-2.5 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all"
                             >
-                              <Phone className="w-3 h-3" /> Call / Text via Platform
+                              <Phone className="w-3 h-3" /> Call/Text
                             </button>
                             <button
                               type="button"
                               onClick={() => openPlatformContact(lead, 'email')}
-                              className="bg-slate-800 hover:bg-slate-700 text-sky-400 border border-slate-700 px-3 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-all"
+                              className="bg-slate-800 hover:bg-slate-700 text-sky-400 border border-slate-700 px-2.5 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all"
                             >
-                              <Mail className="w-3 h-3" /> Email via Platform
+                              <Mail className="w-3 h-3" /> Email
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => openFbReferenceGenerator(lead)}
+                              className="bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 px-2.5 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all"
+                            >
+                              <Share2 className="w-3 h-3" /> FB Reference / Ally Vouch
                             </button>
                           </div>
                         </div>
@@ -1616,19 +1699,27 @@ export default function JobAlliesDashboard() {
               </div>
             </div>
 
-            {/* Section B: User-Led Facebook Groups & Lead Platform Connector */}
+            {/* Section B: User-Led Facebook Groups, Peer Vouching & Optional Chrome Extension */}
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
-              <div className="border-b border-slate-800 pb-4">
-                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30">
-                  User-Led Lead Source Integration
-                </span>
-                <h2 className="text-lg font-bold text-white mt-1 flex items-center gap-2">
-                  <Navigation className="w-5 h-5 text-amber-400" />
-                  Connect Your Facebook Groups & Lead Generation Platforms
-                </h2>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Add the local Facebook Groups you belong to or connect your Thumbtack, Angi, and Bark accounts so incoming leads route straight into your Lead Radar with auto-generated quotes.
-                </p>
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                <div>
+                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                    User-Led Lead Source & Facebook Group Integration
+                  </span>
+                  <h2 className="text-lg font-bold text-white mt-1 flex items-center gap-2">
+                    <Navigation className="w-5 h-5 text-amber-400" />
+                    Connect Your Facebook Groups & Lead Generation Platforms
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Use our built-in web workflow (zero extension required) OR download the optional JobAllies Scout Chrome Extension to highlight trade requests inside Facebook Groups.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowExtensionModal(true)}
+                  className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 shrink-0"
+                >
+                  <Download className="w-4 h-4" /> Optional: Download Chrome Extension
+                </button>
               </div>
 
               {/* Add Facebook Group Form */}
@@ -1965,7 +2056,6 @@ export default function JobAlliesDashboard() {
               </span>
             </div>
 
-            {/* Step 1: Approve Quote -> Step 2: Send to Prospect AND Order Materials from Linked Retailer */}
             {!quoteApproved ? (
               <div className="flex gap-3 pt-2">
                 <button
@@ -2021,7 +2111,178 @@ export default function JobAlliesDashboard() {
         </div>
       )}
 
-      {/* MODAL 2: PLATFORM-MEDIATED PHONE / EMAIL RELAY */}
+      {/* MODAL 2: WORKFLOW 2 & C — FACEBOOK GROUP REFERENCE & PEER ALLY VOUCH GENERATOR */}
+      {fbReferenceLead && (
+        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-slate-900 border border-amber-500/50 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 my-8">
+            <div className="flex justify-between items-start border-b border-slate-800 pb-4">
+              <div>
+                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  Facebook Group Co-Pilot • Peer Ally Vouch & Assisted Reply
+                </span>
+                <h3 className="text-lg font-black text-white mt-2">
+                  Post Reference for &ldquo;{fbReferenceLead.title}&rdquo;
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Third-party Peer Ally Vouches convert 5x higher in neighborhood groups and avoid self-promotion bans.
+                </p>
+              </div>
+              <button onClick={() => setFbReferenceLead(null)} className="text-slate-400 hover:text-white font-bold">✕</button>
+            </div>
+
+            {/* Mode Switcher: Peer Ally Vouch (Workflow 2) vs Direct Reply (Approach C) */}
+            <div className="grid grid-cols-2 gap-2 bg-slate-950 p-1.5 rounded-xl border border-slate-800 text-xs">
+              <button
+                type="button"
+                onClick={() => {
+                  setFbReferenceMode('peer_vouch');
+                  updateFbDraftComment(fbReferenceLead, 'peer_vouch');
+                }}
+                className={`py-2.5 px-3 rounded-lg font-black transition-all ${
+                  fbReferenceMode === 'peer_vouch' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                1. Peer Ally Vouch (5x Higher Trust)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFbReferenceMode('direct_reply');
+                  updateFbDraftComment(fbReferenceLead, 'direct_reply');
+                }}
+                className={`py-2.5 px-3 rounded-lg font-black transition-all ${
+                  fbReferenceMode === 'direct_reply' ? 'bg-emerald-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                2. Direct Neighborly Contractor Reply
+              </button>
+            </div>
+
+            {fbReferenceMode === 'peer_vouch' && (
+              <div className="space-y-1.5 text-xs">
+                <label className="block font-bold text-slate-300">Select Trusted Trade Ally to Vouch / Partner With:</label>
+                <select
+                  value={vouchingAllyId}
+                  onChange={(e) => {
+                    setVouchingAllyId(e.target.value);
+                    const ally = network.find(p => p.id === e.target.value);
+                    updateFbDraftComment(fbReferenceLead, 'peer_vouch', ally);
+                  }}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white"
+                >
+                  {network.map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} — {p.company} ({p.trade} • {p.feePercent}% Escrow Referral Split)
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="space-y-1.5 text-xs">
+              <label className="block font-bold text-slate-300">Editable Facebook Group Comment Reference:</label>
+              <textarea
+                rows={4}
+                value={fbDraftComment}
+                onChange={(e) => setFbDraftComment(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl p-3 text-white leading-relaxed"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={copyReferenceAndOpenFacebook}
+                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-lg"
+              >
+                <ExternalLink className="w-4 h-4" /> Copy & Open FB Thread to Paste
+              </button>
+              <button
+                type="button"
+                onClick={requestAllyToPostVouch}
+                className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-lg"
+              >
+                <Send className="w-4 h-4" /> Ask Trade Ally to Post Vouch (SMS)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: OPTIONAL CHROME EXTENSION DOWNLOADER & GUIDE */}
+      {showExtensionModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-slate-900 border border-sky-500/50 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 my-8">
+            <div className="flex justify-between items-start border-b border-slate-800 pb-4">
+              <div>
+                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">
+                  100% Optional Browser Co-Pilot
+                </span>
+                <h3 className="text-lg font-black text-white mt-2">
+                  JobAllies Scout — Facebook Group Chrome Extension
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  You can use all FB Reference & Peer Vouch tools directly inside the web dashboard without installing anything—or install our lightweight Chrome Extension for in-group buttons.
+                </p>
+              </div>
+              <button onClick={() => setShowExtensionModal(false)} className="text-slate-400 hover:text-white font-bold">✕</button>
+            </div>
+
+            <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2.5 text-xs text-slate-300">
+              <div className="font-bold text-white">What the Optional Extension Does on Facebook.com/groups:</div>
+              <p>• Highlights homeowner posts asking for trade recommendations in real time using your safe residential browser session.</p>
+              <p>• Adds a 1-click <strong>&ldquo;Push to JobAllies Radar&rdquo;</strong> button on any group post.</p>
+              <p>• Adds 1-click <strong>&ldquo;Copy Peer Ally Vouch&rdquo;</strong> and <strong>&ldquo;Copy Direct Reply&rdquo;</strong> buttons right above the Facebook comment box.</p>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <a
+                href="/chrome-extension/manifest.json"
+                download="manifest.json"
+                className="bg-slate-800 hover:bg-slate-700 text-sky-400 font-bold py-2.5 px-3 rounded-xl text-center border border-slate-700"
+              >
+                1. manifest.json
+              </a>
+              <a
+                href="/chrome-extension/content.js"
+                download="content.js"
+                className="bg-slate-800 hover:bg-slate-700 text-sky-400 font-bold py-2.5 px-3 rounded-xl text-center border border-slate-700"
+              >
+                2. content.js
+              </a>
+              <a
+                href="/chrome-extension/popup.html"
+                download="popup.html"
+                className="bg-slate-800 hover:bg-slate-700 text-sky-400 font-bold py-2.5 px-3 rounded-xl text-center border border-slate-700"
+              >
+                3. popup.html
+              </a>
+              <a
+                href="/chrome-extension/popup.js"
+                download="popup.js"
+                className="bg-slate-800 hover:bg-slate-700 text-sky-400 font-bold py-2.5 px-3 rounded-xl text-center border border-slate-700"
+              >
+                4. popup.js
+              </a>
+            </div>
+
+            <div className="text-[11px] text-slate-400 bg-slate-950 p-3 rounded-xl border border-slate-800">
+              <strong>Quick Load Instructions:</strong> Save the 4 files above into a folder named <code>joballies-extension</code>, open <code>chrome://extensions</code> in Google Chrome, toggle on <strong>Developer mode</strong> (top right), and click <strong>Load unpacked</strong>.
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowExtensionModal(false)}
+                className="bg-emerald-500 text-slate-950 font-black px-5 py-2.5 rounded-xl text-xs"
+              >
+                Done — Continue Using Web Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: PLATFORM-MEDIATED PHONE / EMAIL RELAY */}
       {platformContactModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
@@ -2070,7 +2331,7 @@ export default function JobAlliesDashboard() {
         </div>
       )}
 
-      {/* MODAL 3: WHOLESALE PO SHEET */}
+      {/* MODAL 5: WHOLESALE PO SHEET */}
       {activePoLog && (
         <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-sky-500/40 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5">
@@ -2125,7 +2386,7 @@ export default function JobAlliesDashboard() {
         </div>
       )}
 
-      {/* MODAL 4: INVITE TRADE PARTNER */}
+      {/* MODAL 6: INVITE TRADE PARTNER */}
       {showInviteModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
@@ -2192,7 +2453,7 @@ export default function JobAlliesDashboard() {
         </div>
       )}
 
-      {/* MODAL 5: REFER WON JOB */}
+      {/* MODAL 7: REFER WON JOB */}
       {showReferModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-sky-500/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
@@ -2247,7 +2508,7 @@ export default function JobAlliesDashboard() {
         </div>
       )}
 
-      {/* MODAL 6: STRIPE 14-DAY TRIAL & BILLING MANAGEMENT */}
+      {/* MODAL 8: STRIPE 14-DAY TRIAL & BILLING MANAGEMENT */}
       {showBillingModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
