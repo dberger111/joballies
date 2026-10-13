@@ -2,9 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock_key', {
-  apiVersion: '2023-10-16' as any,
-});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock');
 
 export async function POST(request: Request) {
   try {
@@ -18,7 +16,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Fetch referral details from Supabase
     const { data: contract, error: contractErr } = await supabase
       .from('referral_contracts')
       .select('*, referrer:contractor_profiles!referrer_id(stripe_connect_id), referee:contractor_profiles!referee_id(stripe_connect_id)')
@@ -30,12 +27,11 @@ export async function POST(request: Request) {
     }
 
     if (action === 'hold_escrow') {
-      // Create Stripe PaymentIntent with manual capture or escrow hold
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round((amount || contract.escrow_amount || 50) * 100), // in cents
+        amount: Math.round((amount || contract.escrow_amount || 50) * 100),
         currency: 'usd',
         payment_method_types: ['card'],
-        capture_method: 'manual', // Hold in escrow
+        capture_method: 'manual',
         metadata: { referral_id, job_id: contract.job_id },
       });
 
@@ -55,7 +51,6 @@ export async function POST(request: Request) {
         status: 'in_escrow',
       });
     } else if (action === 'release_payout') {
-      // Capture and transfer funds to the referee contractor via Stripe Connect
       if (contract.stripe_payment_intent_id) {
         await stripe.paymentIntents.capture(contract.stripe_payment_intent_id);
       }
