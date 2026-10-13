@@ -213,7 +213,6 @@ export default function ContractorDashboard() {
 
       <main style={{ maxWidth: '1000px', margin: '0 auto', padding: '32px 24px' }}>
         
-        {/* TAB NAVIGATION */}
         <div style={{ display: 'flex', gap: '10px', borderBottom: '1px solid #1e293b', paddingBottom: '16px', marginBottom: '32px' }}>
           <button 
             onClick={() => setActiveTab('leads')} 
@@ -240,7 +239,6 @@ export default function ContractorDashboard() {
           </button>
         </div>
 
-        {/* TAB 1: GEOFENCED LEADS */}
         {activeTab === 'leads' && (
           <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '24px' }}>
             <h2 style={{ fontSize: '16px', margin: '0 0 16px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -270,7 +268,6 @@ export default function ContractorDashboard() {
           </div>
         )}
 
-        {/* TAB 2: TRADEVOICE & QUOTES */}
         {activeTab === 'voice' && (
           <>
             <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '24px', marginBottom: '24px' }}>
@@ -306,7 +303,7 @@ export default function ContractorDashboard() {
                   rows={3}
                   value={noteInput}
                   onChange={(e) => setNoteInput(e.target.value)}
-                  placeholder="Dictate field materials and labor hours here (e.g. 'six pieces of wood, 14 tiles, and 14 man hours')..."
+                  placeholder="Dictate field materials and labor hours here..."
                   style={{ width: '100%', backgroundColor: '#090d16', border: isRecording ? '2px solid #ef4444' : '1px solid #334155', borderRadius: '10px', padding: '12px', color: '#fff', fontSize: '14px', marginBottom: '12px' }}
                 />
                 <button 
@@ -362,7 +359,6 @@ export default function ContractorDashboard() {
           </>
         )}
 
-        {/* TAB 3: P2P REFERRAL ESCROW */}
         {activeTab === 'escrow' && (
           <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '24px' }}>
             <h2 style={{ fontSize: '16px', margin: '0 0 16px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -381,7 +377,6 @@ export default function ContractorDashboard() {
 
       </main>
 
-      {/* CLIENT QUOTE MODAL */}
       {activeQuoteModal && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 1000 }}>
           <div style={{ backgroundColor: '#0f172a', border: '1px solid #10b981', borderRadius: '16px', padding: '24px', maxWidth: '520px', width: '100%' }}>
@@ -423,7 +418,6 @@ export default function ContractorDashboard() {
         </div>
       )}
 
-      {/* VENDOR PO MODAL */}
       {activePoModal && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 1000 }}>
           <div style={{ backgroundColor: '#0f172a', border: '1px solid #38bdf8', borderRadius: '16px', padding: '24px', maxWidth: '520px', width: '100%' }}>
@@ -436,4 +430,27 @@ export default function ContractorDashboard() {
               <button onClick={() => setActivePoModal(null)} style={{ background: 'none', border: 'none', color: '#ef4444', fontWeight: 'bold', cursor: 'pointer' }}>Close</button>
             </div>
 
-            <div style={{ backgroundColor: '#090d16', padding: '14px', borderRadius: '10px', marginBottom: '16px', fontSize: '
+            <div style={{ backgroundColor: '#090d16', padding: '14px', borderRadius: '10px', marginBottom: '16px', fontSize: '13px' }}>
+              {activePoModal.items?.map((item: any, i: number) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid #1e293b' }}>
+                  <span>{item.description} ({item.quantity})</span>
+                  <span style={{ fontWeight: 'bold', color: '#10b981' }}>${item.totalPrice.toFixed(2)}</span>
+                </div>
+              ))}
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: '#38bdf8', borderTop: '1px solid #334155', paddingTop: '8px', marginTop: '8px' }}>
+                <span>Wholesale Subtotal:</span>
+                <span>${activePoModal.subtotal.toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <a href="https://www.homedepot.com/c/pro_services" target="_blank" rel="noreferrer" style={{ flex: 1, backgroundColor: '#38bdf8', color: '#090d16', padding: '10px', borderRadius: '8px', fontWeight: 'bold', textAlign: 'center', textDecoration: 'none' }}>
+                Transfer Cart to Home Depot / SiteOne Pro
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
