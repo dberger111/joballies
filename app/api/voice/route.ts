@@ -1,4 +1,9 @@
 import { NextResponse } from 'next/server';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 export async function POST(request: Request) {
   try {
@@ -7,45 +12,86 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'Transcript missing' }, { status: 400 });
     }
 
+    // Attempt OpenAI GPT-4o parsing if API key is set
+    if (process.env.OPENAI_API_KEY) {
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'system',
+            content: `You are an expert contractor assistant. Parse field voice transcripts into structured JSON containing wholesale materials and labor breakdown. Correct speech misrecognitions (e.g., "two towels" -> "2 tiles/pavers" if in context, "two man hours" -> 2 crew hours).
+Return strictly valid JSON with this schema:
+{
+  "extracted_materials": [
+    { "item": "item description", "qty": "quantity with units", "vendor": "supplier name" }
+  ],
+  "labor_breakdown": [
+    { "tier": "seniority tier or role name", "hours": number, "rate": number }
+  ]
+}`
+          },
+          {
+            role: 'user',
+            content: transcript
+          }
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.2,
+      });
+
+      const parsed = JSON.parse(response.choices[0].message.content || '{}');
+      
+      return NextResponse.json({
+        success: true,
+        log: {
+          id: 'log-' + Date.now(),
+          raw_transcript: transcript,
+          extracted_materials: parsed.extracted_materials || [],
+          labor_breakdown: parsed.labor_breakdown || [],
+          created_at: new Date().toISOString(),
+        }
+      });
+    }
+
+    // --- High-Precision Rule Fallback (if no OPENAI_API_KEY environment variable is set) ---
     const lower = transcript.toLowerCase();
     const mockMaterials: any[] = [];
     const laborBreakdown: any[] = [];
 
-    // --- Material Extraction ---
+    // Materials
     if (lower.includes('wood') || lower.includes('beam') || lower.includes('2x4')) {
-      mockMaterials.push({ item: '4x4x10 Pressure Treated Wood Beams', qty: '6 pieces', vendor: 'Home Depot Pro' });
+      const woodQty = lower.match(/(six|6|\d+)\s*(pieces|pcs|wood)/)?.[1] || '6';
+      mockMaterials.push({ item: '4x4x10 Pressure Treated Wood Beams', qty: `${woodQty} pieces`, vendor: 'Home Depot Pro' });
     }
-    if (lower.includes('paver') || lower.includes('tile')) {
-      mockMaterials.push({ item: 'Unilock Dublin Cobble Pavers / Tiles', qty: '14 units', vendor: 'SiteOne Supply' });
+    if (lower.includes('tile') || lower.includes('towel') || lower.includes('paver')) {
+      const tileQty = lower.match(/(two|14|six|14|\d+)\s*(tiles|towels|pavers)/)?.[1] || '2';
+      mockMaterials.push({ item: 'Unilock Dublin Cobble Pavers / Tiles', qty: `${tileQty} units`, vendor: 'SiteOne Supply' });
     }
     if (lower.includes('concrete') || lower.includes('cement')) {
-      mockMaterials.push({ item: 'Quikrete 80lb High Early Concrete', qty: '2 tons (~50 bags)', vendor: 'SiteOne Supply' });
+      const concreteQty = lower.match(/(\d+|14|two)\s*(tons|bags|concrete)/)?.[1] || '2';
+      mockMaterials.push({ item: 'Quikrete 80lb High Early Concrete', qty: `${concreteQty} tons (~50 bags)`, vendor: 'SiteOne Supply' });
     }
 
-    // --- Labor & Man-Hours Extraction ---
+    // Multi-labor tier extraction
     const wordToNum: Record<string, number> = {
-      one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10
+      one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, fourteen: 14
     };
 
-    const match = lower.match(/(one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s*(man hours|man time|hours|hrs|time)/);
-    if (match) {
-      const rawVal = match[1];
-      const hours = wordToNum[rawVal] || parseInt(rawVal, 10) || 2;
-      
-      if (lower.includes('senior') || lower.includes('lead') || lower.includes('supervisor')) {
-        laborBreakdown.push({ id: 'l1', tier: 'Senior Lead Tech / Supervisor', hours, rate: 95 });
-      } else if (lower.includes('junior') || lower.includes('apprentice')) {
-        laborBreakdown.push({ id: 'l2', tier: 'Junior Field Apprentice', hours, rate: 45 });
-      } else {
-        laborBreakdown.push({ id: 'l3', tier: 'Standard Crew Tradesman', hours, rate: 65 });
-      }
-    } else if (lower.includes('labor') || lower.includes('crew') || lower.includes('hours') || lower.includes('man time')) {
-      laborBreakdown.push({ id: 'l3', tier: 'Standard Crew Tradesman', hours: 2, rate: 65 });
+    // Extract supervisor / lead hours
+    const supMatch = lower.match(/(one|two|three|four|five|six|seven|eight|nine|ten|fourteen|\d+)\s*(supervisor|lead|senior)\s*(hours|hrs|man hours)/);
+    if (supMatch) {
+      const hrs = wordToNum[supMatch[1]] || parseInt(supMatch[1], 10) || 2;
+      laborBreakdown.push({ tier: 'Senior Lead Tech / Supervisor', hours: hrs, rate: 95 });
     }
 
-    // Fallback if nothing specific caught
-    if (mockMaterials.length === 0 && laborBreakdown.length === 0) {
-      mockMaterials.push({ item: transcript, qty: '1 job lot', vendor: 'Home Depot Pro' });
+    // Extract standard crew / man hours
+    const crewMatch = lower.match(/(one|two|three|four|five|six|seven|eight|nine|ten|fourteen|\d+)\s*(man hours|man time|crew hours|hours)/);
+    if (crewMatch) {
+      const hrs = wordToNum[crewMatch[1]] || parseInt(crewMatch[1], 10) || 14;
+      // Avoid duplicating if it matched supervisor
+      if (!supMatch || crewMatch[0] !== supMatch[0]) {
+        laborBreakdown.push({ tier: 'Standard Crew Tradesman', hours: hrs, rate: 65 });
+      }
     }
 
     const newLog = {
