@@ -2,7 +2,12 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Mic, MapPin, ShoppingCart, ArrowRight, Globe, Sparkles, MessageSquare } from 'lucide-react';
+import {
+  Mic, MapPin, ShoppingCart, ArrowRight, Globe, Sparkles,
+  MessageSquare, Hammer, Zap, Wrench, BrickWall, Home, Maximize2,
+  Paintbrush, Layers, Shield, Flame, Wind, Thermometer, Cpu,
+  Settings, Key, Truck, HardHat, Waves, Trophy, Trees, Bug, CheckCircle
+} from 'lucide-react';
 
 function BrandLogo({ size = 'md' }: { size?: 'sm' | 'md' }) {
   const dims = size === 'sm' ? 'w-8 h-8' : 'w-10 h-10';
@@ -19,11 +24,110 @@ function BrandLogo({ size = 'md' }: { size?: 'sm' | 'md' }) {
   );
 }
 
+interface TradeDefinition {
+  name: string;
+  desc: string;
+  icon: any;
+}
+
+interface TradeCategoryGroup {
+  id: string;
+  label: string;
+  badge: string;
+  trades: TradeDefinition[];
+}
+
+const TRADE_CATEGORIES: TradeCategoryGroup[] = [
+  {
+    id: 'building',
+    label: 'Building & Construction Trades',
+    badge: '15 Trades',
+    trades: [
+      { name: 'Carpenter', desc: 'Builds, installs, and repairs structures and fixtures made from wood, drywall, and other materials.', icon: Hammer },
+      { name: 'Electrician', desc: 'Installs, maintains, and repairs electrical power, communications, and lighting wiring systems.', icon: Zap },
+      { name: 'Plumber', desc: 'Assembles, installs, and repairs pipes, fittings, and fixtures for water, gas, and drainage systems.', icon: Wrench },
+      { name: 'Mason', desc: 'Lays bricks, concrete blocks, stone, or tiles to build walls, chimneys, patios, and foundations.', icon: BrickWall },
+      { name: 'Roofer', desc: 'Installs, repairs, and replaces waterproof and weather-resistant roofs.', icon: Home },
+      { name: 'Glazier', desc: 'Cuts, fits, and installs glass in windows, skylights, storefronts, and displays.', icon: Maximize2 },
+      { name: 'Painter and Decorator', desc: 'Applies paint, wallpaper, and other finishes to interior and exterior surfaces.', icon: Paintbrush },
+      { name: 'Plasterer and Stucco Worker', desc: 'Applies interior plaster and exterior stucco to walls and ceilings.', icon: Layers },
+      { name: 'Drywall Installer', desc: 'Hangs, tapes, and finishes gypsum panels on interior walls and ceilings.', icon: Layers },
+      { name: 'Ironworker', desc: 'Erects and reinforces structural steel frameworks for buildings, bridges, and industrial plants.', icon: Shield },
+      { name: 'Sheet Metal Worker', desc: 'Fabricates and installs thin metal products, including HVAC ductwork and metal roofs.', icon: Layers },
+      { name: 'Insulation Installer', desc: 'Applies thermal, acoustic, and moisture insulation materials to buildings and equipment.', icon: Thermometer },
+      { name: 'Flooring Installer / Tiler', desc: 'Lays carpet, hardwood, vinyl, or ceramic tiles on floors and walls.', icon: Maximize2 },
+      { name: 'Scaffolder', desc: 'Erects temporary metal or wooden platforms and scaffolding for construction sites.', icon: HardHat },
+      { name: 'Pile Driver', desc: 'Operates heavy equipment to drive deep structural piles into the ground for foundations.', icon: Hammer }
+    ]
+  },
+  {
+    id: 'mechanical',
+    label: 'Mechanical & Industrial Trades',
+    badge: '10 Trades',
+    trades: [
+      { name: 'HVAC Technician', desc: 'Installs, maintains, and repairs heating, ventilation, air conditioning, and refrigeration systems.', icon: Wind },
+      { name: 'Pipefitter / Steamfitter', desc: 'Installs and maintains high-pressure piping systems for industrial and manufacturing plants.', icon: Wrench },
+      { name: 'Boilermaker', desc: 'Builds, installs, and repairs large boilers, vats, and closed-vat pressure vessels.', icon: Flame },
+      { name: 'Welder', desc: 'Joins, cuts, or repairs metal parts using high-heat welding equipment.', icon: Flame },
+      { name: 'Elevator Mechanic', desc: 'Installs, services, and repairs elevators, escalators, and moving walkways.', icon: Settings },
+      { name: 'Millwright', desc: 'Installs, aligns, and maintains heavy industrial machinery and factory equipment.', icon: Settings },
+      { name: 'Machinist', desc: 'Operates precision machine tools to make or modify metal parts.', icon: Cpu },
+      { name: 'Tool and Die Maker', desc: 'Creates specialized tools, dies, guides, and machine fixtures.', icon: Wrench },
+      { name: 'Locksmith', desc: 'Installs, services, and repairs locks, safes, and security hardware.', icon: Key },
+      { name: 'Automotive / Diesel Mechanic', desc: 'Diagnoses, maintains, and repairs cars, trucks, or heavy machinery.', icon: Truck }
+    ]
+  },
+  {
+    id: 'transport',
+    label: 'Transport & Heavy Equipment Trades',
+    badge: '4 Trades',
+    trades: [
+      { name: 'Heavy Equipment Operator', desc: 'Drives and controls bulldozers, backhoes, excavators, and loaders.', icon: Truck },
+      { name: 'Crane Operator', desc: 'Operates heavy mobile or tower cranes to lift and move heavy construction materials.', icon: HardHat },
+      { name: 'Commercial Truck Driver', desc: 'Transports freight and materials over regional or long-distance routes.', icon: Truck },
+      { name: 'Lineman', desc: 'Installs and repairs electrical power lines, utility poles, and substation infrastructure.', icon: Zap }
+    ]
+  },
+  {
+    id: 'specialty',
+    label: 'Outdoor, Property & Specialty Trades',
+    badge: '4 Trades',
+    trades: [
+      { name: 'Landscaper', desc: 'Designs, grades, installs, and maintains lawns, gardens, drainage, and outdoor living spaces.', icon: Trees },
+      { name: 'Pool Maintenance', desc: 'Opens, closes, balances chemistry, and repairs residential and commercial swimming pools & heaters.', icon: Waves },
+      { name: 'Tennis Court Maintenance', desc: 'Resurfaces, lines, fences, and repairs Har-Tru clay, hardcourt, and pickleball facilities.', icon: Trophy },
+      { name: 'Exterminator', desc: 'Inspects, treats, and prevents structural pests, termites, rodents, and wildlife intrusions.', icon: Bug }
+    ]
+  }
+];
+
+const QUICK_TICKER_TRADES = [
+  'Carpenter', 'Electrician', 'Plumber', 'Mason', 'Roofer', 'HVAC Technician',
+  'Landscaper', 'Pool Maintenance', 'Tennis Court Maintenance', 'Exterminator',
+  'Heavy Equipment Operator', 'Painter & Decorator', 'Flooring / Tiler', 'Welder', 'Drywall Installer'
+];
+
 export default function JobAlliesLandingPage() {
   const [lang, setLang] = useState<'en' | 'es'>('en');
+  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+
+  const visibleGroups = selectedCategory === 'ALL'
+    ? TRADE_CATEGORIES
+    : TRADE_CATEGORIES.filter(g => g.id === selectedCategory);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950">
+      {/* Top Audience Strip: Explicitly States Who JobAllies Is For */}
+      <div className="bg-slate-900 border-b border-slate-800/80 px-4 py-2 text-center text-[11px] sm:text-xs font-bold text-slate-300">
+        <span className="text-emerald-400 uppercase tracking-wider mr-2">Built For Tradespeople:</span>
+        <span>
+          {lang === 'en'
+            ? 'Construction, Mechanical, Heavy Equipment, Landscaping, Pool, Tennis Court & Pest Control Pros'
+            : 'Profesionales de Construcción, Mecánica, Equipo Pesado, Paisajismo, Piscinas, Canchas de Tenis y Control de Plagas'}
+        </span>
+      </div>
+
+      {/* Main Header */}
       <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <BrandLogo />
@@ -50,7 +154,8 @@ export default function JobAlliesLandingPage() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-16 sm:py-24 flex flex-col justify-center space-y-16">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-14 sm:py-20 space-y-20">
+        {/* Hero Section */}
         <div className="text-center max-w-3xl mx-auto space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold">
             <Sparkles className="w-3.5 h-3.5" />
@@ -73,7 +178,7 @@ export default function JobAlliesLandingPage() {
               : 'Ve cada cliente potencial en tu área. Cotiza al instante. Llena pedidos de materiales en tiendas Pro. Refiere trabajo a tu red de confianza.'}
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
+          <div className="flex flex-wrap items-center justify-center gap-4 pt-3">
             <Link
               href="/dashboard"
               className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-8 py-4 rounded-2xl text-sm sm:text-base shadow-xl shadow-emerald-500/20 flex items-center gap-2.5 transition-all"
@@ -81,9 +186,34 @@ export default function JobAlliesLandingPage() {
               <span>{lang === 'en' ? 'Enter Your Command Center (Free)' : 'Entrar a Tu Centro de Comando (Gratis)'}</span>
               <ArrowRight className="w-5 h-5" />
             </Link>
+            <a
+              href="#trades-directory"
+              className="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-bold px-6 py-4 rounded-2xl text-sm transition-all"
+            >
+              Explore All 33 Supported Trades ↓
+            </a>
+          </div>
+
+          {/* Quick Trade Pill Strip Right Under Hero CTA */}
+          <div className="pt-6">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-3">
+              Select Your Trade to Open Your Local Lead Radar:
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              {QUICK_TICKER_TRADES.map((t) => (
+                <Link
+                  key={t}
+                  href={`/dashboard?trade=${encodeURIComponent(t)}`}
+                  className="bg-slate-900/90 hover:bg-emerald-500/15 border border-slate-800 hover:border-emerald-500/40 text-slate-300 hover:text-emerald-300 px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+                >
+                  {t}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
 
+        {/* 4 Core Pillars */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           <div className="bg-slate-900/90 border border-slate-800 hover:border-emerald-500/40 rounded-2xl p-6 flex flex-col justify-between space-y-4 transition-all">
             <div className="space-y-3">
@@ -117,7 +247,7 @@ export default function JobAlliesLandingPage() {
                 </span>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Filter local leads by job type, drive distance, and project value—and connect your own Facebook Groups & lead platforms in 2 clicks.
+                Filter local leads by job type, drive distance, and project value—and connect your own Facebook Groups &amp; lead platforms in 2 clicks.
               </p>
             </div>
             <Link href="/dashboard" className="block text-center bg-slate-950 hover:bg-slate-800 border border-slate-800 text-amber-400 font-bold py-2.5 rounded-xl text-xs transition-all">
@@ -165,15 +295,103 @@ export default function JobAlliesLandingPage() {
             </Link>
           </div>
         </div>
+
+        {/* Interactive 33-Trade Icon Directory */}
+        <section id="trades-directory" className="space-y-8 pt-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-800 pb-6">
+            <div>
+              <span className="text-[11px] font-black uppercase tracking-wider text-emerald-400">
+                Built For Every Field &amp; Industrial Trade
+              </span>
+              <h2 className="text-2xl sm:text-4xl font-black text-white mt-1">
+                33 Specialized Trades. One Command Center.
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                Click any trade below to launch your Lead Radar with trade-specific auto-quoting and wholesale material catalogs.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { id: 'ALL', label: 'All 33 Trades' },
+                { id: 'building', label: 'Building & Construction (15)' },
+                { id: 'mechanical', label: 'Mechanical & Industrial (10)' },
+                { id: 'transport', label: 'Transport & Heavy Equip (4)' },
+                { id: 'specialty', label: 'Pool, Tennis, Landscape & Pest (4)' }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setSelectedCategory(tab.id)}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+                    selectedCategory === tab.id
+                      ? 'bg-emerald-500 text-slate-950 shadow'
+                      : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-10">
+            {visibleGroups.map(group => (
+              <div key={group.id} className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-black text-white flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-emerald-400" />
+                    <span>{group.label}</span>
+                  </h3>
+                  <span className="text-xs font-bold text-slate-400 bg-slate-900 border border-slate-800 px-3 py-1 rounded-full">
+                    {group.badge}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {group.trades.map(trade => {
+                    const IconComponent = trade.icon;
+                    return (
+                      <Link
+                        key={trade.name}
+                        href={`/dashboard?trade=${encodeURIComponent(trade.name)}`}
+                        className="group bg-slate-900/70 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl p-4 flex items-start gap-3.5 transition-all"
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-slate-950 border border-slate-800 group-hover:border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
+                          <IconComponent className="w-5 h-5" />
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-bold text-sm text-white group-hover:text-emerald-400 transition-colors">
+                              {trade.name}
+                            </span>
+                            <ArrowRight className="w-3.5 h-3.5 text-slate-600 group-hover:text-emerald-400 transition-colors shrink-0" />
+                          </div>
+                          <p className="text-xs text-slate-400 leading-relaxed">
+                            {trade.desc}
+                          </p>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       </main>
 
-      <footer className="border-t border-slate-800/80 bg-slate-900/60 px-6 py-8">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+      {/* Complete Footer with Homeowner Intake, Privacy Policy & Terms of Service */}
+      <footer className="border-t border-slate-800/80 bg-slate-900/60 px-6 py-10 mt-12">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-slate-400">
           <div className="flex items-center gap-3">
             <BrandLogo size="sm" />
-            <span>© 2026 JobAllies. All rights reserved.</span>
+            <div>
+              <span className="font-bold text-white block">JobAllies</span>
+              <span>© 2026 JobAllies. All rights reserved.</span>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-6">
+
+          <div className="flex flex-wrap items-center justify-center gap-6">
             <Link
               href="/post-project"
               className="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 font-bold px-4 py-2 rounded-xl transition-all"
@@ -181,7 +399,13 @@ export default function JobAlliesLandingPage() {
               {lang === 'en' ? 'Homeowner? Post a project free →' : '¿Propietario? Publica un proyecto gratis →'}
             </Link>
             <Link href="/dashboard" className="hover:text-white font-semibold transition-colors">
-              Enter Your Command Center (Free)
+              Command Center
+            </Link>
+            <Link href="/privacy" className="hover:text-white font-semibold transition-colors">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="hover:text-white font-semibold transition-colors">
+              Terms of Service &amp; Escrow
             </Link>
           </div>
         </div>
