@@ -1,13 +1,35 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import {
   MapPin, Mic, Users, Link2, Plus,
   CheckCircle, ShieldCheck, RefreshCw,
   Send, Navigation, CreditCard, Lock,
-  ExternalLink, Download, Printer, Mail,
-  MessageSquare, Sparkles, Check, Building, Copy, Phone, Calendar, Edit3, Trash2
+  ExternalLink, Download, Mail,
+  MessageSquare, Sparkles, Check, Building, Copy, Phone, Calendar, Edit3, Trash2, ShoppingCart, Settings
 } from 'lucide-react';
+
+function BrandLogo() {
+  return (
+    <Link href="/" className="flex items-center gap-3 group">
+      <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-sky-400 p-0.5 shadow-lg shadow-emerald-500/20 flex items-center justify-center">
+        <div className="w-full h-full bg-slate-950/90 rounded-[10px] flex items-center justify-center">
+          <svg viewBox="0 0 36 36" fill="none" className="w-6 h-6">
+            <path d="M18 3L31 10.5V25.5L18 33L5 25.5V10.5L18 3Z" stroke="#10b981" strokeWidth="2.5" />
+            <path d="M11 20.5L16 25L25.5 13.5" stroke="#38bdf8" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="18" cy="9" r="2" fill="#fbbf24" />
+          </svg>
+        </div>
+      </div>
+      <div>
+        <h1 className="text-xl font-black tracking-tight text-white group-hover:text-emerald-400 transition-colors">
+          JobAllies
+        </h1>
+      </div>
+    </Link>
+  );
+}
 
 interface MaterialItem {
   item: string;
@@ -28,8 +50,6 @@ interface DictationLog {
   timestamp: string;
   rawText: string;
   clientName: string;
-  clientPhone?: string;
-  clientEmail?: string;
   materials: MaterialItem[];
   labor: LaborItem[];
 }
@@ -61,6 +81,23 @@ interface BillingState {
   trialEndsAt: string | null;
   triggerLeadTitle: string | null;
   monthlyRate: number;
+  userStripeSecretKey?: string;
+}
+
+interface RetailerAccounts {
+  homeDepotProId: string;
+  lowesProId: string;
+  siteOneAccountId: string;
+  fergusonAccountId: string;
+  preferredStoreZip: string;
+}
+
+interface ConnectedLeadSources {
+  thumbtackConnected: boolean;
+  angiConnected: boolean;
+  barkConnected: boolean;
+  googleLsaConnected: boolean;
+  facebookGroups: { id: string; name: string; url: string; keywords: string }[];
 }
 
 const DEFAULT_LEADS: LeadItem[] = [
@@ -81,7 +118,7 @@ const DEFAULT_LEADS: LeadItem[] = [
     urgency: 'Immediate',
     claimed: false,
     quoteMaterials: [
-      { item: 'Natural Bluestone Thermal Pavers (350 sq ft)', qty: 350, cost: 9.50, vendor: 'SiteOne Supply', sku: 'S1-BLU-350' },
+      { item: 'Natural Bluestone Thermal Pavers (350 sq ft)', qty: 350, cost: 9.45, vendor: 'SiteOne Supply', sku: 'S1-BLU-350' },
       { item: 'Fieldstone Retaining Wall Block (Pallet)', qty: 3, cost: 420.00, vendor: 'SiteOne Supply', sku: 'S1-FLD-PAL' },
       { item: '3/4" Crushed Stone Base & Polymeric Sand (Tons)', qty: 6, cost: 48.00, vendor: 'SiteOne Supply', sku: 'S1-CRB-06' }
     ],
@@ -106,7 +143,7 @@ const DEFAULT_LEADS: LeadItem[] = [
     urgency: 'Emergency / ASAP',
     claimed: false,
     quoteMaterials: [
-      { item: '4" Perforated PVC Pipe & Filter Fabric (120 ft)', qty: 12, cost: 28.00, vendor: 'SiteOne Supply', sku: 'S1-DRN-120' },
+      { item: '4 in. x 100 ft. Corrugated Perforated French Drain Pipe', qty: 2, cost: 118.00, vendor: 'SiteOne Supply', sku: 'S1-DRN-120' },
       { item: 'Washed Drainage Stone #57 (Tons)', qty: 8, cost: 44.00, vendor: 'SiteOne Supply', sku: 'S1-STN-57' }
     ],
     quoteLabor: [
@@ -130,9 +167,9 @@ const DEFAULT_LEADS: LeadItem[] = [
     urgency: 'This Week',
     claimed: false,
     quoteMaterials: [
-      { item: '6x6x12 Western Red Cedar Posts & Beams', qty: 14, cost: 92.00, vendor: 'Home Depot Pro', sku: 'HD-CED-6612' },
-      { item: 'Composite Decking Boards 16ft (Grooved)', qty: 48, cost: 44.00, vendor: 'Home Depot Pro', sku: 'HD-TREX-16' },
-      { item: 'Low-Voltage LED Post Cap Lights & Transformer', qty: 8, cost: 34.00, vendor: 'Home Depot Pro', sku: 'HD-LED-LV8' }
+      { item: '6x6x12 Rough Sawn Western Red Cedar Structural Post', qty: 14, cost: 91.50, vendor: "Lowe's Pro", sku: 'LW-CED-6612' },
+      { item: 'Trex Enhance Naturals 1x6x16 ft. Composite Deck Board', qty: 48, cost: 43.97, vendor: 'Home Depot Pro', sku: 'HD-TREX-16' },
+      { item: 'Quikrete 80 lb. High-Early Strength Concrete Mix', qty: 20, cost: 7.48, vendor: 'Home Depot Pro', sku: 'HD-QK-80' }
     ],
     quoteLabor: [
       { tier: 'Senior Finish Carpentry Crew', hours: 56, rate: 85.00 }
@@ -155,9 +192,9 @@ const DEFAULT_LEADS: LeadItem[] = [
     urgency: 'Immediate',
     claimed: false,
     quoteMaterials: [
-      { item: 'Square D QO 200A 40-Space Main Breaker Panel', qty: 1, cost: 345.00, vendor: 'Home Depot Pro', sku: 'HD-SQD-200' },
+      { item: 'Square D QO 200 Amp 40-Space Main Breaker Panel', qty: 1, cost: 339.00, vendor: 'Home Depot Pro', sku: 'HD-SQD-200' },
       { item: '60A Outdoor Subpanel & 80ft Copper Feeder Conduit', qty: 1, cost: 480.00, vendor: 'Home Depot Pro', sku: 'HD-SUB-60A' },
-      { item: 'NEMA 14-50 Comercial EV Charger Circuit Kit', qty: 1, cost: 195.00, vendor: 'Home Depot Pro', sku: 'HD-EV-1450' }
+      { item: 'NEMA 14-50 Commercial EV Charger Circuit Kit', qty: 1, cost: 195.00, vendor: 'Home Depot Pro', sku: 'HD-EV-1450' }
     ],
     quoteLabor: [
       { tier: 'Licensed Master Electrician', hours: 22, rate: 125.00 }
@@ -180,7 +217,7 @@ const DEFAULT_LEADS: LeadItem[] = [
     urgency: 'Flexible',
     claimed: false,
     quoteMaterials: [
-      { item: 'Navien NCB-240/130H High-Efficiency Combi Boiler', qty: 1, cost: 2450.00, vendor: 'Ferguson Pro', sku: 'FG-NAV-240' },
+      { item: 'Navien NCB-240/130H Condensing Combi-Boiler', qty: 1, cost: 2445.00, vendor: 'Ferguson Pro', sku: 'FG-NAV-240' },
       { item: '4-Zone Copper Radiant Manifold & Circulator Pumps', qty: 1, cost: 680.00, vendor: 'Ferguson Pro', sku: 'FG-MAN-4Z' },
       { item: 'Schedule 40 PVC Venting & Condensate Neutralizer Kit', qty: 1, cost: 220.00, vendor: 'Ferguson Pro', sku: 'FG-VNT-40' }
     ],
@@ -199,7 +236,7 @@ function buildAutoQuoteFromLead(title: string, desc: string, trade: string): { m
     const area = sqFtMatch ? Number(sqFtMatch[1]) : 300;
     return {
       materials: [
-        { item: `Natural Stone / Pavers (${area} sq ft)`, qty: area, cost: 9.25, vendor: 'SiteOne Supply', sku: 'S1-PAV-100' },
+        { item: `Natural Stone / Pavers (${area} sq ft)`, qty: area, cost: 9.45, vendor: 'SiteOne Supply', sku: 'S1-BLU-350' },
         { item: 'Crushed Stone Base & Polymeric Sand (Tons)', qty: Math.max(3, Math.round(area / 60)), cost: 46.00, vendor: 'SiteOne Supply', sku: 'S1-BASE-01' }
       ],
       labor: [{ tier: 'Master Mason & Hardscape Crew', hours: Math.max(16, Math.round(area / 10)), rate: 95.00 }]
@@ -209,7 +246,7 @@ function buildAutoQuoteFromLead(title: string, desc: string, trade: string): { m
   if (trade === 'Electrical' || text.includes('panel') || text.includes('charger') || text.includes('light')) {
     return {
       materials: [
-        { item: `Primary Electrical Equipment (${title.slice(0, 32)})`, qty: 1, cost: 420.00, vendor: 'Home Depot Pro', sku: 'HD-ELC-200' },
+        { item: 'Square D QO 200 Amp Main Breaker Panel / Kit', qty: 1, cost: 339.00, vendor: 'Home Depot Pro', sku: 'HD-SQD-200' },
         { item: 'THHN Copper Wiring, Conduit & Breakers', qty: 1, cost: 285.00, vendor: 'Home Depot Pro', sku: 'HD-WIR-80' }
       ],
       labor: [{ tier: 'Licensed Master Electrician', hours: 16, rate: 120.00 }]
@@ -219,7 +256,7 @@ function buildAutoQuoteFromLead(title: string, desc: string, trade: string): { m
   if (trade === 'Plumbing & Mechanical' || text.includes('boiler') || text.includes('heater') || text.includes('pipe')) {
     return {
       materials: [
-        { item: `Plumbing / Heating Unit (${title.slice(0, 32)})`, qty: 1, cost: 1450.00, vendor: 'Ferguson Pro', sku: 'FG-PLB-500' },
+        { item: 'Navien High-Efficiency Combi-Boiler / Mechanical Unit', qty: 1, cost: 2445.00, vendor: 'Ferguson Pro', sku: 'FG-NAV-240' },
         { item: 'Copper Fittings, Valves & Venting Kit', qty: 1, cost: 340.00, vendor: 'Ferguson Pro', sku: 'FG-FIT-12' }
       ],
       labor: [{ tier: 'Licensed Master Plumber', hours: 20, rate: 115.00 }]
@@ -229,8 +266,8 @@ function buildAutoQuoteFromLead(title: string, desc: string, trade: string): { m
   const footage = lnFtMatch ? Number(lnFtMatch[1]) : 100;
   return {
     materials: [
-      { item: `Project Materials (${title.slice(0, 35)})`, qty: 10, cost: 65.00, vendor: 'Home Depot Pro', sku: 'HD-PRO-101' },
-      { item: `Fasteners, Supplies & Site Consumables (${footage} ft)`, qty: 4, cost: 45.00, vendor: 'Home Depot Pro', sku: 'HD-SUP-04' }
+      { item: '4x4x10 Pressure-Treated Ground Contact Timber Posts', qty: 12, cost: 26.98, vendor: 'Home Depot Pro', sku: 'HD-PT-4410' },
+      { item: `Fasteners, Concrete & Site Consumables (${footage} ft)`, qty: 15, cost: 7.48, vendor: 'Home Depot Pro', sku: 'HD-QK-80' }
     ],
     labor: [{ tier: 'Skilled Trade Crew Labor', hours: 20, rate: 85.00 }]
   };
@@ -246,11 +283,36 @@ export default function JobAlliesDashboard() {
     firstLeadAcceptedAt: null,
     trialEndsAt: null,
     triggerLeadTitle: null,
-    monthlyRate: 49.00
+    monthlyRate: 49.00,
+    userStripeSecretKey: ''
   });
   const [showBillingModal, setShowBillingModal] = useState(false);
 
-  // Filters: Location, Job Type, Job Distance, Job Value
+  // User-Led Retailer Account Integrations
+  const [retailerAccounts, setRetailerAccounts] = useState<RetailerAccounts>({
+    homeDepotProId: 'PRO-XTRA-2035550199',
+    lowesProId: 'LOWES-PRO-88412',
+    siteOneAccountId: 'S1-CT-44910',
+    fergusonAccountId: 'FERG-NE-7721',
+    preferredStoreZip: '06880 (Westport / Norwalk Pro Desk)'
+  });
+
+  // User-Led Lead Platform & Facebook Group Integrations
+  const [leadSources, setLeadSources] = useState<ConnectedLeadSources>({
+    thumbtackConnected: true,
+    angiConnected: true,
+    barkConnected: true,
+    googleLsaConnected: false,
+    facebookGroups: [
+      { id: 'fb-1', name: 'Weston & Westport CT Homeowners Exchange', url: 'https://www.facebook.com/groups/search/groups/?q=Weston%20Westport%20CT', keywords: 'mason, patio, drainage, electrician, plumber, handyman' },
+      { id: 'fb-2', name: 'Fairfield County Home Improvement & Referrals', url: 'https://www.facebook.com/groups/search/groups/?q=Fairfield%20County%20Home%20Improvement', keywords: 'contractor, deck, roof, landscaping, boiler' }
+    ]
+  });
+  const [newFbGroupName, setNewFbGroupName] = useState('');
+  const [newFbGroupUrl, setNewFbGroupUrl] = useState('');
+  const [newFbGroupKeywords, setNewFbGroupKeywords] = useState('contractor, quote, repair, remodel');
+
+  // Filters: Service Area, Job Type, Job Distance, Job Value
   const [radarZip, setRadarZip] = useState('Weston, CT');
   const [jobTypeFilter, setJobTypeFilter] = useState<string>('ALL');
   const [jobDistanceFilter, setJobDistanceFilter] = useState<number>(25);
@@ -267,6 +329,7 @@ export default function JobAlliesDashboard() {
   const [editableMaterials, setEditableMaterials] = useState<MaterialItem[]>([]);
   const [editableLabor, setEditableLabor] = useState<LaborItem[]>([]);
   const [quoteApproved, setQuoteApproved] = useState(false);
+  const [orderPoNumber, setOrderPoNumber] = useState('PO-JA-1042');
 
   // Platform Relay Contact Modal State (No Phone/Email Exposed)
   const [platformContactModal, setPlatformContactModal] = useState<{ lead: LeadItem; mode: 'phone' | 'email' } | null>(null);
@@ -281,21 +344,21 @@ export default function JobAlliesDashboard() {
     {
       id: 'log-101',
       timestamp: 'Oct 13, 2026 • 4:30 PM',
-      rawText: 'We need 12 pressure treated 4x4x10 wood posts at $28 each from Home Depot Pro, 15 bags of Quikrete high early concrete at $7.50, and 16 hours of senior crew labor at $65 an hour for a deck rebuild in Weston.',
+      rawText: 'We need 12 pressure treated 4x4x10 wood posts at $26.98 each from Home Depot Pro, 15 bags of Quikrete high early concrete at $7.48, and 16 hours of senior crew labor at $65 an hour for a deck rebuild in Weston.',
       clientName: 'Sarah Jenkins • Westport Deck Rebuild',
       materials: [
-        { item: '4x4x10 Pressure Treated Wood Posts', qty: 12, cost: 28.00, vendor: 'Home Depot Pro', sku: 'HD-PT-4410' },
-        { item: 'Quikrete 80lb High Early Concrete', qty: 15, cost: 7.50, vendor: 'Home Depot Pro', sku: 'HD-QK-80' }
+        { item: '4x4x10 Pressure Treated Wood Posts', qty: 12, cost: 26.98, vendor: 'Home Depot Pro', sku: 'HD-PT-4410' },
+        { item: 'Quikrete 80lb High Early Concrete', qty: 15, cost: 7.48, vendor: 'Home Depot Pro', sku: 'HD-QK-80' }
       ],
       labor: [{ tier: 'Senior Crew Tradesman', hours: 16, rate: 65.00 }]
     },
     {
       id: 'log-102',
       timestamp: 'Oct 13, 2026 • 3:15 PM',
-      rawText: '14 Unilock Dublin Cobble stone pavers at $18.50 per unit from SiteOne Supply, 3 tons of crushed stone base at $42, plus 8 hours site lead supervision at $95 an hour.',
+      rawText: '14 Unilock Dublin Cobble stone pavers at $11.20 per sq ft from SiteOne Supply, 3 tons of crushed stone base at $42, plus 8 hours site lead supervision at $95 an hour.',
       clientName: 'Mark Henderson • Weston Bluestone Patio',
       materials: [
-        { item: 'Unilock Dublin Cobble Pavers (Pallet)', qty: 14, cost: 18.50, vendor: 'SiteOne Supply', sku: 'S1-UNI-DC' },
+        { item: 'Unilock Dublin Cobble Pavers', qty: 14, cost: 11.20, vendor: 'SiteOne Supply', sku: 'S1-UNI-DC' },
         { item: '3/4" Crushed Stone Base (Tons)', qty: 3, cost: 42.00, vendor: 'SiteOne Supply', sku: 'S1-CRB-34' }
       ],
       labor: [{ tier: 'Site Supervisor / Lead Tech', hours: 8, rate: 95.00 }]
@@ -330,36 +393,95 @@ export default function JobAlliesDashboard() {
   const [invPhone, setInvPhone] = useState('');
   const [invEmail, setInvEmail] = useState('');
 
-  const [integrations, setIntegrations] = useState([
-    { id: 'hdp', name: 'Home Depot Pro Xtra & Lowe\'s Pro', category: 'Live SKU Search & CSV Bulk Cart Upload', connected: true },
-    { id: 'siteone', name: 'SiteOne Landscape Supply', category: 'Hardscape & Nursery Wholesale Sync', connected: true },
-    { id: 'ferguson', name: 'Ferguson Pro', category: 'Plumbing & Mechanical Wholesale Sync', connected: true },
-    { id: 'qbo', name: 'QuickBooks Online', category: 'Accounting & CSV Invoice Export', connected: true },
-    { id: 'stripe', name: 'Stripe 14-Day Trial & Escrow Engine', category: 'Pay-On-Success Subscription & Escrow', connected: true }
-  ]);
-
   useEffect(() => {
     try {
-      const savedBilling = localStorage.getItem('ja_billing_v6');
+      const savedBilling = localStorage.getItem('ja_billing_v7');
       if (savedBilling) setBilling(JSON.parse(savedBilling));
-      const savedLeads = localStorage.getItem('ja_leads_v6');
+      const savedLeads = localStorage.getItem('ja_leads_v7');
       if (savedLeads) setLeads(JSON.parse(savedLeads));
-      const savedLogs = localStorage.getItem('ja_logs_v6');
+      const savedLogs = localStorage.getItem('ja_logs_v7');
       if (savedLogs) setDictationLogs(JSON.parse(savedLogs));
+      const savedRetailers = localStorage.getItem('ja_retailers_v7');
+      if (savedRetailers) setRetailerAccounts(JSON.parse(savedRetailers));
+      const savedSources = localStorage.getItem('ja_sources_v7');
+      if (savedSources) setLeadSources(JSON.parse(savedSources));
     } catch (e) {}
+
+    // Also pull any incoming webhook leads from Thumbtack/Angi/Bark/Homeowner portal
+    fetch('/api/webhooks/leads')
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data.leads) && data.leads.length > 0) {
+          setLeads(prev => {
+            const ids = new Set(prev.map(l => l.id));
+            const nowStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' • ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            const fresh = data.leads
+              .filter((l: any) => !ids.has(l.id))
+              .map((l: any) => {
+                const autoQ = buildAutoQuoteFromLead(l.title, l.desc, l.trade);
+                return {
+                  ...l,
+                  postedAt: l.postedAt || nowStr,
+                  estimatedValue: l.estimatedValue || 5500,
+                  quoteMaterials: autoQ.materials,
+                  quoteLabor: autoQ.labor
+                };
+              });
+            return fresh.length > 0 ? [...fresh, ...prev] : prev;
+          });
+        }
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
     try {
-      localStorage.setItem('ja_billing_v6', JSON.stringify(billing));
-      localStorage.setItem('ja_leads_v6', JSON.stringify(leads));
-      localStorage.setItem('ja_logs_v6', JSON.stringify(dictationLogs));
+      localStorage.setItem('ja_billing_v7', JSON.stringify(billing));
+      localStorage.setItem('ja_leads_v7', JSON.stringify(leads));
+      localStorage.setItem('ja_logs_v7', JSON.stringify(dictationLogs));
+      localStorage.setItem('ja_retailers_v7', JSON.stringify(retailerAccounts));
+      localStorage.setItem('ja_sources_v7', JSON.stringify(leadSources));
     } catch (e) {}
-  }, [billing, leads, dictationLogs]);
+  }, [billing, leads, dictationLogs, retailerAccounts, leadSources]);
 
   const triggerToast = (msg: string, type: 'success' | 'info' | 'amber' = 'success') => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 4500);
+  };
+
+  // --- LIVE STRIPE CHECKOUT LAUNCHER ---
+  const launchLiveStripeTrialCheckout = async () => {
+    try {
+      const res = await fetch('/api/billing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'start_trial_subscription',
+          originUrl: window.location.origin,
+          userStripeSecretKey: billing.userStripeSecretKey
+        })
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+        return;
+      }
+      if (data.error) {
+        triggerToast(`Stripe API: ${data.error}`, 'amber');
+        return;
+      }
+      const now = new Date();
+      const ends = new Date(now.getTime() + 14 * 86400000);
+      setBilling(prev => ({
+        ...prev,
+        planStatus: 'TRIAL_ACTIVE',
+        firstLeadAcceptedAt: now.toISOString(),
+        trialEndsAt: ends.toISOString()
+      }));
+      triggerToast('14-Day Free Trial active! Add STRIPE_SECRET_KEY in Vercel or Tab 4 to open live Stripe Checkout.', 'info');
+    } catch (e) {
+      triggerToast('Could not reach billing endpoint.', 'amber');
+    }
   };
 
   // --- OPEN AUTO-GENERATED QUOTE EDITOR FOR ANY LEAD ---
@@ -372,6 +494,7 @@ export default function JobAlliesDashboard() {
     setEditingLeadQuote(lead);
     setEditableMaterials(generated.materials.map(m => ({ ...m })));
     setEditableLabor(generated.labor.map(l => ({ ...l })));
+    setOrderPoNumber(`PO-${lead.id.toUpperCase()}`);
     setQuoteApproved(false);
   };
 
@@ -415,18 +538,17 @@ export default function JobAlliesDashboard() {
     if (!editingLeadQuote) return;
     setQuoteApproved(true);
 
-    // Save edited quote onto the lead and start 14-day free trial if first lead accepted
     const now = new Date();
     const ends = new Date(now.getTime() + 14 * 86400000);
     if (billing.planStatus === 'FREE_EXPLORER') {
-      setBilling({
+      setBilling(prev => ({
+        ...prev,
         planStatus: 'TRIAL_ACTIVE',
         acceptedLeadsCount: 1,
         firstLeadAcceptedAt: now.toISOString(),
         trialEndsAt: ends.toISOString(),
-        triggerLeadTitle: editingLeadQuote.title,
-        monthlyRate: 49.00
-      });
+        triggerLeadTitle: editingLeadQuote.title
+      }));
     } else if (!editingLeadQuote.claimed) {
       setBilling(prev => ({ ...prev, acceptedLeadsCount: prev.acceptedLeadsCount + 1 }));
     }
@@ -438,7 +560,6 @@ export default function JobAlliesDashboard() {
       quoteLabor: editableLabor
     } : l));
 
-    // Also add/sync into Voice Quotes & Retailer Carts tab
     const syncedLog: DictationLog = {
       id: 'quote-' + editingLeadQuote.id,
       timestamp: 'Approved Just Now',
@@ -448,7 +569,7 @@ export default function JobAlliesDashboard() {
       labor: editableLabor
     };
     setDictationLogs(prev => [syncedLog, ...prev.filter(x => x.id !== syncedLog.id)]);
-    triggerToast(`Quote approved for ${editingLeadQuote.author}! Select Text or Email below to send through JobAllies.`, 'success');
+    triggerToast(`Quote approved! You can now send to ${editingLeadQuote.author} or push materials to your linked Retailer Pro Account.`, 'success');
   };
 
   const sendApprovedQuoteThroughPlatform = async (channel: 'sms' | 'email') => {
@@ -476,10 +597,53 @@ export default function JobAlliesDashboard() {
     } catch (e) {}
 
     triggerToast(
-      `Approved quote ($${grandTotal.toFixed(2)}) sent to ${editingLeadQuote.author} via JobAllies ${channel === 'sms' ? 'Text Relay' : 'Email Relay'}!`,
+      `Approved quote ($${grandTotal.toFixed(2)}) dispatched to ${editingLeadQuote.author} via JobAllies ${channel === 'sms' ? 'Text Relay' : 'Email Relay'}!`,
       'success'
     );
     setEditingLeadQuote(null);
+  };
+
+  // --- RETAILER PRO ACCOUNT ORDERING FROM QUOTE ---
+  const getRetailerAccountForVendor = (vendor: string) => {
+    const v = vendor.toLowerCase();
+    if (v.includes('lowe')) return retailerAccounts.lowesProId;
+    if (v.includes('siteone')) return retailerAccounts.siteOneAccountId;
+    if (v.includes('ferguson')) return retailerAccounts.fergusonAccountId;
+    return retailerAccounts.homeDepotProId;
+  };
+
+  const getRetailerSearchUrl = (vendor: string, item: string) => {
+    const q = encodeURIComponent(item);
+    const v = vendor.toLowerCase();
+    if (v.includes('lowe')) return `https://www.lowes.com/search?searchTerm=${q}`;
+    if (v.includes('siteone')) return `https://www.siteone.com/en/search/?text=${q}`;
+    if (v.includes('ferguson')) return `https://www.ferguson.com/search/${q}`;
+    return `https://www.homedepot.com/s/${q}`;
+  };
+
+  const downloadRetailerCsvCart = (materialsList: MaterialItem[], poCode: string) => {
+    const headers = ['PO_Number', 'Pro_Account_ID', 'Store_Zip', 'SKU', 'Item_Description', 'Quantity', 'Wholesale_Unit_Cost', 'Line_Total', 'Vendor', 'Direct_Order_URL'];
+    const rows = materialsList.map(m => [
+      poCode,
+      `"${getRetailerAccountForVendor(m.vendor)}"`,
+      `"${retailerAccounts.preferredStoreZip}"`,
+      m.sku,
+      `"${m.item.replace(/"/g, '""')}"`,
+      m.qty,
+      m.cost.toFixed(2),
+      (m.qty * m.cost).toFixed(2),
+      `"${m.vendor}"`,
+      getRetailerSearchUrl(m.vendor, m.item)
+    ]);
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `JobAllies_ProOrder_${poCode}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    triggerToast(`Exported Pro Order CSV (${poCode}) stamped with your Retailer Pro Account IDs!`, 'success');
   };
 
   // --- PLATFORM-MEDIATED PHONE / EMAIL RELAY (NO RAW PHONE/EMAIL EXPOSED) ---
@@ -536,7 +700,7 @@ export default function JobAlliesDashboard() {
         const enriched: LeadItem = {
           ...data.lead,
           postedAt: nowStr,
-          estimatedValue: 4500,
+          estimatedValue: 4800,
           quoteMaterials: autoQ.materials,
           quoteLabor: autoQ.labor
         };
@@ -582,7 +746,7 @@ export default function JobAlliesDashboard() {
           return;
         }
       }
-      triggerToast(`Refreshed leads within ${jobDistanceFilter} miles of ${radarZip}.`, 'info');
+      triggerToast(`Synced connected lead platforms & groups within ${jobDistanceFilter} miles of ${radarZip}.`, 'info');
     } catch (e) {
       triggerToast('Refreshed local lead radar.', 'info');
     }
@@ -656,37 +820,6 @@ export default function JobAlliesDashboard() {
     }
   };
 
-  const getRetailerSearchUrl = (vendor: string, item: string) => {
-    const q = encodeURIComponent(item);
-    const v = vendor.toLowerCase();
-    if (v.includes('lowe')) return `https://www.lowes.com/search?searchTerm=${q}`;
-    if (v.includes('siteone')) return `https://www.siteone.com/en/search/?text=${q}`;
-    if (v.includes('ferguson')) return `https://www.ferguson.com/search/${q}`;
-    return `https://www.homedepot.com/s/${q}`;
-  };
-
-  const downloadRetailerCsvCart = (log: DictationLog) => {
-    const headers = ['SKU', 'Item Description', 'Quantity', 'Wholesale Unit Cost ($)', 'Line Total ($)', 'Preferred Vendor', 'Live Search URL'];
-    const rows = log.materials.map(m => [
-      m.sku,
-      `"${m.item.replace(/"/g, '""')}"`,
-      m.qty,
-      m.cost.toFixed(2),
-      (m.qty * m.cost).toFixed(2),
-      `"${m.vendor}"`,
-      getRetailerSearchUrl(m.vendor, m.item)
-    ]);
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `JobAllies_ProCart_${log.id}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    triggerToast('Downloaded Retailer Quick-Order CSV!', 'success');
-  };
-
   const handleInvitePartnerSubmit = async (e: React.FormEvent, channel: 'sms' | 'email') => {
     e.preventDefault();
     if (!invName || !invCompany) return;
@@ -711,6 +844,26 @@ export default function JobAlliesDashboard() {
     const partner = network.find(p => p.id === selectedPartnerId);
     if (!partner) return;
     const feeAmount = selectedJobValue * (partner.feePercent / 100);
+
+    try {
+      const res = await fetch('/api/billing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'lock_escrow',
+          amount: feeAmount,
+          projectTitle: selectedJobTitle,
+          partnerName: partner.company,
+          originUrl: window.location.origin,
+          userStripeSecretKey: billing.userStripeSecretKey
+        })
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+        return;
+      }
+    } catch (err) {}
 
     const newEscrow = {
       id: 'esc-' + Date.now(),
@@ -737,6 +890,24 @@ export default function JobAlliesDashboard() {
     setEscrowContracts(escrowContracts.map(e => e.id === escId ? { ...e, status: 'Released' } : e));
     setNetwork(network.map(p => p.company === target.assignedPartner ? { ...p, lifetimeShared: p.lifetimeShared + target.escrowAmount } : p));
     triggerToast(`Released $${target.escrowAmount.toFixed(2)} from escrow to ${target.assignedPartner}!`, 'success');
+  };
+
+  const handleAddFacebookGroup = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newFbGroupName.trim()) return;
+    const entry = {
+      id: 'fb-' + Date.now(),
+      name: newFbGroupName.trim(),
+      url: newFbGroupUrl.trim() || `https://www.facebook.com/groups/search/groups/?q=${encodeURIComponent(newFbGroupName)}`,
+      keywords: newFbGroupKeywords.trim() || 'contractor, quote'
+    };
+    setLeadSources(prev => ({
+      ...prev,
+      facebookGroups: [entry, ...prev.facebookGroups]
+    }));
+    setNewFbGroupName('');
+    setNewFbGroupUrl('');
+    triggerToast(`Connected Facebook Group "${entry.name}" to your Lead Radar!`, 'success');
   };
 
   // Filter leads by Job Type, Job Distance, and Job Value
@@ -782,29 +953,20 @@ export default function JobAlliesDashboard() {
           <span className="text-slate-300">
             {billing.planStatus === 'FREE_EXPLORER'
               ? 'Free to browse leads and edit auto-quotes. Your 14-day free trial begins once you approve and send your first quote.'
-              : `Active 14-Day Trial ($0 billed today).`}
+              : 'Active 14-Day Free Trial ($0 billed today).'}
           </span>
         </div>
         <button
           onClick={() => setShowBillingModal(true)}
           className="text-emerald-400 hover:text-emerald-300 font-bold underline text-[11px] flex items-center gap-1"
         >
-          <CreditCard className="w-3.5 h-3.5" /> Trial & Billing Status
+          <CreditCard className="w-3.5 h-3.5" /> Stripe Trial & Billing
         </button>
       </div>
 
-      {/* Clean Header (Clutter Removed) */}
+      {/* Clean Header */}
       <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-4 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-sky-400 flex items-center justify-center font-black text-slate-950 text-xl shadow-lg shadow-emerald-500/20">
-            JA
-          </div>
-          <div>
-            <h1 className="text-xl font-black tracking-tight text-white">
-              JobAllies
-            </h1>
-          </div>
-        </div>
+        <BrandLogo />
 
         <div className="flex items-center gap-3">
           <div className="hidden md:flex items-center gap-4 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs">
@@ -823,6 +985,14 @@ export default function JobAlliesDashboard() {
               <span className="text-sky-400 font-bold">${totalLockedEscrow.toFixed(2)}</span>
             </div>
           </div>
+
+          <button
+            onClick={() => setActiveTab('sync')}
+            className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5"
+          >
+            <Settings className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Account Integrations</span>
+          </button>
         </div>
       </header>
 
@@ -845,7 +1015,7 @@ export default function JobAlliesDashboard() {
             }`}
           >
             <Mic className="w-4 h-4" />
-            <span>Voice Quotes & Retailer Carts</span>
+            <span>Voice Quotes & Retailer Orders</span>
             <span className="ml-1 bg-slate-950/20 px-2 py-0.5 rounded-full text-[10px]">{dictationLogs.length}</span>
           </button>
           <button
@@ -864,7 +1034,7 @@ export default function JobAlliesDashboard() {
             }`}
           >
             <Link2 className="w-4 h-4" />
-            <span>Retailer & Accounting Integrations</span>
+            <span>Retailer, Lead & Stripe Setup</span>
           </button>
         </nav>
 
@@ -940,7 +1110,7 @@ export default function JobAlliesDashboard() {
                   <button
                     onClick={() => setShowImportDrawer(!showImportDrawer)}
                     className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-3 py-2.5 rounded-xl text-xs border border-slate-700"
-                    title="Import Post"
+                    title="Import Post from Facebook Group / Lead Platform"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
@@ -951,7 +1121,7 @@ export default function JobAlliesDashboard() {
                 <form onSubmit={handleImportCommunityPost} className="bg-slate-950 border border-emerald-500/40 rounded-xl p-4 space-y-3 pt-3">
                   <div className="flex items-center justify-between">
                     <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-                      <Sparkles className="w-4 h-4" /> Add Job Request to Radar
+                      <Sparkles className="w-4 h-4" /> Paste Facebook Group / Lead Request to Auto-Generate Quote
                     </h4>
                     <button type="button" onClick={() => setShowImportDrawer(false)} className="text-xs text-slate-400 hover:text-white">Close ✕</button>
                   </div>
@@ -992,7 +1162,6 @@ export default function JobAlliesDashboard() {
                     lead.claimed ? 'border-emerald-500/50' : 'border-slate-800 hover:border-amber-500/40'
                   }`}>
                     <div className="space-y-3">
-                      {/* Top Row: Trade Badge + Explicit Date & Time Posted */}
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30">
                           {lead.trade}
@@ -1006,7 +1175,7 @@ export default function JobAlliesDashboard() {
                       <h3 className="text-base font-bold text-white leading-snug">{lead.title}</h3>
                       <p className="text-xs text-slate-400 leading-relaxed">{lead.desc}</p>
 
-                      {/* Prospect Details & Platform-Mediated Contact Buttons (No Raw Phone/Email Shown) */}
+                      {/* Prospect Info & Platform-Mediated Contact Buttons (Zero Phone/Email Exposed) */}
                       <div className="grid grid-cols-2 gap-2 text-xs bg-slate-950 p-3 rounded-xl border border-slate-800">
                         <div>
                           <span className="text-slate-500 block text-[10px] uppercase font-bold">Prospect</span>
@@ -1019,7 +1188,7 @@ export default function JobAlliesDashboard() {
 
                         <div className="col-span-2 pt-2.5 mt-1 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2">
                           <span className="text-[11px] text-slate-400">
-                            Auto-Quote Ready: <strong className="text-emerald-400">${autoQuoteTotal.toFixed(2)}</strong>
+                            Auto-Quote: <strong className="text-emerald-400">${autoQuoteTotal.toFixed(2)}</strong>
                           </span>
                           <div className="flex items-center gap-2">
                             <button
@@ -1052,7 +1221,7 @@ export default function JobAlliesDashboard() {
                       <Edit3 className="w-4 h-4" />
                       <span>
                         {lead.claimed
-                          ? `Edit & Re-Send Approved Quote ($${autoQuoteTotal.toFixed(2)})`
+                          ? `Edit Approved Quote & Order Materials ($${autoQuoteTotal.toFixed(2)})`
                           : `Review, Edit & Approve Auto-Quote ($${autoQuoteTotal.toFixed(2)})`}
                       </span>
                     </button>
@@ -1063,7 +1232,7 @@ export default function JobAlliesDashboard() {
           </div>
         )}
 
-        {/* TAB 2: VOICE QUOTES & RETAILER CARTS */}
+        {/* TAB 2: VOICE QUOTES & RETAILER ORDERS */}
         {activeTab === 'voice' && (
           <div className="space-y-6">
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
@@ -1074,7 +1243,7 @@ export default function JobAlliesDashboard() {
                     Voice Quotes & Line-Item Estimator
                   </h2>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    Speak or type jobsite notes to generate custom quotes and wholesale material carts.
+                    Speak or type jobsite notes to generate custom quotes linked directly to your Retailer Pro Accounts.
                   </p>
                 </div>
                 <button
@@ -1103,7 +1272,7 @@ export default function JobAlliesDashboard() {
                     disabled={isParsingVoice}
                     className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-6 py-2.5 rounded-xl text-xs shadow-lg"
                   >
-                    {isParsingVoice ? 'Generating Quote...' : 'Generate Quote & Retailer Cart'}
+                    {isParsingVoice ? 'Generating Quote...' : 'Generate Quote & Retailer Order'}
                   </button>
                 </div>
               </form>
@@ -1112,7 +1281,7 @@ export default function JobAlliesDashboard() {
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
               <div>
                 <h3 className="text-sm font-bold text-white">Client Material Markup: <span className="text-emerald-400">{globalMarkup}%</span></h3>
-                <p className="text-xs text-slate-400">Applies profit margin to client quotes while keeping wholesale carts at 0%.</p>
+                <p className="text-xs text-slate-400">Applies profit margin to client quotes while keeping wholesale retailer orders at 0%.</p>
               </div>
               <div className="flex items-center gap-1.5 bg-slate-950 p-1.5 rounded-xl border border-slate-800">
                 {[0, 15, 20, 25, 30, 40].map(m => (
@@ -1171,14 +1340,16 @@ export default function JobAlliesDashboard() {
                       <div className="bg-slate-950 border border-sky-500/30 rounded-xl p-4 flex flex-col justify-between space-y-4">
                         <div className="space-y-2">
                           <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                            <span className="text-xs font-bold text-white">Wholesale Retailer Cart (0% Markup)</span>
+                            <span className="text-xs font-bold text-white">Linked Retailer Pro Order (0% Markup)</span>
                             <span className="text-xs font-black text-sky-400">${rawMat.toFixed(2)}</span>
                           </div>
                           {log.materials.map((m, idx) => (
                             <div key={idx} className="flex items-center justify-between text-xs bg-slate-900/90 px-2.5 py-1.5 rounded-lg border border-slate-800">
                               <div>
                                 <span className="text-white font-medium">{m.qty}x {m.item}</span>
-                                <span className="text-[10px] text-slate-400 block">{m.vendor} • ${m.cost.toFixed(2)}/ea</span>
+                                <span className="text-[10px] text-slate-400 block">
+                                  {m.vendor} ({getRetailerAccountForVendor(m.vendor)}) • ${m.cost.toFixed(2)}/ea
+                                </span>
                               </div>
                               <a
                                 href={getRetailerSearchUrl(m.vendor, m.item)}
@@ -1186,7 +1357,7 @@ export default function JobAlliesDashboard() {
                                 rel="noopener noreferrer"
                                 className="bg-sky-500/20 hover:bg-sky-500 text-sky-300 hover:text-slate-950 border border-sky-500/40 px-2.5 py-1 rounded-md text-[11px] font-bold flex items-center gap-1 transition-all"
                               >
-                                <span>Shop {m.vendor.split(' ')[0]}</span>
+                                <span>Order at {m.vendor.split(' ')[0]}</span>
                                 <ExternalLink className="w-3 h-3" />
                               </a>
                             </div>
@@ -1195,11 +1366,11 @@ export default function JobAlliesDashboard() {
 
                         <div className="flex flex-wrap gap-2">
                           <button
-                            onClick={() => downloadRetailerCsvCart(log)}
+                            onClick={() => downloadRetailerCsvCart(log.materials, `PO-${log.id.toUpperCase()}`)}
                             className="flex-1 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5"
                           >
                             <Download className="w-3.5 h-3.5" />
-                            <span>Download Pro Xtra CSV Cart</span>
+                            <span>Export Pro Account Order CSV</span>
                           </button>
                           <button
                             onClick={() => setActivePoLog(log)}
@@ -1228,7 +1399,7 @@ export default function JobAlliesDashboard() {
                 <div>
                   <h2 className="text-xl font-extrabold text-white">Trade Network & Peer Referral Escrow</h2>
                   <p className="text-xs text-slate-400 mt-1">
-                    Invite trusted subcontractor allies, refer out-of-scope work, and lock referral commissions in escrow.
+                    Invite trusted subcontractor allies, refer out-of-scope work, and lock referral commissions in Stripe Escrow.
                   </p>
                 </div>
               </div>
@@ -1346,82 +1517,299 @@ export default function JobAlliesDashboard() {
           </div>
         )}
 
-        {/* TAB 4: RETAILER & ACCOUNTING INTEGRATIONS */}
+        {/* TAB 4: USER-LED RETAILER ACCOUNTS, FACEBOOK GROUPS, LEAD PLATFORMS & STRIPE LIVE SETUP */}
         {activeTab === 'sync' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
-              <div>
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Link2 className="w-5 h-5 text-emerald-400" />
-                  Retailer Carts & Accounting Integrations
-                </h2>
-                <p className="text-xs text-slate-400 mt-1">
-                  Export invoices directly to QuickBooks CSV and sync material orders with major pro retailers.
-                </p>
+          <div className="space-y-6">
+            {/* Section A: User-Led Retailer Pro Account Integration */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                <div>
+                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                    User-Led Retailer Account Setup
+                  </span>
+                  <h2 className="text-lg font-bold text-white mt-1 flex items-center gap-2">
+                    <ShoppingCart className="w-5 h-5 text-emerald-400" />
+                    Pro Retailer Account Linking (For Instant Quote-to-Order Fulfillment)
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Enter your Pro Account IDs below once. Every approved quote automatically stamps your account number onto POs and exports bulk Quick-Order carts.
+                  </p>
+                </div>
+                <button
+                  onClick={() => triggerToast('Saved your Retailer Pro Account credentials!', 'success')}
+                  className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-5 py-2.5 rounded-xl text-xs"
+                >
+                  Save Retailer Accounts
+                </button>
               </div>
-              <button
-                onClick={() => {
-                  const headers = ['InvoiceDate', 'Customer', 'Item', 'Quantity', 'Rate', 'Amount'];
-                  const rows: string[] = [];
-                  dictationLogs.forEach(l => {
-                    l.materials.forEach(m => {
-                      const price = m.cost * (1 + globalMarkup / 100);
-                      rows.push([new Date().toLocaleDateString(), `"${l.clientName}"`, `"${m.item}"`, m.qty, price.toFixed(2), (m.qty * price).toFixed(2)].join(','));
-                    });
-                  });
-                  const uri = encodeURI('data:text/csv;charset=utf-8,' + [headers.join(','), ...rows].join('\n'));
-                  const link = document.createElement('a');
-                  link.setAttribute('href', uri);
-                  link.setAttribute('download', 'JobAllies_QuickBooks_Invoices.csv');
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-                  triggerToast('Exported QuickBooks Online Invoice CSV!', 'success');
-                }}
-                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs flex items-center gap-2"
-              >
-                <Download className="w-4 h-4" /> Export All Quotes to QuickBooks CSV
-              </button>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+                <div className="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="font-bold text-white">Home Depot Pro Xtra ID / Phone</label>
+                    <a href="https://www.homedepot.com/c/Pro_Xtra" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline text-[11px] flex items-center gap-1">
+                      <span>Portal</span> <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                  <input
+                    type="text"
+                    value={retailerAccounts.homeDepotProId}
+                    onChange={(e) => setRetailerAccounts({ ...retailerAccounts, homeDepotProId: e.target.value })}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono"
+                  />
+                </div>
+
+                <div className="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="font-bold text-white">Lowe&apos;s MVPs Pro Account ID</label>
+                    <a href="https://www.lowes.com/l/Pro" target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:underline text-[11px] flex items-center gap-1">
+                      <span>Portal</span> <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                  <input
+                    type="text"
+                    value={retailerAccounts.lowesProId}
+                    onChange={(e) => setRetailerAccounts({ ...retailerAccounts, lowesProId: e.target.value })}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono"
+                  />
+                </div>
+
+                <div className="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="font-bold text-white">SiteOne Landscape Account #</label>
+                    <a href="https://www.siteone.com/en/quickorder" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline text-[11px] flex items-center gap-1">
+                      <span>Quick-Order</span> <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                  <input
+                    type="text"
+                    value={retailerAccounts.siteOneAccountId}
+                    onChange={(e) => setRetailerAccounts({ ...retailerAccounts, siteOneAccountId: e.target.value })}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono"
+                  />
+                </div>
+
+                <div className="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="font-bold text-white">Ferguson Pro Account #</label>
+                    <a href="https://www.ferguson.com/" target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:underline text-[11px] flex items-center gap-1">
+                      <span>Portal</span> <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                  <input
+                    type="text"
+                    value={retailerAccounts.fergusonAccountId}
+                    onChange={(e) => setRetailerAccounts({ ...retailerAccounts, fergusonAccountId: e.target.value })}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono"
+                  />
+                </div>
+
+                <div className="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-2 md:col-span-2">
+                  <label className="font-bold text-white block">Preferred Pickup / Delivery Branch Zip Code</label>
+                  <input
+                    type="text"
+                    value={retailerAccounts.preferredStoreZip}
+                    onChange={(e) => setRetailerAccounts({ ...retailerAccounts, preferredStoreZip: e.target.value })}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white"
+                  />
+                </div>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {integrations.map(item => (
-                <div key={item.id} className="bg-slate-950 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-emerald-400">
-                      <Building className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-white">{item.name}</h4>
-                      <span className="text-[10px] text-slate-400 block">{item.category}</span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setIntegrations(integrations.map(i => i.id === item.id ? { ...i, connected: !i.connected } : i));
-                      triggerToast(`Updated ${item.name} status.`, 'info');
-                    }}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
-                      item.connected ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-400'
-                    }`}
-                  >
-                    {item.connected ? 'Active' : 'Enable'}
+            {/* Section B: User-Led Facebook Groups & Lead Platform Connector */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+              <div className="border-b border-slate-800 pb-4">
+                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                  User-Led Lead Source Integration
+                </span>
+                <h2 className="text-lg font-bold text-white mt-1 flex items-center gap-2">
+                  <Navigation className="w-5 h-5 text-amber-400" />
+                  Connect Your Facebook Groups & Lead Generation Platforms
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Add the local Facebook Groups you belong to or connect your Thumbtack, Angi, and Bark accounts so incoming leads route straight into your Lead Radar with auto-generated quotes.
+                </p>
+              </div>
+
+              {/* Add Facebook Group Form */}
+              <form onSubmit={handleAddFacebookGroup} className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-slate-950 border border-slate-800 p-4 rounded-xl text-xs">
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">Facebook Group Name *</label>
+                  <input
+                    type="text"
+                    value={newFbGroupName}
+                    onChange={(e) => setNewFbGroupName(e.target.value)}
+                    required
+                    placeholder="e.g. Greenwich CT Homeowners"
+                    className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">Group URL (Optional)</label>
+                  <input
+                    type="url"
+                    value={newFbGroupUrl}
+                    onChange={(e) => setNewFbGroupUrl(e.target.value)}
+                    placeholder="https://facebook.com/groups/..."
+                    className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">Auto-Match Trade Keywords</label>
+                  <input
+                    type="text"
+                    value={newFbGroupKeywords}
+                    onChange={(e) => setNewFbGroupKeywords(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <button type="submit" className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2 rounded-lg text-xs">
+                    + Connect Facebook Group
                   </button>
                 </div>
-              ))}
+              </form>
+
+              {/* Connected Facebook Groups List */}
+              <div className="space-y-2">
+                {leadSources.facebookGroups.map(group => (
+                  <div key={group.id} className="bg-slate-950 border border-slate-800 p-3.5 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
+                    <div>
+                      <span className="font-bold text-white">{group.name}</span>
+                      <span className="block text-[11px] text-slate-400">Keywords: {group.keywords}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={group.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-slate-800 hover:bg-slate-700 text-sky-400 px-3 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1"
+                      >
+                        <span>Open Group Feed</span> <ExternalLink className="w-3 h-3" />
+                      </a>
+                      <button
+                        onClick={() => {
+                          setActiveTab('radar');
+                          setShowImportDrawer(true);
+                        }}
+                        className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-3 py-1.5 rounded-lg text-[11px] font-bold"
+                      >
+                        Import Post to Radar
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Lead Gen Platforms 1-Click Webhook Copy */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 text-xs">
+                {[
+                  { key: 'thumbtack', name: 'Thumbtack Pro', param: 'thumbtack', connected: leadSources.thumbtackConnected },
+                  { key: 'angi', name: 'Angi / HomeAdvisor', param: 'angi', connected: leadSources.angiConnected },
+                  { key: 'bark', name: 'Bark.com Marketplace', param: 'bark', connected: leadSources.barkConnected }
+                ].map(plat => (
+                  <div key={plat.key} className="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-white">{plat.name}</span>
+                      <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-bold">
+                        Webhook Active
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400">
+                      Paste your personal endpoint into {plat.name} to auto-route leads & generate quotes:
+                    </p>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(`https://joballies.com/api/webhooks/leads?source=${plat.param}`);
+                        triggerToast(`Copied your ${plat.name} Webhook URL!`, 'success');
+                      }}
+                      className="w-full bg-slate-900 hover:bg-slate-800 border border-slate-700 text-sky-400 font-bold py-2 rounded-lg text-[11px] flex items-center justify-center gap-1.5"
+                    >
+                      <Copy className="w-3.5 h-3.5" /> Copy {plat.name} Webhook URL
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Section C: Live Stripe Checkout & Accounting Sync */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                <div>
+                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/30">
+                    Live Stripe & QuickBooks Integration
+                  </span>
+                  <h2 className="text-lg font-bold text-white mt-1 flex items-center gap-2">
+                    <CreditCard className="w-5 h-5 text-sky-400" />
+                    Stripe 14-Day Trial Billing, Escrow & QuickBooks Export
+                  </h2>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={launchLiveStripeTrialCheckout}
+                    className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5"
+                  >
+                    <CreditCard className="w-4 h-4" /> Test Live Stripe 14-Day Trial Checkout
+                  </button>
+                  <button
+                    onClick={() => {
+                      const headers = ['InvoiceDate', 'Customer', 'Item', 'Quantity', 'Rate', 'Amount'];
+                      const rows: string[] = [];
+                      dictationLogs.forEach(l => {
+                        l.materials.forEach(m => {
+                          const price = m.cost * (1 + globalMarkup / 100);
+                          rows.push([new Date().toLocaleDateString(), `"${l.clientName}"`, `"${m.item}"`, m.qty, price.toFixed(2), (m.qty * price).toFixed(2)].join(','));
+                        });
+                      });
+                      const uri = encodeURI('data:text/csv;charset=utf-8,' + [headers.join(','), ...rows].join('\n'));
+                      const link = document.createElement('a');
+                      link.setAttribute('href', uri);
+                      link.setAttribute('download', 'JobAllies_QuickBooks_Invoices.csv');
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                      triggerToast('Exported QuickBooks Online Invoice CSV!', 'success');
+                    }}
+                    className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5"
+                  >
+                    <Download className="w-4 h-4" /> Export Quotes to QuickBooks CSV
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-2 text-xs">
+                <label className="font-bold text-white block">
+                  Optional: Paste Stripe Secret Key (`sk_test_...` or `sk_live_...`) for Instant Live Redirects (or set `STRIPE_SECRET_KEY` in Vercel)
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="password"
+                    value={billing.userStripeSecretKey || ''}
+                    onChange={(e) => setBilling({ ...billing, userStripeSecretKey: e.target.value })}
+                    placeholder="sk_test_... or sk_live_..."
+                    className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono"
+                  />
+                  <button
+                    onClick={() => triggerToast('Stripe key saved! Click "Test Live Stripe 14-Day Trial Checkout" above to verify.', 'success')}
+                    className="bg-slate-800 hover:bg-slate-700 text-emerald-400 font-bold px-4 py-2 rounded-lg border border-slate-700"
+                  >
+                    Save Key
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* MODAL 1: EDITABLE AUTO-QUOTE & APPROVAL WORKFLOW */}
+      {/* MODAL 1: EDITABLE AUTO-QUOTE, APPROVAL & RETAILER PRO ORDER DISPATCH */}
       {editingLeadQuote && (
         <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-slate-900 border border-emerald-500/50 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5 my-8">
             <div className="flex justify-between items-start border-b border-slate-800 pb-4">
               <div>
                 <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  Auto-Generated Quote • Editable Line Items
+                  Auto-Generated Quote • Editable Line Items & Retailer Order Sync
                 </span>
                 <h3 className="text-lg font-black text-white mt-2">{editingLeadQuote.title}</h3>
                 <p className="text-xs text-slate-400 mt-0.5">
@@ -1452,7 +1840,7 @@ export default function JobAlliesDashboard() {
               <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                 {editableMaterials.map((mat, idx) => (
                   <div key={idx} className="grid grid-cols-12 gap-2 items-center bg-slate-950 border border-slate-800 p-2 rounded-xl text-xs">
-                    <div className="col-span-6">
+                    <div className="col-span-5">
                       <input
                         type="text"
                         value={mat.item}
@@ -1460,16 +1848,28 @@ export default function JobAlliesDashboard() {
                         className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-white"
                       />
                     </div>
-                    <div className="col-span-2">
+                    <div className="col-span-3">
+                      <select
+                        value={mat.vendor}
+                        onChange={(e) => handleMaterialEdit(idx, 'vendor', e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-slate-300 text-[11px]"
+                      >
+                        <option>Home Depot Pro</option>
+                        <option>Lowe&apos;s Pro</option>
+                        <option>SiteOne Supply</option>
+                        <option>Ferguson Pro</option>
+                      </select>
+                    </div>
+                    <div className="col-span-1">
                       <input
                         type="number"
                         value={mat.qty}
                         onChange={(e) => handleMaterialEdit(idx, 'qty', Number(e.target.value))}
-                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-white text-center"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-1.5 py-1.5 text-white text-center"
                         title="Quantity"
                       />
                     </div>
-                    <div className="col-span-3">
+                    <div className="col-span-2">
                       <input
                         type="number"
                         step="0.01"
@@ -1554,7 +1954,7 @@ export default function JobAlliesDashboard() {
               <div>
                 <span className="text-slate-400 block">Client Quote Total (Includes {globalMarkup}% Material Markup + Labor)</span>
                 <span className="text-[11px] text-slate-500">
-                  Sent through JobAllies Platform Relay to {editingLeadQuote.author}
+                  Wholesale Material Order Total (0% Markup): ${editableMaterials.reduce((s, m) => s + m.cost * m.qty, 0).toFixed(2)}
                 </span>
               </div>
               <span className="text-xl font-black text-emerald-400">
@@ -1565,7 +1965,7 @@ export default function JobAlliesDashboard() {
               </span>
             </div>
 
-            {/* Step 1: Approve Quote -> Step 2: Send via Text or Email through Platform */}
+            {/* Step 1: Approve Quote -> Step 2: Send to Prospect AND Order Materials from Linked Retailer */}
             {!quoteApproved ? (
               <div className="flex gap-3 pt-2">
                 <button
@@ -1574,7 +1974,7 @@ export default function JobAlliesDashboard() {
                   className="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl text-xs shadow-lg flex items-center justify-center gap-2"
                 >
                   <CheckCircle className="w-4 h-4" />
-                  <span>Approve Quote to Enable Text & Email Dispatch</span>
+                  <span>Approve Quote to Enable Prospect Dispatch & Retailer Material Order</span>
                 </button>
                 <button
                   type="button"
@@ -1586,23 +1986,33 @@ export default function JobAlliesDashboard() {
               </div>
             ) : (
               <div className="space-y-3 pt-2 border-t border-slate-800">
-                <div className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
-                  <CheckCircle className="w-4 h-4" /> Quote Approved! Choose how to send to {editingLeadQuote.author} through JobAllies:
+                <div className="text-xs font-bold text-emerald-400 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle className="w-4 h-4" /> Quote Approved! Send to {editingLeadQuote.author} or Order Materials:
+                  </span>
+                  <span className="text-[11px] text-slate-400 font-mono">PO: {orderPoNumber}</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                   <button
                     type="button"
                     onClick={() => sendApprovedQuoteThroughPlatform('sms')}
-                    className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg"
+                    className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-lg"
                   >
-                    <MessageSquare className="w-4 h-4" /> Send Approved Quote via Text (Platform Relay)
+                    <MessageSquare className="w-4 h-4" /> Send via Text
                   </button>
                   <button
                     type="button"
                     onClick={() => sendApprovedQuoteThroughPlatform('email')}
-                    className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-black py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg"
+                    className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-black py-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-lg"
                   >
-                    <Mail className="w-4 h-4" /> Send Approved Quote via Email (Platform Relay)
+                    <Mail className="w-4 h-4" /> Send via Email
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => downloadRetailerCsvCart(editableMaterials, orderPoNumber)}
+                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-lg"
+                  >
+                    <ShoppingCart className="w-4 h-4" /> Order Materials (Pro CSV)
                   </button>
                 </div>
               </div>
@@ -1611,7 +2021,7 @@ export default function JobAlliesDashboard() {
         </div>
       )}
 
-      {/* MODAL 2: PLATFORM-MEDIATED PHONE / EMAIL RELAY (NO PHONE/EMAIL SHOWN) */}
+      {/* MODAL 2: PLATFORM-MEDIATED PHONE / EMAIL RELAY */}
       {platformContactModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
@@ -1666,7 +2076,7 @@ export default function JobAlliesDashboard() {
           <div className="bg-slate-900 border border-sky-500/40 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5">
             <div className="flex justify-between items-center border-b border-slate-800 pb-4">
               <div>
-                <span className="text-[10px] font-bold uppercase text-sky-400">Wholesale Purchase Order (0% Markup)</span>
+                <span className="text-[10px] font-bold uppercase text-sky-400">Wholesale Purchase Order (Linked Pro Accounts)</span>
                 <h3 className="text-lg font-bold text-white">PO #{activePoLog.id.toUpperCase()}</h3>
               </div>
               <button onClick={() => setActivePoLog(null)} className="text-slate-400 hover:text-white font-bold">✕</button>
@@ -1677,7 +2087,9 @@ export default function JobAlliesDashboard() {
                 <div key={i} className="bg-slate-950 border border-slate-800 p-3 rounded-xl flex items-center justify-between text-xs">
                   <div>
                     <span className="font-bold text-white">{m.qty}x {m.item}</span>
-                    <span className="block text-[10px] text-slate-400">SKU: {m.sku} • Vendor: {m.vendor}</span>
+                    <span className="block text-[10px] text-slate-400">
+                      SKU: {m.sku} • {m.vendor} (Acct: {getRetailerAccountForVendor(m.vendor)})
+                    </span>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="font-mono text-sky-400 font-bold">${(m.qty * m.cost).toFixed(2)}</span>
@@ -1687,7 +2099,7 @@ export default function JobAlliesDashboard() {
                       rel="noopener noreferrer"
                       className="bg-sky-500 text-slate-950 font-black px-2.5 py-1 rounded-lg text-[11px] flex items-center gap-1"
                     >
-                      <span>Open Item</span>
+                      <span>Order</span>
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   </div>
@@ -1697,7 +2109,7 @@ export default function JobAlliesDashboard() {
 
             <div className="flex gap-2">
               <button
-                onClick={() => downloadRetailerCsvCart(activePoLog)}
+                onClick={() => downloadRetailerCsvCart(activePoLog.materials, `PO-${activePoLog.id.toUpperCase()}`)}
                 className="flex-1 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5"
               >
                 <Download className="w-4 h-4" /> Download Bulk Cart CSV
@@ -1835,14 +2247,14 @@ export default function JobAlliesDashboard() {
         </div>
       )}
 
-      {/* MODAL 6: BILLING & 14-DAY TRIAL MANAGEMENT */}
+      {/* MODAL 6: STRIPE 14-DAY TRIAL & BILLING MANAGEMENT */}
       {showBillingModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
             <div className="flex justify-between items-center border-b border-slate-800 pb-4">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-emerald-400" />
-                JobAllies Trial & Billing Status
+                Stripe 14-Day Trial & Billing
               </h3>
               <button onClick={() => setShowBillingModal(false)} className="text-slate-400 hover:text-white font-bold">✕</button>
             </div>
@@ -1859,7 +2271,7 @@ export default function JobAlliesDashboard() {
               <div className="flex justify-between">
                 <span className="text-slate-400">14-Day Trial Triggered:</span>
                 <span className="font-bold text-white">
-                  {billing.firstLeadAcceptedAt ? new Date(billing.firstLeadAcceptedAt).toLocaleDateString() : 'Not yet triggered ($0/mo)'}
+                  {billing.firstLeadAcceptedAt ? new Date(billing.firstLeadAcceptedAt).toLocaleDateString() : 'Starts when you approve 1st quote ($0/mo)'}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -1872,28 +2284,28 @@ export default function JobAlliesDashboard() {
 
             <div className="flex flex-wrap gap-2">
               <button
+                onClick={launchLiveStripeTrialCheckout}
+                className="flex-1 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black py-2.5 rounded-xl text-xs"
+              >
+                Open Stripe Checkout (14-Day Trial)
+              </button>
+              <button
                 onClick={() => {
-                  setBilling({
+                  setBilling(prev => ({
+                    ...prev,
                     planStatus: 'FREE_EXPLORER',
                     acceptedLeadsCount: 0,
                     firstLeadAcceptedAt: null,
                     trialEndsAt: null,
-                    triggerLeadTitle: null,
-                    monthlyRate: 49.00
-                  });
+                    triggerLeadTitle: null
+                  }));
                   setLeads(DEFAULT_LEADS);
                   setShowBillingModal(false);
                   triggerToast('Reset account to Free Explorer Tier.', 'info');
                 }}
-                className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2.5 rounded-xl text-xs border border-slate-700"
+                className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-4 py-2.5 rounded-xl text-xs border border-slate-700"
               >
-                Reset to Free Tier
-              </button>
-              <button
-                onClick={() => setShowBillingModal(false)}
-                className="flex-1 bg-emerald-500 text-slate-950 font-black py-2.5 rounded-xl text-xs"
-              >
-                Done
+                Reset
               </button>
             </div>
           </div>
