@@ -18,7 +18,6 @@ export default function ContractorDashboard() {
   const [noteInput, setNoteInput] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const recognitionRef = useRef(null);
-  const [processingEscrow, setProcessingEscrow] = useState(null);
 
   useEffect(() => {
     async function fetchProfile() {
@@ -29,7 +28,6 @@ export default function ContractorDashboard() {
           business_name: "Apex Landscaping & Field Trades",
           primary_trade: "Landscaping & Hardscape",
           service_radius_miles: 25,
-          primary_language: "EN",
         });
         setLoading(false);
         return;
@@ -65,15 +63,17 @@ export default function ContractorDashboard() {
       setIsRecording(false);
       return;
     }
+
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert("Voice dictation is not supported in this browser. Please use Chrome, Edge, or Safari.");
+      alert("Voice dictation is not supported in this browser. Please use Google Chrome or Safari.");
       return;
     }
+
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = contractor?.primary_language === "ES" ? "es-ES" : "en-US";
+    recognition.lang = "en-US";
 
     recognition.onstart = () => setIsRecording(true);
     recognition.onresult = (event) => {
@@ -81,9 +81,12 @@ export default function ContractorDashboard() {
       for (let i = event.resultIndex; i < event.results.length; i++) {
         currentTranscript += event.results[i][0].transcript;
       }
-      setNoteInput((prev) => currentTranscript || prev);
+      if (currentTranscript) setNoteInput(currentTranscript);
     };
-    recognition.onerror = () => setIsRecording(false);
+    recognition.onerror = (e) => {
+      console.error("Mic error:", e);
+      setIsRecording(false);
+    };
     recognition.onend = () => setIsRecording(false);
 
     recognitionRef.current = recognition;
@@ -92,21 +95,29 @@ export default function ContractorDashboard() {
 
   const handleVoiceSubmit = async (e) => {
     e.preventDefault();
-    if (!noteInput || !contractor) return;
+    if (!noteInput) return;
     setTranscribing(true);
+
     try {
       const res = await fetch("/api/voice", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contractor_id: contractor.id, transcript: noteInput }),
+        body: JSON.stringify({
+          contractor_id: contractor?.id || "demo-contractor-uuid",
+          transcript: noteInput,
+        }),
       });
+
       const json = await res.json();
-      if (json.success) {
-        setVoiceLogs([json.log, ...voiceLogs]);
+      if (json.success && json.log) {
+        setVoiceLogs((prev) => [json.log, ...prev]);
         setNoteInput("");
+      } else {
+        alert("Extraction error: " + (json.error || "Failed to process materials"));
       }
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error("Cart submit error:", err);
+      alert("Failed to reach voice extraction server");
     }
     setTranscribing(false);
   };
@@ -180,30 +191,85 @@ export default function ContractorDashboard() {
         )}
 
         {activeTab === "voice" && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "24px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
             <div style={{ backgroundColor: "#0f172a", border: "1px solid #1e293b", borderRadius: "16px", padding: "24px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                <h2 style={{ fontSize: "16px", fontWeight: "bold", margin: 0 }}>Field Voice Dictation</h2>
-                <button type="button" onClick={toggleRecording} style={{ backgroundColor: isRecording ? "#ef4444" : "#10b981", color: "#fff", border: "none", padding: "8px 14px", borderRadius: "20px", fontWeight: "bold", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
+                <h2 style={{ fontSize: "16px", fontWeight: "bold", margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
+                  <Mic style={{ width: "18px", height: "18px", color: "#10b981" }} />
+                  <span>Field Voice AI Assistant</span>
+                </h2>
+                <button
+                  type="button"
+                  onClick={toggleRecording}
+                  style={{
+                    backgroundColor: isRecording ? "#ef4444" : "#10b981",
+                    color: "#ffffff",
+                    border: "none",
+                    padding: "8px 14px",
+                    borderRadius: "20px",
+                    fontWeight: "bold",
+                    fontSize: "12px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px"
+                  }}
+                >
                   {isRecording ? <MicOff style={{ width: "14px", height: "14px" }} /> : <Mic style={{ width: "14px", height: "14px" }} />}
                   <span>{isRecording ? "Listening..." : "Tap to Record"}</span>
                 </button>
               </div>
+
+              <p style={{ fontSize: "12px", color: "#94a3b8", margin: "0 0 16px" }}>
+                Type or dictate field notes below. OpenAI GPT-4o will parse items into wholesale carts (Home Depot Pro, SiteOne, Ferguson).
+              </p>
+
               <form onSubmit={handleVoiceSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                <textarea rows={5} value={noteInput} onChange={(e) => setNoteInput(e.target.value)} placeholder="Dictate or type field materials..." style={{ width: "100%", backgroundColor: "#090d16", border: "1px solid #1e293b", borderRadius: "12px", padding: "12px", color: "#ffffff" }} />
-                <button type="submit" disabled={transcribing || !noteInput} style={{ backgroundColor: "#10b981", color: "#090d16", border: "none", padding: "12px", borderRadius: "10px", fontWeight: "bold", cursor: "pointer" }}>
-                  {transcribing ? "Extracting..." : "Extract Wholesale Cart"}
+                <textarea
+                  rows={5}
+                  value={noteInput}
+                  onChange={(e) => setNoteInput(e.target.value)}
+                  placeholder="e.g. test 3 2 x 4 inch beams and some concrete"
+                  style={{ width: "100%", backgroundColor: "#090d16", border: isRecording ? "2px solid #ef4444" : "1px solid #1e293b", borderRadius: "12px", padding: "12px", color: "#ffffff", fontSize: "14px" }}
+                />
+                <button
+                  type="submit"
+                  disabled={transcribing || !noteInput}
+                  style={{ backgroundColor: "#10b981", color: "#090d16", border: "none", padding: "12px", borderRadius: "10px", fontWeight: "bold", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", opacity: transcribing || !noteInput ? 0.6 : 1 }}
+                >
+                  <Send style={{ width: "14px", height: "14px" }} />
+                  <span>{transcribing ? "Parsing Materials..." : "Extract Wholesale Cart"}</span>
                 </button>
               </form>
             </div>
-            <div>
-              <h2 style={{ fontSize: "16px", fontWeight: "bold", margin: "0 0 16px" }}>Generated Material Carts</h2>
+
+            <div style={{ backgroundColor: "#0f172a", border: "1px solid #1e293b", borderRadius: "16px", padding: "24px" }}>
+              <h2 style={{ fontSize: "16px", fontWeight: "bold", margin: "0 0 16px", display: "flex", alignItems: "center", gap: "8px" }}>
+                <ShoppingCart style={{ width: "18px", height: "18px", color: "#10b981" }} />
+                <span>Generated Material Carts</span>
+              </h2>
+
               {voiceLogs.length === 0 ? (
-                <div style={{ backgroundColor: "#0f172a", border: "1px solid #1e293b", borderRadius: "16px", padding: "32px", textAlign: "center", color: "#64748b" }}>No material carts generated yet.</div>
+                <div style={{ border: "1px dashed #1e293b", borderRadius: "12px", padding: "32px", textAlign: "center", color: "#64748b", fontSize: "13px" }}>
+                  No materials extracted yet. Submit field notes on the left or tap the record button to build wholesale supplier carts.
+                </div>
               ) : (
                 voiceLogs.map((log, idx) => (
-                  <div key={idx} style={{ backgroundColor: "#0f172a", border: "1px solid #1e293b", borderRadius: "16px", padding: "20px", marginBottom: "12px" }}>
-                    <p style={{ fontSize: "12px", color: "#94a3b8", fontStyle: "italic" }}>"{log.raw_transcript}"</p>
+                  <div key={idx} style={{ backgroundColor: "#090d16", border: "1px solid #1e293b", borderRadius: "12px", padding: "16px", marginBottom: "16px" }}>
+                    <p style={{ fontSize: "12px", color: "#94a3b8", fontStyle: "italic", margin: "0 0 12px" }}>"{log.raw_transcript}"</p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                      {log.extracted_materials?.map((item, i) => (
+                        <div key={i} style={{ backgroundColor: "#0f172a", border: "1px solid #1e293b", padding: "10px 14px", borderRadius: "8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <div>
+                            <span style={{ fontSize: "13px", fontWeight: "bold", color: "#ffffff", display: "block" }}>{item.item}</span>
+                            <span style={{ fontSize: "11px", color: "#64748b" }}>{item.category} • {item.vendor}</span>
+                          </div>
+                          <span style={{ fontSize: "12px", fontWeight: "bold", color: "#10b981", backgroundColor: "rgba(16, 185, 129, 0.1)", padding: "4px 8px", borderRadius: "6px" }}>
+                            {item.qty}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))
               )}
