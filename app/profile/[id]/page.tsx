@@ -7,7 +7,6 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 font-sans p-6 md:p-12 flex flex-col justify-between">
       <div className="max-w-4xl mx-auto w-full space-y-12">
-        {/* Header & Direct Quote CTA */}
         <div className="text-center space-y-4 pt-8">
           <span className="bg-blue-900/50 text-blue-400 text-xs font-semibold uppercase tracking-widest px-3 py-1 rounded-full border border-blue-700/50">
             Verified Trade Professional
@@ -16,7 +15,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
             {contractorName}
           </h1>
           <p className="text-slate-400 max-w-xl mx-auto text-sm">
-            Expert craftsmanship, reliable service, and quality installations. Verified member of JobAllies (from UpLevel Labs, Inc.).
+            Expert craftsmanship, reliable service, and quality installations. Verified member of JobAllies.
           </p>
           <div className="flex justify-center gap-4 pt-2">
             <Link 
@@ -28,7 +27,6 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
           </div>
         </div>
 
-        {/* Trade Service Area Map Card */}
         <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-bold text-white">Service Radius & Territory</h3>
@@ -48,7 +46,6 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
           </div>
         </div>
 
-        {/* Recent Project Gallery */}
         <div className="space-y-4">
           <h3 className="text-xl font-bold text-white border-b border-slate-800 pb-3">Recent Project Gallery</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -73,7 +70,6 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
           </div>
         </div>
 
-        {/* Synced Reviews & Testimonials Section */}
         <div className="space-y-4 bg-slate-900 border border-slate-800 p-6 rounded-2xl">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-bold text-white">Google & Yelp Verified Reviews</h3>

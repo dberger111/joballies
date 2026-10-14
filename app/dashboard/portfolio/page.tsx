@@ -16,7 +16,7 @@ export default function PortfolioManager() {
       <div className="max-w-4xl mx-auto space-y-8">
         <div className="flex justify-between items-center border-b border-slate-800 pb-6">
           <div>
-            <span className="text-xs font-semibold text-blue-400 uppercase tracking-widest">JobAllies (from UpLevel Labs, Inc.)</span>
+            <span className="text-xs font-semibold text-blue-400 uppercase tracking-widest">JobAllies</span>
             <h1 className="text-3xl font-extrabold text-white">Portfolio & Public Landing Page</h1>
           </div>
           <Link href="/profile/sample-contractor" target="_blank" className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold px-4 py-2 rounded-xl transition">
