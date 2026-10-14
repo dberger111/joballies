@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 
 export default function DashboardPage() {
   const [user, setUser] = useState<any>({ name: 'Pro Contractor', trade: 'General Contractor' });
+  const [copiedInvite, setCopiedInvite] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -18,6 +19,12 @@ export default function DashboardPage() {
     localStorage.removeItem('joballies_authenticated');
     localStorage.removeItem('joballies_user');
     router.push('/auth/signup');
+  };
+
+  const handleCopyCrewLink = () => {
+    navigator.clipboard.writeText('https://joballies.com/invite/pro-crew');
+    setCopiedInvite(true);
+    setTimeout(() => setCopiedInvite(false), 3000);
   };
 
   return (
@@ -37,9 +44,6 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <Link href="/dashboard/mass-invite" className="bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold px-4 py-3 rounded-xl transition shadow-lg shadow-amber-500/20">
-              🚀 Mass-Invite Local Pros
-            </Link>
             <Link href="/dashboard/verify" className="bg-emerald-950/80 hover:bg-emerald-900/80 border border-emerald-700/60 text-emerald-300 text-xs font-bold px-4 py-3 rounded-xl transition">
               🛡️ Verified Pro Badge
             </Link>
@@ -80,7 +84,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Main 4 Field Tools - Crisp Non-Technical Copy */}
+        {/* Main 4 Field Tools */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Link href="/dashboard/voice-quote" className="bg-gradient-to-br from-slate-900 to-slate-900/60 border border-slate-800 hover:border-blue-500 p-6 rounded-3xl space-y-4 transition shadow-xl group flex flex-col justify-between">
             <div className="space-y-3">
@@ -163,7 +167,7 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {/* Fast Action Banner: 1-Tap 5-Star Review Booster + Mass Invite */}
+        {/* Bottom Bar: 1-Tap Review Booster + Simple 1-on-1 Sub Link */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="space-y-1">
@@ -179,18 +183,18 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          <div className="bg-gradient-to-r from-amber-950/40 to-slate-900 border border-amber-700/40 p-6 rounded-3xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="space-y-1">
-              <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">Grow the Local Network</span>
-              <h4 className="font-extrabold text-white text-base">Auto-Invite Local Tradespeople En Masse</h4>
-              <p className="text-xs text-slate-300">Pre-build Digital Yard Signs for local contractors and blast "Waiting Lead / Crew Invite" texts automatically.</p>
+              <span className="text-xs font-bold text-blue-400 uppercase tracking-wider">Work With a Great Sub?</span>
+              <h4 className="font-extrabold text-white text-base">Add a Trusted Trade Buddy to Your Crew</h4>
+              <p className="text-xs text-slate-400">Copy your personal crew link to share 1-on-1 with a plumber, electrician, or mason you know on the jobsite.</p>
             </div>
-            <Link 
-              href="/dashboard/mass-invite"
-              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs px-5 py-3.5 rounded-xl transition shadow-lg shadow-amber-500/20 whitespace-nowrap"
+            <button 
+              onClick={handleCopyCrewLink}
+              className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold text-xs px-5 py-3.5 rounded-xl transition whitespace-nowrap"
             >
-              ⚡ Open Mass Inviter
-            </Link>
+              {copiedInvite ? "✓ Crew Link Copied!" : "🔗 Copy My Crew Link"}
+            </button>
           </div>
         </div>
       </div>

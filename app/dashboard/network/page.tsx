@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 export default function TradeNetworkPage() {
   const [copiedVouch, setCopiedVouch] = useState(false);
+  const [copiedInvite, setCopiedInvite] = useState(false);
   const [town, setTown] = useState("Westport");
   const [allyBusiness, setAllyBusiness] = useState("Precision Stone & Masonry");
   const [allyTrade, setAllyTrade] = useState("bluestone patio & stonework");
@@ -14,6 +15,12 @@ export default function TradeNetworkPage() {
     navigator.clipboard.writeText(neighborVouchText);
     setCopiedVouch(true);
     setTimeout(() => setCopiedVouch(false), 3000);
+  };
+
+  const copySingleCrewInvite = () => {
+    navigator.clipboard.writeText("https://joballies.com/invite/pro-crew");
+    setCopiedInvite(true);
+    setTimeout(() => setCopiedInvite(false), 3000);
   };
 
   return (
@@ -32,12 +39,10 @@ export default function TradeNetworkPage() {
 
         {/* Section 1: 1-Click Facebook Group Neighbor Vouch Builder */}
         <div className="bg-slate-900 border border-blue-500/40 p-6 md:p-8 rounded-3xl space-y-5 shadow-xl">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-blue-400">💬 Neighbor Vouch Builder</span>
-              <h3 className="text-xl font-extrabold text-white mt-0.5">1-Click Facebook Group Recommendation</h3>
-              <p className="text-xs text-slate-400">When homeowners ask for a contractor in local town Facebook groups, a recommendation from another trade pro wins the job 5x faster.</p>
-            </div>
+          <div>
+            <span className="text-xs font-bold uppercase tracking-wider text-blue-400">💬 Neighbor Vouch Builder</span>
+            <h3 className="text-xl font-extrabold text-white mt-0.5">1-Click Facebook Group Recommendation</h3>
+            <p className="text-xs text-slate-400">When homeowners ask for a contractor in local town Facebook groups, a recommendation from another trade pro wins the job 5x faster.</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -55,7 +60,6 @@ export default function TradeNetworkPage() {
             </div>
           </div>
 
-          {/* Realistic Facebook Comment Preview Bubble */}
           <div className="bg-slate-950 border border-slate-800 p-4 rounded-2xl space-y-2">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold">👍</div>
@@ -91,9 +95,12 @@ export default function TradeNetworkPage() {
               <h3 className="text-xl font-extrabold text-white mt-0.5">Your Local Sub & Referral Crew</h3>
               <p className="text-xs text-slate-400">Pass jobs outside your trade to trusted local allies and automatically lock in your 10% finder's fee.</p>
             </div>
-            <Link href="/dashboard/mass-invite" className="bg-emerald-600/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-emerald-600/30 transition">
-              + Invite More Local Pros
-            </Link>
+            <button 
+              onClick={copySingleCrewInvite}
+              className="bg-emerald-600/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-emerald-600/30 transition"
+            >
+              {copiedInvite ? "✓ Personal Invite Link Copied!" : "🔗 Copy 1-on-1 Sub Invite Link"}
+            </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -112,7 +119,7 @@ export default function TradeNetworkPage() {
                 <span className="text-emerald-400 font-extrabold">You pocket $350 • They get $3,150</span>
               </div>
               <button 
-                onClick={() => alert("Lead handoff texted to Precision Plumbing with 10% finder's fee locked!")} 
+                onClick={() => alert("Lead handoff sent to Precision Plumbing with 10% finder's fee locked!")} 
                 className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold py-3 px-4 rounded-xl transition w-full"
               >
                 📲 Pass a Job to Precision Plumbing
@@ -134,7 +141,7 @@ export default function TradeNetworkPage() {
                 <span className="text-emerald-400 font-extrabold">You pocket $280 • They get $2,520</span>
               </div>
               <button 
-                onClick={() => alert("Lead handoff texted to Voltage Masters with 10% finder's fee locked!")} 
+                onClick={() => alert("Lead handoff sent to Voltage Masters with 10% finder's fee locked!")} 
                 className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold py-3 px-4 rounded-xl transition w-full"
               >
                 📲 Pass a Job to Voltage Masters
