@@ -1,6 +1,13 @@
 'use client';
 import { useState, use } from 'react';
-import Link from 'next/link';
+
+const MULTIPLIER_TRADES = [
+  "General Contractor", "Handyman", "Electrician", "Plumber", 
+  "Mason / Stonework", "Carpenter", "HVAC Tech", "Painter / Drywall", 
+  "Roofer", "Landscaper", "Flooring / Tile", "Driveway Paving", 
+  "Pool Maintenance", "Tennis Court Maintenance", "Exterminator", "Tree Service", 
+  "Irrigation", "Disaster Cleanup", "Mold Remediation", "Cleaning / Hauling"
+];
 
 export default function QuoteApprovalPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -41,16 +48,15 @@ export default function QuoteApprovalPage({ params }: { params: Promise<{ id: st
                 <p className="text-xs text-slate-300">Digital Receipt & Mechanic's Lien Waiver Protection #LW-{id.toUpperCase()} is now active.</p>
               </div>
 
-              {/* PILLAR C: Reverse-Viral Homeowner Multi-Trade Multiplier */}
               <div className="bg-slate-950 border-2 border-blue-500/40 p-6 rounded-2xl space-y-4">
                 <div className="space-y-1">
                   <span className="text-xs font-extrabold uppercase tracking-wider text-blue-400">Need Another Trade on This Project?</span>
                   <h4 className="text-base font-extrabold text-white">
-                    Tap any trade below and our contractor's trusted local ally will text you a fast quote:
+                    Tap any trade below (General Contractor, Handyman, or Specialty Pro) and our contractor's trusted local ally will text you a fast quote:
                   </h4>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                  {['Plumber', 'Electrician', 'Painter / Drywall', 'Mason / Patio', 'Carpenter', 'HVAC Tech', 'Landscaper', 'Handyman'].map((trade) => (
+                  {MULTIPLIER_TRADES.map((trade) => (
                     <button
                       key={trade}
                       onClick={() => setExtraTradeRequested(trade)}
@@ -76,7 +82,7 @@ export default function QuoteApprovalPage({ params }: { params: Promise<{ id: st
       </div>
 
       <footer className="max-w-3xl mx-auto w-full text-center border-t border-slate-800/80 pt-8 mt-12 text-xs text-slate-500">
-        © {new Date().getFullYear()} JobAllies — All rights reserved. (from UpLevel Labs, Inc.)
+        © {new Date().getFullYear()} JobAllies (from UpLevel Labs, Inc.) — All rights reserved.
       </footer>
     </main>
   );
