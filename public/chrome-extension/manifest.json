@@ -3,6 +3,9 @@
   "name": "JobAllies Scout — Facebook Group Co-Pilot & Ally Vouch",
   "version": "1.0.0",
   "description": "Spots local trade requests inside Facebook Groups, pushes leads to JobAllies Radar, and inserts 1-click Peer Ally Vouches.",
+  "icons": {
+    "128": "icon128.png"
+  },
   "permissions": ["activeTab", "storage", "clipboardWrite"],
   "host_permissions": [
     "https://*.facebook.com/*",
