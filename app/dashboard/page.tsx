@@ -48,8 +48,8 @@ export default function DashboardPage() {
 
         setLeads([
           {
-            id: 'L-LOCAL-1',
-            source: `Online Lead Feed (${resolvedTown})`,
+            id: 'L-PLATFORM-1',
+            source: 'Thumbtack Verified Pro Feed',
             trade: resolvedTrade,
             town: resolvedTown,
             budget: '$3,500 – $6,500',
@@ -65,8 +65,8 @@ export default function DashboardPage() {
             status: 'New',
           },
           {
-            id: 'L-LOCAL-2',
-            source: `Online Lead Feed (Local Search — ${resolvedTown})`,
+            id: 'L-PLATFORM-2',
+            source: 'Angi Leads Integration',
             trade: resolvedTrade,
             town: resolvedTown,
             budget: '$5,000 – $9,000',
@@ -162,14 +162,14 @@ export default function DashboardPage() {
                   <div className="space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-xs font-extrabold text-blue-400 bg-blue-950 px-3 py-0.5 rounded-full border border-blue-800">
-                        {lead.source}
+                        Source: {lead.source}
                       </span>
                       <span className="text-xs font-bold text-emerald-400">{lead.budget}</span>
                       <span className="text-xs text-slate-400">📍 {lead.town}</span>
                     </div>
                     <p className="text-sm font-bold text-white mt-1">Homeowner Request: "{lead.scope}"</p>
                     <p className="text-xs text-slate-400">
-                      Client: <strong className="text-slate-200">{lead.clientName}</strong> • <span className="text-blue-400 font-bold">🔒 Homeowner Messaging Vault (Secure Platform Relay)</span>
+                      Client: <strong className="text-slate-200">{lead.clientName}</strong> • <span className="text-blue-400 font-bold">🔒 Secure Platform Relay (Phone Number Hidden)</span>
                     </p>
                   </div>
                   <span className={`text-xs font-extrabold px-3 py-1 rounded-full ${lead.status === 'Sent via Platform' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-amber-950 text-amber-400 border border-amber-800'}`}>
