@@ -29,15 +29,6 @@ export default async function TradeLandingPage({ params }: { params: Promise<{ s
             Quote more quickly.<br />
             Build your trusted referral network.
           </h1>
-
-          <div className="space-y-4 pt-2 max-w-2xl mx-auto border-l-2 border-blue-500 pl-5 text-left">
-            <p className="text-base font-bold text-slate-100 italic">
-              “It’s like drinking from a firehose. JobAllies ensures I always have plenty of work.”
-            </p>
-            <p className="text-xs md:text-sm font-medium text-slate-400 leading-relaxed">
-              “I used to spend way too much time trying to win business. Now I have so much business that I refer most of it out (and get paid for those referrals.)”
-            </p>
-          </div>
         </div>
 
         <QuickStartCard defaultTrade={tradeName} />

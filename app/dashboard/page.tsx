@@ -17,7 +17,6 @@ interface LeadItem {
     laborRate: number;
     materialsCost: number;
     total: number;
-    notes: string;
   };
   status: 'New' | 'Quote Generated' | 'Sent to Client';
 }
@@ -26,60 +25,63 @@ export default function DashboardPage() {
   const [userProfile, setUserProfile] = useState({
     name: 'Mike Johnson',
     trade: 'General Contractor',
-    location: 'Westport, CT',
+    location: 'Weston, CT',
     licenseNumber: 'HIC.0649281',
   });
 
-  const [leads, setLeads] = useState<LeadItem[]>([
-    {
-      id: 'L-501',
-      source: 'Online Lead Feed (Google / Local Search)',
-      trade: 'General Contractor',
-      town: 'Westport, CT',
-      budget: '$4,500 – $7,000',
-      scope: 'Primary bathroom framing, cement board backing, and tile prep.',
-      clientName: 'Sarah Jenkins',
-      clientPhone: '(203) 555-0148',
-      autoQuote: {
-        laborHours: 24,
-        laborRate: 135,
-        materialsCost: 850,
-        total: 4090,
-        notes: 'Includes bathroom framing, waterproof membrane, and cement board installation.',
-      },
-      status: 'New',
-    },
-    {
-      id: 'L-502',
-      source: 'Online Lead Feed (Homeowner Portal)',
-      trade: 'General Contractor',
-      town: 'Fairfield, CT',
-      budget: '$2,800 – $4,500',
-      scope: 'Kitchen backsplash tiling and custom pantry shelving setup.',
-      clientName: 'David Markowitz',
-      clientPhone: '(203) 555-0192',
-      autoQuote: {
-        laborHours: 16,
-        laborRate: 135,
-        materialsCost: 420,
-        total: 2580,
-        notes: 'Includes surface prep, tile setting, grout sealing, and custom shelving.',
-      },
-      status: 'New',
-    },
-  ]);
+  const [leads, setLeads] = useState<LeadItem[]>([]);
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('joballies_temp_user');
+      const saved = localStorage.getItem('joballies_temp_user') || localStorage.getItem('joballies_user');
       if (saved) {
         const parsed = JSON.parse(saved);
+        const resolvedTrade = parsed.trade || 'General Contractor';
+        const resolvedTown = parsed.location || 'Weston, CT';
         setUserProfile((prev) => ({
           ...prev,
           name: parsed.name || prev.name,
-          trade: parsed.trade || prev.trade,
-          location: parsed.location || prev.location,
+          trade: resolvedTrade,
+          location: resolvedTown,
         }));
+
+        // Generate hyper-local leads matching the exact trade and town chosen by the user
+        setLeads([
+          {
+            id: 'L-LOCAL-1',
+            source: `Online Lead Feed (${resolvedTown})`,
+            trade: resolvedTrade,
+            town: resolvedTown,
+            budget: '$3,500 – $6,500',
+            scope: `Urgent residential ${resolvedTrade.toLowerCase()} service and installation requested by homeowner.`,
+            clientName: 'Robert Vance',
+            clientPhone: '(408) 555-0182',
+            autoQuote: {
+              laborHours: 14,
+              laborRate: 140,
+              materialsCost: 620,
+              total: 2580,
+            },
+            status: 'New',
+          },
+          {
+            id: 'L-LOCAL-2',
+            source: `Online Lead Feed (Local Search — ${resolvedTown})`,
+            trade: resolvedTrade,
+            town: resolvedTown,
+            budget: '$5,000 – $9,000',
+            scope: `Complete system replacement and inspection for ${resolvedTrade.toLowerCase()} project.`,
+            clientName: 'Elena Rostova',
+            clientPhone: '(408) 555-0199',
+            autoQuote: {
+              laborHours: 22,
+              laborRate: 140,
+              materialsCost: 1150,
+              total: 4230,
+            },
+            status: 'New',
+          },
+        ]);
       }
     } catch {}
   }, []);
@@ -140,10 +142,12 @@ export default function DashboardPage() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-4">
             <div>
               <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">⚡ Live Firehose Feed</span>
-              <h2 className="text-xl font-extrabold text-white">Incoming Online Leads & Auto-Created Quotes</h2>
+              <h2 className="text-xl font-extrabold text-white">
+                Active {userProfile.trade} Leads in {userProfile.location} (Auto-Created Quotes)
+              </h2>
             </div>
             <span className="text-xs font-bold text-blue-400 bg-blue-950 px-3.5 py-1.5 rounded-full border border-blue-800">
-              {leads.length} Leads Ready for Review & Send
+              {leads.length} Local Leads Ready
             </span>
           </div>
 
