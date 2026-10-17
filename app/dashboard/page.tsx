@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import SiteFooter from '../components/SiteFooter';
+import FeedbackWidget from '../components/FeedbackWidget';
 
 interface LeadItem {
   id: string;
@@ -11,14 +12,14 @@ interface LeadItem {
   budget: string;
   scope: string;
   clientName: string;
-  clientPhone: string;
   autoQuote: {
     laborHours: number;
     laborRate: number;
     materialsCost: number;
     total: number;
   };
-  status: 'New' | 'Quote Generated' | 'Sent to Client';
+  personalNote: string;
+  status: 'New' | 'Quote Generated' | 'Sent via Platform';
 }
 
 export default function DashboardPage() {
@@ -54,7 +55,7 @@ export default function DashboardPage() {
             budget: '$3,500 – $6,500',
             scope: `Urgent residential ${resolvedTrade.toLowerCase()} service and installation requested by homeowner.`,
             clientName: 'Robert Vance',
-            clientPhone: '(408) 555-0182',
+            personalNote: 'Looking forward to working with you on this project. Let me know when you are ready to schedule.',
             autoQuote: {
               laborHours: 14,
               laborRate: 140,
@@ -71,7 +72,7 @@ export default function DashboardPage() {
             budget: '$5,000 – $9,000',
             scope: `Complete system replacement and inspection for ${resolvedTrade.toLowerCase()} project.`,
             clientName: 'Elena Rostova',
-            clientPhone: '(408) 555-0199',
+            personalNote: 'We can complete this within 3 days of approval. Materials are in stock locally.',
             autoQuote: {
               laborHours: 22,
               laborRate: 140,
@@ -96,13 +97,17 @@ export default function DashboardPage() {
     );
   };
 
-  const markSent = (id: string) => {
-    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status: 'Sent to Client' } : l)));
-    alert('Quote successfully approved and sent via SMS and Email to the homeowner!');
+  const updateNote = (id: string, note: string) => {
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, personalNote: note } : l)));
+  };
+
+  const markSentViaPlatform = (id: string) => {
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status: 'Sent via Platform' } : l)));
+    alert('Quick Quote and personal note successfully dispatched through the JobAllies platform relay to the homeowner!');
   };
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 font-sans p-5 md:p-10 flex flex-col justify-between">
+    <main className="min-h-screen bg-slate-950 text-slate-100 font-sans p-5 md:p-10 flex flex-col justify-between relative">
       <div className="max-w-6xl mx-auto w-full space-y-8">
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-5 gap-4">
           <div className="flex items-center gap-3">
@@ -163,9 +168,11 @@ export default function DashboardPage() {
                       <span className="text-xs text-slate-400">📍 {lead.town}</span>
                     </div>
                     <p className="text-sm font-bold text-white mt-1">Homeowner Request: "{lead.scope}"</p>
-                    <p className="text-xs text-slate-400">Client: {lead.clientName} • <span className="text-white font-mono">{lead.clientPhone}</span></p>
+                    <p className="text-xs text-slate-400">
+                      Client: <strong className="text-slate-200">{lead.clientName}</strong> • <span className="text-blue-400 font-bold">🔒 Homeowner Messaging Vault (Secure Platform Relay)</span>
+                    </p>
                   </div>
-                  <span className={`text-xs font-extrabold px-3 py-1 rounded-full ${lead.status === 'Sent to Client' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-amber-950 text-amber-400 border border-amber-800'}`}>
+                  <span className={`text-xs font-extrabold px-3 py-1 rounded-full ${lead.status === 'Sent via Platform' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-amber-950 text-amber-400 border border-amber-800'}`}>
                     Status: {lead.status}
                   </span>
                 </div>
@@ -173,7 +180,7 @@ export default function DashboardPage() {
                 <div className="bg-slate-900/90 border border-blue-500/40 p-5 rounded-2xl space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-xs font-extrabold uppercase tracking-wider text-blue-400">
-                      ✨ Quick Estimate (Editable & Ready to Send)
+                      ✨ Quick Estimate & Platform Dispatch
                     </span>
                     <span className="text-xl font-black text-emerald-400">${lead.autoQuote.total.toLocaleString()}</span>
                   </div>
@@ -208,13 +215,24 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-400 mb-1">Optional Personal Note to Homeowner</label>
+                    <input
+                      type="text"
+                      value={lead.personalNote}
+                      onChange={(e) => updateNote(lead.id, e.target.value)}
+                      placeholder="Add a personal note to accompany your quote..."
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white"
+                    />
+                  </div>
+
                   <div className="flex flex-col sm:flex-row gap-3 pt-2">
                     <button
                       type="button"
-                      onClick={() => markSent(lead.id)}
+                      onClick={() => markSentViaPlatform(lead.id)}
                       className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3.5 rounded-xl text-xs transition shadow-lg"
                     >
-                      ✓ Approve & Send Quote to Homeowner (SMS / Email)
+                      ✓ Send Quick Quote via Platform Relay
                     </button>
                     <Link
                       href="/dashboard/supplier-cart"
@@ -230,6 +248,7 @@ export default function DashboardPage() {
         </section>
       </div>
 
+      <FeedbackWidget />
       <SiteFooter />
     </main>
   );
