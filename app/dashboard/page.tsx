@@ -5,6 +5,12 @@ import SiteFooter from '../components/SiteFooter';
 import FeedbackWidget from '../components/FeedbackWidget';
 import Logo from '../components/Logo';
 
+interface CustomField {
+  id: string;
+  label: string;
+  amount: number;
+}
+
 interface LeadItem {
   id: string;
   source: string;
@@ -21,11 +27,12 @@ interface LeadItem {
     laborHours: number;
     laborRate: number;
     materialsCost: number;
+    customFields: CustomField[];
     total: number;
   };
   personalNote: string;
   status: 'New' | 'Quote Generated' | 'Sent via Platform' | 'Accepted by Prospect';
-  wizardStep: number; // 1: Review Scope, 2: Adjust Pricing, 3: Personal Qualifications Note, 4: Ready to Send
+  wizardStep: number;
 }
 
 interface SavedQuote {
@@ -41,7 +48,7 @@ interface SavedQuote {
 export default function DashboardPage() {
   const [userProfile, setUserProfile] = useState({
     name: 'Mike Johnson',
-    trade: 'General Contractor',
+    trade: 'Tree Service',
     location: 'Providence, RI',
     licenseNumber: 'RIC.049210',
     email: 'mike@joballies.com',
@@ -51,6 +58,10 @@ export default function DashboardPage() {
   const [leads, setLeads] = useState<LeadItem[]>([]);
   const [savedQuotes, setSavedQuotes] = useState<SavedQuote[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Temporary state for adding a custom field to a specific lead
+  const [newFieldLabel, setNewFieldLabel] = useState('');
+  const [newFieldAmount, setNewFieldAmount] = useState<number>(150);
 
   useEffect(() => {
     let resolvedTrade = 'Tree Service';
@@ -80,6 +91,10 @@ export default function DashboardPage() {
             ...l,
             clientEmail: `homeowner${idx + 1}@providence-resident.org`,
             clientPhone: `+1 (401) 555-01${70 + idx}`,
+            autoQuote: {
+              ...l.autoQuote,
+              customFields: []
+            },
             wizardStep: 1
           }));
           setLeads(mapped);
@@ -94,12 +109,50 @@ export default function DashboardPage() {
     fetchLeads();
   }, []);
 
-  const updateQuote = (id: string, field: string, val: number) => {
+  const recalculateTotal = (quote: { laborHours: number; laborRate: number; materialsCost: number; customFields: CustomField[] }) => {
+    const base = quote.laborHours * quote.laborRate + quote.materialsCost;
+    const customSum = quote.customFields.reduce((acc, f) => acc + f.amount, 0);
+    return base + customSum;
+  };
+
+  const updateQuoteField = (id: string, field: string, val: number) => {
     setLeads((prev) =>
       prev.map((l) => {
         if (l.id !== id) return l;
         const updatedQuote = { ...l.autoQuote, [field]: val };
-        updatedQuote.total = updatedQuote.laborHours * updatedQuote.laborRate + updatedQuote.materialsCost;
+        updatedQuote.total = recalculateTotal(updatedQuote);
+        return { ...l, autoQuote: updatedQuote };
+      })
+    );
+  };
+
+  const addCustomField = (id: string) => {
+    if (!newFieldLabel.trim()) return;
+    setLeads((prev) =>
+      prev.map((l) => {
+        if (l.id !== id) return l;
+        const newField: CustomField = {
+          id: Date.now().toString(),
+          label: newFieldLabel.trim(),
+          amount: Number(newFieldAmount) || 0
+        };
+        const updatedFields = [...l.autoQuote.customFields, newField];
+        const updatedQuote = { ...l.autoQuote, customFields: updatedFields };
+        updatedQuote.total = recalculateTotal(updatedQuote);
+        return { ...l, autoQuote: updatedQuote };
+      })
+    );
+    setNewFieldLabel('');
+    setNewFieldAmount(150);
+  };
+
+  const removeCustomField = (leadId: string, fieldId: string) => {
+    setLeads((prev) =>
+      prev.map((l) => {
+        if (l.id !== leadId) return l;
+        const updatedFields = l.autoQuote.customFields.filter((f) => f.id !== fieldId);
+        const updatedQuote = { ...l.autoQuote, customFields: updatedFields };
+        updatedQuote.total = recalculateTotal(updatedQuote);
         return { ...l, autoQuote: updatedQuote };
       })
     );
@@ -116,7 +169,6 @@ export default function DashboardPage() {
   const sendQuote = (lead: LeadItem) => {
     setLeads((prev) => prev.map((l) => (l.id === lead.id ? { ...l, status: 'Sent via Platform' } : l)));
     
-    // Save to dashboard quote history
     const newQuote: SavedQuote = {
       id: `Q-${Date.now().toString().slice(-4)}`,
       leadId: lead.id,
@@ -249,7 +301,7 @@ export default function DashboardPage() {
 
                 {/* CONTACT INFO REVEAL ON ACCEPTANCE */}
                 {lead.status === 'Accepted by Prospect' && (
-                  <div className="bg-emerald-950/80 border border-emerald-500 p-5 rounded-2xl space-y-2">
+                  <div className="bg-emerald-950/80 border border-emerald-500 p-5 rounded-2xl space-y-2 shadow-xl">
                     <h4 className="text-xs font-black uppercase tracking-wider text-emerald-400">
                       🎉 Prospect Accepted Quote! Direct Contact Information Unlocked:
                     </h4>
@@ -268,7 +320,7 @@ export default function DashboardPage() {
                     </span>
                     <div className="flex gap-1.5">
                       <button onClick={() => setWizardStep(lead.id, 1)} className={`px-2.5 py-1 rounded-lg text-[10px] font-bold ${lead.wizardStep === 1 ? 'bg-blue-600 text-white' : 'bg-slate-950 text-slate-400'}`}>1. Review Scope</button>
-                      <button onClick={() => setWizardStep(lead.id, 2)} className={`px-2.5 py-1 rounded-lg text-[10px] font-bold ${lead.wizardStep === 2 ? 'bg-blue-600 text-white' : 'bg-slate-950 text-slate-400'}`}>2. Adjust Pricing</button>
+                      <button onClick={() => setWizardStep(lead.id, 2)} className={`px-2.5 py-1 rounded-lg text-[10px] font-bold ${lead.wizardStep === 2 ? 'bg-blue-600 text-white' : 'bg-slate-950 text-slate-400'}`}>2. Adjust Pricing & Add Fields</button>
                       <button onClick={() => setWizardStep(lead.id, 3)} className={`px-2.5 py-1 rounded-lg text-[10px] font-bold ${lead.wizardStep === 3 ? 'bg-blue-600 text-white' : 'bg-slate-950 text-slate-400'}`}>3. Qualifications Note</button>
                     </div>
                   </div>
@@ -288,17 +340,17 @@ export default function DashboardPage() {
                           onClick={() => setWizardStep(lead.id, 2)}
                           className="bg-blue-600 hover:bg-blue-500 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs transition"
                         >
-                          Next: Adjust Pricing & Labor →
+                          Next: Adjust Pricing & Add Custom Fields →
                         </button>
                       </div>
                     </div>
                   )}
 
-                  {/* STEP 2: ADJUST PRICING */}
+                  {/* STEP 2: ADJUST PRICING & ADD CUSTOM FIELDS */}
                   {lead.wizardStep === 2 && (
-                    <div className="space-y-4 py-2">
+                    <div className="space-y-5 py-2">
                       <div className="flex justify-between items-center">
-                        <span className="text-xs font-bold text-slate-300">Edit estimate line items below as needed:</span>
+                        <span className="text-xs font-bold text-slate-300">Edit standard items or add custom quote fields below:</span>
                         <span className="text-lg font-black text-emerald-400">${lead.autoQuote.total.toLocaleString()}</span>
                       </div>
 
@@ -308,7 +360,7 @@ export default function DashboardPage() {
                           <input
                             type="number"
                             value={lead.autoQuote.laborHours}
-                            onChange={(e) => updateQuote(lead.id, 'laborHours', Number(e.target.value))}
+                            onChange={(e) => updateQuoteField(lead.id, 'laborHours', Number(e.target.value))}
                             className="w-full bg-slate-950 border border-blue-500/80 rounded-xl px-3 py-2 text-xs font-bold text-white shadow-inner"
                           />
                         </div>
@@ -317,7 +369,7 @@ export default function DashboardPage() {
                           <input
                             type="number"
                             value={lead.autoQuote.laborRate}
-                            onChange={(e) => updateQuote(lead.id, 'laborRate', Number(e.target.value))}
+                            onChange={(e) => updateQuoteField(lead.id, 'laborRate', Number(e.target.value))}
                             className="w-full bg-slate-950 border border-blue-500/80 rounded-xl px-3 py-2 text-xs font-bold text-white shadow-inner"
                           />
                         </div>
@@ -326,9 +378,62 @@ export default function DashboardPage() {
                           <input
                             type="number"
                             value={lead.autoQuote.materialsCost}
-                            onChange={(e) => updateQuote(lead.id, 'materialsCost', Number(e.target.value))}
+                            onChange={(e) => updateQuoteField(lead.id, 'materialsCost', Number(e.target.value))}
                             className="w-full bg-slate-950 border border-blue-500/80 rounded-xl px-3 py-2 text-xs font-bold text-white shadow-inner"
                           />
+                        </div>
+                      </div>
+
+                      {/* CUSTOM FIELDS SECTION */}
+                      <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs font-extrabold text-amber-400 uppercase tracking-wider">
+                            ➕ Custom Quote Fields / Line Items
+                          </span>
+                          <span className="text-[10px] text-slate-400">Add permits, disposal fees, or custom equipment</span>
+                        </div>
+
+                        {lead.autoQuote.customFields.length > 0 && (
+                          <div className="space-y-2">
+                            {lead.autoQuote.customFields.map((cf) => (
+                              <div key={cf.id} className="flex justify-between items-center bg-slate-900 px-3.5 py-2 rounded-xl text-xs">
+                                <span className="text-white font-medium">{cf.label}</span>
+                                <div className="flex items-center gap-3">
+                                  <span className="font-bold text-emerald-400">${cf.amount.toFixed(2)}</span>
+                                  <button
+                                    onClick={() => removeCustomField(lead.id, cf.id)}
+                                    className="text-rose-400 hover:text-rose-300 font-bold text-xs"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                          <input
+                            type="text"
+                            placeholder="Line item name (e.g., Permit Fee, Debris Disposal)"
+                            value={newFieldLabel}
+                            onChange={(e) => setNewFieldLabel(e.target.value)}
+                            className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white"
+                          />
+                          <input
+                            type="number"
+                            placeholder="Amount ($)"
+                            value={newFieldAmount}
+                            onChange={(e) => setNewFieldAmount(Number(e.target.value))}
+                            className="w-28 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => addCustomField(lead.id)}
+                            className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-4 py-2 rounded-xl text-xs whitespace-nowrap transition"
+                          >
+                            + Add Field
+                          </button>
                         </div>
                       </div>
 
