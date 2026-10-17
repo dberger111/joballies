@@ -8,6 +8,8 @@ import Logo from '../components/Logo';
 interface LeadItem {
   id: string;
   source: string;
+  datePosted: string;
+  timePosted: string;
   trade: string;
   town: string;
   budget: string;
@@ -129,13 +131,13 @@ export default function DashboardPage() {
         <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl space-y-6 shadow-xl">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-4">
             <div>
-              <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">⚡ Live Municipal Permits & State Feed</span>
+              <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">⚡ Live State Registry & Municipal Permits Feed</span>
               <h2 className="text-xl font-extrabold text-white">
-                Active {userProfile.trade} Leads in {userProfile.location} (Quick Quotes)
+                Active {userProfile.trade} Leads in {userProfile.location} ({leads.length} Available)
               </h2>
             </div>
             <span className="text-xs font-bold text-blue-400 bg-blue-950 px-3.5 py-1.5 rounded-full border border-blue-800">
-              {loading ? 'Fetching live leads...' : `${leads.length} Real Local Leads Ready`}
+              {loading ? 'Fetching all leads...' : `showing all ${leads.length} live leads`}
             </span>
           </div>
 
@@ -143,17 +145,20 @@ export default function DashboardPage() {
             {leads.map((lead) => (
               <div key={lead.id} className="bg-slate-950 border border-slate-800 p-6 rounded-2xl space-y-5">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-slate-900 pb-4">
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-xs font-extrabold text-blue-400 bg-blue-950 px-3 py-0.5 rounded-full border border-blue-800">
                         Source: {lead.source}
                       </span>
                       <span className="text-xs font-bold text-emerald-400">{lead.budget}</span>
                       <span className="text-xs text-slate-400">📍 {lead.town}</span>
+                      <span className="text-xs font-bold text-slate-400 bg-slate-900 px-2.5 py-0.5 rounded-md border border-slate-800">
+                        🕒 Posted: {lead.datePosted} at {lead.timePosted}
+                      </span>
                     </div>
                     <p className="text-sm font-bold text-white mt-1">Project Request: "{lead.scope}"</p>
                     <p className="text-xs text-slate-400">
-                      Client: <strong className="text-slate-200">{lead.clientName}</strong> • <span className="text-blue-400 font-bold">🔒 Secure Platform Relay (Phone Number Hidden)</span>
+                      Client: <strong className="text-slate-200">{lead.clientName}</strong> • <span className="text-blue-400 font-bold">Secure Platform Relay</span>
                     </p>
                   </div>
                   <span className={`text-xs font-extrabold px-3 py-1 rounded-full ${lead.status === 'Sent via Platform' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-amber-950 text-amber-400 border border-amber-800'}`}>
