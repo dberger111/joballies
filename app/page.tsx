@@ -15,40 +15,40 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 font-sans p-5 md:p-10 flex flex-col justify-between">
-      <div className="max-w-6xl mx-auto w-full space-y-14">
+      <div className="max-w-5xl mx-auto w-full space-y-12 text-center">
         <Navbar />
 
-        <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-2">
-          <div className="lg:col-span-6 space-y-6 text-left">
-            <div className="inline-flex items-center gap-2 bg-blue-950/90 border border-blue-800 text-blue-400 text-xs font-extrabold uppercase tracking-widest px-3.5 py-1.5 rounded-full">
-              <span>⭐</span> The #1 platform for tradespeople
-            </div>
-
-            <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white leading-[1.1]">
-              Get more leads.<br />
-              Quote more quickly.<br />
-              <span className="text-blue-500">Give and receive referrals.</span>
-            </h1>
-
-            <div className="space-y-4 pt-2 border-l-2 border-blue-500 pl-5">
-              <p className="text-base font-bold text-slate-100 italic">
-                “It’s like drinking from a firehose. JobAllies ensures I always have plenty of work.”
-              </p>
-              <p className="text-xs md:text-sm font-medium text-slate-400 leading-relaxed">
-                “I used to spend way too much time trying to win business. Now I have so much business that I refer most of it out (and get paid for those referrals.)”
-              </p>
-            </div>
+        {/* Headline & Sub-content Centered */}
+        <div className="space-y-6 max-w-3xl mx-auto pt-2">
+          <div className="inline-flex items-center gap-2 bg-blue-950/90 border border-blue-800 text-blue-400 text-xs font-extrabold uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg">
+            <span>⭐</span> The #1 platform for tradespeople
           </div>
 
-          <div className="lg:col-span-6">
-            <QuickStartCard defaultTrade="General Contractor" />
-          </div>
-        </section>
+          <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white leading-[1.1]">
+            Get more leads.<br />
+            Quote more quickly.<br />
+            <span className="text-blue-500">Build your trusted referral network.</span>
+          </h1>
 
-        <section className="space-y-6 pt-6 border-t border-slate-800">
+          {/* Testimonials */}
+          <div className="space-y-4 pt-2 max-w-2xl mx-auto border-l-2 border-blue-500 pl-5 text-left">
+            <p className="text-base font-bold text-slate-100 italic">
+              “It’s like drinking from a firehose. JobAllies ensures I always have plenty of work.”
+            </p>
+            <p className="text-xs md:text-sm font-medium text-slate-400 leading-relaxed">
+              “I used to spend way too much time trying to win business. Now I have so much business that I refer most of it out (and get paid for those referrals.)”
+            </p>
+          </div>
+        </div>
+
+        {/* Action Card Placed Right Under Header & Centered */}
+        <QuickStartCard />
+
+        {/* 55 Trades Grid */}
+        <section className="space-y-6 pt-8 border-t border-slate-800 text-left">
           <div>
-            <h2 className="text-2xl font-black text-white">Tap Your Trade (Pre-Fills Your Local Workspace)</h2>
-            <p className="text-xs text-slate-400">55 licensed & independent trades supported nationwide.</p>
+            <h2 className="text-2xl font-black text-white">To See Specialty Leads in your Local Area</h2>
+            <p className="text-xs text-slate-400">Select your specialty to pre-fill your workspace.</p>
           </div>
 
           {groups.map((groupName) => (

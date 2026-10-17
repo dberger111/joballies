@@ -3,9 +3,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { MASTER_TRADES } from './tradesData';
 
-export default function QuickStartCard({ defaultTrade = 'General Contractor' }: { defaultTrade?: string }) {
+export default function QuickStartCard({ defaultTrade }: { defaultTrade?: string }) {
   const router = useRouter();
-  const [trade, setTrade] = useState(defaultTrade);
+  const [trade, setTrade] = useState(defaultTrade || '');
   const [location, setLocation] = useState('Weston, CT');
   const [contact, setContact] = useState('');
   const [businessName, setBusinessName] = useState('');
@@ -52,13 +52,14 @@ export default function QuickStartCard({ defaultTrade = 'General Contractor' }: 
 
   const handleLaunch = (e: React.FormEvent) => {
     e.preventDefault();
-    const resolvedName = businessName.trim() || `Verified ${trade} Pro`;
+    const resolvedTrade = trade.trim() || 'General Contractor';
+    const resolvedName = businessName.trim() || `Verified ${resolvedTrade} Pro`;
     const resolvedContact = contact.trim() || 'pro@joballies.com';
 
     const userObj = {
       name: resolvedName,
       phoneOrEmail: resolvedContact,
-      trade,
+      trade: resolvedTrade,
       location,
       licenseNumber: 'State Verified',
     };
@@ -69,14 +70,13 @@ export default function QuickStartCard({ defaultTrade = 'General Contractor' }: 
     router.push('/dashboard');
   };
 
+  const cardTitle = trade ? `See active ${trade} leads in ${location}` : `See active leads in ${location}`;
+
   return (
-    <div className="bg-slate-900 border-2 border-blue-500/60 rounded-3xl p-6 md:p-8 shadow-2xl shadow-blue-950/40 text-left space-y-5">
-      <div className="border-b border-slate-800 pb-3">
-        <span className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-400">
-          ⚡ Pre-Filled for Your Area • Instant Access
-        </span>
-        <h2 className="text-xl font-black text-white mt-0.5">
-          See Active {trade} Leads in {location}
+    <div className="max-w-3xl mx-auto bg-slate-900 border-2 border-blue-500/60 rounded-3xl p-6 md:p-8 shadow-2xl shadow-blue-950/40 text-left space-y-5">
+      <div className="border-b border-slate-800 pb-3 text-center">
+        <h2 className="text-xl md:text-2xl font-black text-white capitalize">
+          {cardTitle}
         </h2>
       </div>
 
@@ -91,6 +91,7 @@ export default function QuickStartCard({ defaultTrade = 'General Contractor' }: 
               onChange={(e) => setTrade(e.target.value)}
               className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-3 text-xs font-extrabold text-white focus:border-blue-400 focus:outline-none"
             >
+              <option value="">Select or general trade...</option>
               {MASTER_TRADES.map((t) => (
                 <option key={t.slug} value={t.name}>
                   {t.icon} {t.name}
