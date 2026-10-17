@@ -18,7 +18,7 @@ export default function Icon() {
           border: '2px solid #60a5fa',
           color: '#ffffff',
           fontWeight: 900,
-          fontSize: '16px',
+          fontSize: '15px',
           fontFamily: 'sans-serif',
           letterSpacing: '-0.5px',
         }}

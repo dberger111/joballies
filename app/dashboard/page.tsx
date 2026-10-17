@@ -45,7 +45,6 @@ export default function DashboardPage() {
           location: resolvedTown,
         }));
 
-        // Generate hyper-local leads matching the exact trade and town chosen by the user
         setLeads([
           {
             id: 'L-LOCAL-1',
@@ -143,7 +142,7 @@ export default function DashboardPage() {
             <div>
               <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">⚡ Live Firehose Feed</span>
               <h2 className="text-xl font-extrabold text-white">
-                Active {userProfile.trade} Leads in {userProfile.location} (Auto-Created Quotes)
+                Active {userProfile.trade} Leads in {userProfile.location} (Quick Quotes)
               </h2>
             </div>
             <span className="text-xs font-bold text-blue-400 bg-blue-950 px-3.5 py-1.5 rounded-full border border-blue-800">
@@ -174,7 +173,7 @@ export default function DashboardPage() {
                 <div className="bg-slate-900/90 border border-blue-500/40 p-5 rounded-2xl space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-xs font-extrabold uppercase tracking-wider text-blue-400">
-                      ✨ AI Auto-Created Estimate (Editable & Ready to Send)
+                      ✨ Quick Estimate (Editable & Ready to Send)
                     </span>
                     <span className="text-xl font-black text-emerald-400">${lead.autoQuote.total.toLocaleString()}</span>
                   </div>

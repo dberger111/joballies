@@ -91,7 +91,7 @@ export default function QuickStartCard({ defaultTrade }: { defaultTrade?: string
               onChange={(e) => setTrade(e.target.value)}
               className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-3 text-xs font-extrabold text-white focus:border-blue-400 focus:outline-none"
             >
-              <option value="">Select or general trade...</option>
+              <option value="">Select trade...</option>
               {MASTER_TRADES.map((t) => (
                 <option key={t.slug} value={t.name}>
                   {t.icon} {t.name}
@@ -136,7 +136,7 @@ export default function QuickStartCard({ defaultTrade }: { defaultTrade?: string
           type="submit"
           className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-sm transition shadow-xl shadow-blue-600/30"
         >
-          View Leads & Auto-Created Quotes →
+          View Leads & Quick Quotes →
         </button>
       </form>
     </div>

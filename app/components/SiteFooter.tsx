@@ -1,20 +1,21 @@
 import Link from 'next/link';
+import Logo from './Logo';
 
 export default function SiteFooter() {
   return (
-    <footer className="max-w-6xl mx-auto w-full border-t border-slate-800/80 pt-8 pb-6 mt-16 text-xs text-slate-400">
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-        <div className="flex items-center gap-2.5 text-slate-400 text-center md:text-left">
-          <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-blue-600 text-white font-black text-[11px]">
-            JA
-          </span>
+    <footer className="max-w-5xl mx-auto w-full border-t border-slate-800/80 pt-8 pb-6 mt-16 text-xs text-slate-400">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="flex items-center gap-3 text-slate-400">
+          <div className="scale-75 origin-left">
+            <Logo size="sm" />
+          </div>
           <span>
             © {new Date().getFullYear()} <strong className="text-slate-200">JobAllies</strong> (from UpLevel Labs, Inc.) — All rights reserved.
           </span>
         </div>
         <div className="flex flex-wrap justify-center items-center gap-5 font-semibold">
           <Link href="/post-project" className="text-blue-400 hover:text-blue-300 transition">
-            Homeowner? Post a Project
+            Homeowner? Request a Quote
           </Link>
           <span className="text-slate-800">•</span>
           <Link href="/privacy" className="text-slate-400 hover:text-white transition">

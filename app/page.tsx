@@ -32,6 +32,50 @@ export default function HomePage() {
 
         <QuickStartCard />
 
+        {/* 4 Explanatory Cards with 3 Bullets Each */}
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 text-left pt-4">
+          <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-3 shadow-xl">
+            <span className="text-2xl">📈</span>
+            <h3 className="text-base font-extrabold text-white">See More Leads</h3>
+            <ul className="space-y-1.5 text-xs text-slate-300">
+              <li>• Real-time local homeowner project requests</li>
+              <li>• Zero lead-buyer bidding wars or markups</li>
+              <li>• Direct client phone numbers unlocked</li>
+            </ul>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-3 shadow-xl">
+            <span className="text-2xl">⚡</span>
+            <h3 className="text-base font-extrabold text-white">Quote Easily and Quickly</h3>
+            <ul className="space-y-1.5 text-xs text-slate-300">
+              <li>• Quick itemized labor & material estimates</li>
+              <li>• Instant SMS and email proposal dispatch</li>
+              <li>• One-tap approval links for clients</li>
+            </ul>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-3 shadow-xl">
+            <span className="text-2xl">💼</span>
+            <h3 className="text-base font-extrabold text-white">Win Business</h3>
+            <ul className="space-y-1.5 text-xs text-slate-300">
+              <li>• Stand out with verified state credentials</li>
+              <li>• Automated Google & Yelp review boosters</li>
+              <li>• Secure escrow payment milestone protection</li>
+            </ul>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-3 shadow-xl">
+            <span className="text-2xl">🤝</span>
+            <h3 className="text-base font-extrabold text-white">Give and Receive Referrals</h3>
+            <ul className="space-y-1.5 text-xs text-slate-300">
+              <li>• Partner with vetted non-competing local pros</li>
+              <li>• Automated 10% referral commission splits</li>
+              <li>• Monetize overflow work effortlessly</li>
+            </ul>
+          </div>
+        </section>
+
+        {/* 55 Trades Grid */}
         <section className="space-y-6 pt-8 border-t border-slate-800 text-left">
           <div>
             <h2 className="text-2xl font-black text-white">To See Specialty Leads in your Local Area</h2>

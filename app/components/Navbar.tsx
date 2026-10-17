@@ -1,16 +1,11 @@
 import Link from 'next/link';
+import Logo from './Logo';
 
 export default function Navbar() {
   return (
     <header className="flex justify-between items-center border-b border-slate-800/80 pb-4">
-      <Link href="/" className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white font-black text-sm shadow-lg shadow-blue-600/30 border border-blue-400/30">
-          JA
-        </div>
-        <div>
-          <span className="text-xl font-black tracking-tight text-white">JobAllies</span>
-          <span className="block text-[9px] font-bold uppercase tracking-widest text-blue-400">Trade Platform</span>
-        </div>
+      <Link href="/">
+        <Logo />
       </Link>
       <Link
         href="/dashboard"
