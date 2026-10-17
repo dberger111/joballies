@@ -245,6 +245,42 @@ export default function DashboardPage() {
               </div>
             ))}
           </div>
+
+          {/* External Lead Platforms Integration Footer */}
+          <div className="bg-slate-950 border border-slate-800 p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 mt-6">
+            <div className="space-y-1 text-center md:text-left">
+              <h4 className="text-xs font-black uppercase tracking-wider text-blue-400">🌐 Connect External Lead Networks</h4>
+              <p className="text-xs text-slate-300">
+                To view more leads in your local area, login to your professional Thumbtack, Angi, or other lead generation platforms:
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2.5 flex-shrink-0">
+              <a
+                href="https://pro.thumbtack.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-blue-600 hover:bg-blue-500 text-white font-extrabold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-2 shadow-md"
+              >
+                <span>🛠️ Thumbtack Pro</span>
+              </a>
+              <a
+                href="https://pro.angi.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-2 shadow-md"
+              >
+                <span>🏡 Angi Leads</span>
+              </a>
+              <a
+                href="https://www.houzz.com/pro"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-slate-800 hover:bg-slate-700 text-slate-100 font-extrabold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-2 border border-slate-700 shadow-md"
+              >
+                <span>📐 Houzz Pro</span>
+              </a>
+            </div>
+          </div>
         </section>
       </div>
 
