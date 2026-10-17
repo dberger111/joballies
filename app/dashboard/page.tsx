@@ -31,59 +31,42 @@ export default function DashboardPage() {
   });
 
   const [leads, setLeads] = useState<LeadItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let resolvedTrade = 'General Contractor';
+    let resolvedTown = 'Weston';
+
     try {
       const saved = localStorage.getItem('joballies_temp_user') || localStorage.getItem('joballies_user');
       if (saved) {
         const parsed = JSON.parse(saved);
-        const resolvedTrade = parsed.trade || 'General Contractor';
-        const resolvedTown = parsed.location || 'Weston, CT';
+        if (parsed.trade) resolvedTrade = parsed.trade;
+        if (parsed.location) resolvedTown = parsed.location.split(',')[0].trim();
         setUserProfile((prev) => ({
           ...prev,
           name: parsed.name || prev.name,
           trade: resolvedTrade,
-          location: resolvedTown,
+          location: parsed.location || prev.location,
         }));
-
-        setLeads([
-          {
-            id: 'L-PLATFORM-1',
-            source: 'Thumbtack Verified Pro Feed',
-            trade: resolvedTrade,
-            town: resolvedTown,
-            budget: '$3,500 – $6,500',
-            scope: `Urgent residential ${resolvedTrade.toLowerCase()} service and installation requested by homeowner.`,
-            clientName: 'Robert Vance',
-            personalNote: 'Looking forward to working with you on this project. Let me know when you are ready to schedule.',
-            autoQuote: {
-              laborHours: 14,
-              laborRate: 140,
-              materialsCost: 620,
-              total: 2580,
-            },
-            status: 'New',
-          },
-          {
-            id: 'L-PLATFORM-2',
-            source: 'Angi Leads Integration',
-            trade: resolvedTrade,
-            town: resolvedTown,
-            budget: '$5,000 – $9,000',
-            scope: `Complete system replacement and inspection for ${resolvedTrade.toLowerCase()} project.`,
-            clientName: 'Elena Rostova',
-            personalNote: 'We can complete this within 3 days of approval. Materials are in stock locally.',
-            autoQuote: {
-              laborHours: 22,
-              laborRate: 140,
-              materialsCost: 1150,
-              total: 4230,
-            },
-            status: 'New',
-          },
-        ]);
       }
     } catch {}
+
+    async function fetchRealLeads() {
+      try {
+        const res = await fetch(`/api/leads?town=${encodeURIComponent(resolvedTown)}&trade=${encodeURIComponent(resolvedTrade)}`);
+        const data = await res.json();
+        if (data && data.leads) {
+          setLeads(data.leads);
+        }
+      } catch (err) {
+        console.error('Failed to fetch real leads:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchRealLeads();
   }, []);
 
   const updateQuote = (id: string, field: string, val: number) => {
@@ -145,13 +128,13 @@ export default function DashboardPage() {
         <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl space-y-6 shadow-xl">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-4">
             <div>
-              <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">⚡ Live Firehose Feed</span>
+              <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">⚡ Live Real-Time Feed (State API & Permits)</span>
               <h2 className="text-xl font-extrabold text-white">
                 Active {userProfile.trade} Leads in {userProfile.location} (Quick Quotes)
               </h2>
             </div>
             <span className="text-xs font-bold text-blue-400 bg-blue-950 px-3.5 py-1.5 rounded-full border border-blue-800">
-              {leads.length} Local Leads Ready
+              {loading ? 'Fetching live leads...' : `${leads.length} Real Local Leads Ready`}
             </span>
           </div>
 
@@ -167,7 +150,7 @@ export default function DashboardPage() {
                       <span className="text-xs font-bold text-emerald-400">{lead.budget}</span>
                       <span className="text-xs text-slate-400">📍 {lead.town}</span>
                     </div>
-                    <p className="text-sm font-bold text-white mt-1">Homeowner Request: "{lead.scope}"</p>
+                    <p className="text-sm font-bold text-white mt-1">Project Request: "{lead.scope}"</p>
                     <p className="text-xs text-slate-400">
                       Client: <strong className="text-slate-200">{lead.clientName}</strong> • <span className="text-blue-400 font-bold">🔒 Secure Platform Relay (Phone Number Hidden)</span>
                     </p>
