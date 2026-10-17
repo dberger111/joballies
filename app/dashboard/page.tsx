@@ -29,8 +29,8 @@ export default function DashboardPage() {
   const [userProfile, setUserProfile] = useState({
     name: 'Mike Johnson',
     trade: 'General Contractor',
-    location: 'Weston, CT',
-    licenseNumber: 'HIC.0649281',
+    location: 'Baton Rouge, LA',
+    licenseNumber: 'LSLBC.554210',
   });
 
   const [leads, setLeads] = useState<LeadItem[]>([]);
@@ -38,19 +38,19 @@ export default function DashboardPage() {
 
   useEffect(() => {
     let resolvedTrade = 'General Contractor';
-    let resolvedTown = 'Weston';
+    let resolvedTown = 'Baton Rouge, LA';
 
     try {
       const saved = localStorage.getItem('joballies_temp_user') || localStorage.getItem('joballies_user');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed.trade) resolvedTrade = parsed.trade;
-        if (parsed.location) resolvedTown = parsed.location.split(',')[0].trim();
+        if (parsed.location) resolvedTown = parsed.location;
         setUserProfile((prev) => ({
           ...prev,
           name: parsed.name || prev.name,
           trade: resolvedTrade,
-          location: parsed.location || prev.location,
+          location: resolvedTown,
         }));
       }
     } catch {}
@@ -89,7 +89,7 @@ export default function DashboardPage() {
 
   const markSentViaPlatform = (id: string) => {
     setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status: 'Sent via Platform' } : l)));
-    alert('Quick Quote and personal note successfully dispatched through the JobAllies platform relay to the homeowner!');
+    alert('Quick Quote and personal qualification note successfully dispatched through the JobAllies platform relay to the homeowner!');
   };
 
   return (
@@ -131,7 +131,7 @@ export default function DashboardPage() {
         <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl space-y-6 shadow-xl">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-4">
             <div>
-              <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">⚡ Live State Registry & Municipal Permits Feed</span>
+              <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">⚡ Live Verified State & Municipal Registry Feed</span>
               <h2 className="text-xl font-extrabold text-white">
                 Active {userProfile.trade} Leads in {userProfile.location} ({leads.length} Available)
               </h2>
@@ -204,15 +204,26 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-400 mb-1">Optional Personal Note to Homeowner</label>
-                    <input
-                      type="text"
+                  {/* EDITABLE QUALIFICATION NOTE WITH DISTINCT SHADING & BORDER */}
+                  <div className="bg-blue-950/40 border border-blue-500/60 p-4 rounded-2xl space-y-2 shadow-inner">
+                    <div className="flex justify-between items-center">
+                      <label className="block text-xs font-black text-blue-300 uppercase tracking-wider">
+                        ✍️ Editable Professional Qualification Note (Click to edit text)
+                      </label>
+                      <span className="text-[10px] font-bold text-amber-400 bg-amber-950/80 border border-amber-800 px-2 py-0.5 rounded-md">
+                        Shaded field is fully editable
+                      </span>
+                    </div>
+                    <textarea
+                      rows={3}
                       value={lead.personalNote}
                       onChange={(e) => updateNote(lead.id, e.target.value)}
-                      placeholder="Add a personal note to accompany your quote..."
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white"
+                      className="w-full bg-blue-950/80 border border-blue-400/80 rounded-xl p-3 text-xs text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm transition"
+                      placeholder="Highlight your trade experience, license credentials, and project-specific qualifications..."
                     />
+                    <p className="text-[11px] text-blue-300/80 italic">
+                      This personalized qualification note accompanies your price estimate when dispatched through the platform relay to the homeowner.
+                    </p>
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-3 pt-2">
@@ -221,7 +232,7 @@ export default function DashboardPage() {
                       onClick={() => markSentViaPlatform(lead.id)}
                       className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3.5 rounded-xl text-xs transition shadow-lg"
                     >
-                      ✓ Send Quick Quote via Platform Relay
+                      ✓ Send Quick Quote & Qualifications via Platform Relay
                     </button>
                     <Link
                       href="/dashboard/supplier-cart"
