@@ -3,17 +3,20 @@ import { useState } from 'react';
 import Link from 'next/link';
 import SiteFooter from '../../components/SiteFooter';
 import FeedbackWidget from '../../components/FeedbackWidget';
+import Logo from '../../components/Logo';
 
 export default function SupplierCartPage() {
   const [items] = useState([
-    { id: 1, name: 'PVC Schedule 40 Pipe (20ft)', qty: 6, unitPrice: 24.50, supplier: 'Home Depot Pro' },
-    { id: 2, name: 'Waterproof Membrane Roll (300 sq ft)', qty: 2, unitPrice: 185.00, supplier: 'SiteOne / Local Supply' },
-    { id: 3, name: 'Cement Backer Board (1/2 in)', qty: 15, unitPrice: 16.75, supplier: 'Home Depot Pro' },
+    { id: 1, name: 'PVC Schedule 40 Pipe (20ft)', qty: 6, basePrice: 24.50, supplier: 'Home Depot Pro', source: 'Home Depot Pro Wholesale Index (Updated Today)' },
+    { id: 2, name: 'Waterproof Membrane Roll (300 sq ft)', qty: 2, basePrice: 185.00, supplier: 'SiteOne / Local Supply', source: 'SiteOne Regional Supply Feed (Providence, RI)' },
+    { id: 3, name: 'Cement Backer Board (1/2 in)', qty: 15, basePrice: 16.75, supplier: 'Home Depot Pro', source: 'Home Depot Pro Wholesale Index (Updated Today)' },
   ]);
+  const [markupPercent, setMarkupPercent] = useState(20);
   const [proNumber, setProNumber] = useState('HD-PRO-948210');
   const [exported, setExported] = useState(false);
 
-  const subtotal = items.reduce((acc, item) => acc + item.qty * item.unitPrice, 0);
+  const multiplier = 1 + markupPercent / 100;
+  const subtotal = items.reduce((acc, item) => acc + item.qty * item.basePrice * multiplier, 0);
 
   const handleExport = () => {
     setExported(true);
@@ -25,8 +28,8 @@ export default function SupplierCartPage() {
       <div className="max-w-4xl mx-auto w-full space-y-8">
         <header className="flex justify-between items-center border-b border-slate-800 pb-5">
           <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-sm">
-              JA
+            <Link href="/dashboard">
+              <Logo size="sm" />
             </Link>
             <div>
               <h1 className="text-xl font-extrabold text-white">Wholesale Supply House Cart</h1>
@@ -41,38 +44,58 @@ export default function SupplierCartPage() {
         <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl space-y-6 shadow-xl">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800 pb-4">
             <div>
-              <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">📦 Active Order List</span>
+              <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">📦 Active Order List & Wholesale Sourcing</span>
               <h2 className="text-lg font-extrabold text-white">Materials Required for Current Leads</h2>
             </div>
-            <div className="flex items-center gap-2">
-              <label className="text-xs font-bold text-slate-400">Pro Account ID:</label>
-              <input
-                type="text"
-                value={proNumber}
-                onChange={(e) => setProNumber(e.target.value)}
-                className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs font-mono text-emerald-400 w-36"
-              />
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5">
+                <label className="text-xs font-bold text-slate-400">Markup (%):</label>
+                <input
+                  type="number"
+                  value={markupPercent}
+                  onChange={(e) => setMarkupPercent(Number(e.target.value))}
+                  className="bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs font-bold text-amber-400 w-20 text-center"
+                />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <label className="text-xs font-bold text-slate-400">Pro Account ID:</label>
+                <input
+                  type="text"
+                  value={proNumber}
+                  onChange={(e) => setProNumber(e.target.value)}
+                  className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs font-mono text-emerald-400 w-32"
+                />
+              </div>
             </div>
           </div>
 
-          <div className="space-y-3">
-            {items.map((item) => (
-              <div key={item.id} className="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div>
-                  <h4 className="text-sm font-bold text-white">{item.name}</h4>
-                  <p className="text-xs text-slate-400">Supplier: <strong className="text-slate-200">{item.supplier}</strong></p>
+          <div className="space-y-4">
+            {items.map((item) => {
+              const markedUpPrice = item.basePrice * multiplier;
+              const itemTotal = item.qty * markedUpPrice;
+              return (
+                <div key={item.id} className="bg-slate-950 border border-slate-800 p-5 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-bold text-white">{item.name}</h4>
+                    <p className="text-xs text-slate-400">
+                      Supplier: <strong className="text-slate-200">{item.supplier}</strong>
+                    </p>
+                    <p className="text-[11px] text-blue-400 font-mono">
+                      📍 Sourced from: {item.source} (${item.basePrice.toFixed(2)} base + {markupPercent}% markup)
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-xs text-slate-300">Qty: <strong className="text-white">{item.qty}</strong></span>
+                    <span className="text-sm font-black text-emerald-400">${itemTotal.toFixed(2)}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-xs text-slate-300">Qty: <strong className="text-white">{item.qty}</strong></span>
-                  <span className="text-xs font-black text-emerald-400">${(item.qty * item.unitPrice).toFixed(2)}</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
-          <div className="border-t border-slate-800 pt-4 flex justify-between items-center">
+          <div className="border-t border-slate-800 pt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <p className="text-xs text-slate-400">Estimated Wholesale Total</p>
+              <p className="text-xs text-slate-400">Estimated Wholesale Total (Including {markupPercent}% Contractor Markup)</p>
               <p className="text-2xl font-black text-white">${subtotal.toFixed(2)}</p>
             </div>
             <button
@@ -86,7 +109,7 @@ export default function SupplierCartPage() {
 
           {exported && (
             <div className="bg-emerald-950/80 border border-emerald-500/50 p-4 rounded-xl text-center">
-              <p className="text-xs font-extrabold text-emerald-400">✓ Wholesale order cart exported successfully with account #{proNumber}!</p>
+              <p className="text-xs font-extrabold text-emerald-400">✓ Wholesale order cart exported successfully with account #{proNumber} and {markupPercent}% markup!</p>
             </div>
           )}
         </section>
