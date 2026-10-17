@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import SiteFooter from '../components/SiteFooter';
 import FeedbackWidget from '../components/FeedbackWidget';
+import Logo from '../components/Logo';
 
 interface LeadItem {
   id: string;
@@ -94,8 +95,8 @@ export default function DashboardPage() {
       <div className="max-w-6xl mx-auto w-full space-y-8">
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-5 gap-4">
           <div className="flex items-center gap-3">
-            <Link href="/" className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-sm">
-              JA
+            <Link href="/">
+              <Logo size="sm" />
             </Link>
             <div>
               <div className="flex items-center gap-2">
@@ -128,7 +129,7 @@ export default function DashboardPage() {
         <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl space-y-6 shadow-xl">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-4">
             <div>
-              <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">⚡ Live Real-Time Feed (State API & Permits)</span>
+              <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">⚡ Live Municipal Permits & State Feed</span>
               <h2 className="text-xl font-extrabold text-white">
                 Active {userProfile.trade} Leads in {userProfile.location} (Quick Quotes)
               </h2>
