@@ -1,167 +1,192 @@
 import Link from 'next/link';
-
-export const MASTER_TRADES = [
-  { name: "General Contractor", slug: "general-contractor", icon: "🏗️", group: "Featured & Core Trades" },
-  { name: "Handyman", slug: "handyman", icon: "🛠️", group: "Featured & Core Trades" },
-  { name: "Electrician", slug: "electrician", icon: "⚡", group: "Featured & Core Trades" },
-  { name: "Plumber", slug: "plumber", icon: "🚰", group: "Featured & Core Trades" },
-  { name: "Mason", slug: "mason", icon: "🧱", group: "Featured & Core Trades" },
-  { name: "Carpenter", slug: "carpenter", icon: "🪚", group: "Featured & Core Trades" },
-  { name: "HVAC Technician", slug: "hvac", icon: "❄️", group: "Featured & Core Trades" },
-  { name: "Landscaper", slug: "landscaper", icon: "🌲", group: "Featured & Core Trades" },
-  { name: "Roofer", slug: "roofing", icon: "🏠", group: "Building & Construction" },
-  { name: "Painter & Decorator", slug: "painter", icon: "🎨", group: "Building & Construction" },
-  { name: "Drywall Installer", slug: "drywall", icon: "📏", group: "Building & Construction" },
-  { name: "Flooring & Tiler", slug: "flooring", icon: "🪵", group: "Building & Construction" },
-  { name: "Glazier & Glass", slug: "glass", icon: "🪟", group: "Building & Construction" },
-  { name: "Plasterer & Stucco", slug: "stucco", icon: "🏛️", group: "Building & Construction" },
-  { name: "Ironworker", slug: "ironworker", icon: "🔩", group: "Building & Construction" },
-  { name: "Sheet Metal Worker", slug: "sheet-metal", icon: "🛡️", group: "Building & Construction" },
-  { name: "Insulation Installer", slug: "insulation", icon: "🌡️", group: "Building & Construction" },
-  { name: "Scaffolder", slug: "scaffolder", icon: "🪜", group: "Building & Construction" },
-  { name: "Pile Driver", slug: "pile-driver", icon: "🔨", group: "Building & Construction" },
-  { name: "Concrete & Foundations", slug: "concrete", icon: "🪨", group: "Building & Construction" },
-  { name: "Siding & Exterior", slug: "siding", icon: "🏡", group: "Building & Construction" },
-  { name: "Fencing", slug: "fencing", icon: "🚧", group: "Building & Construction" },
-  { name: "Gutter Installation", slug: "gutter", icon: "🌧️", group: "Building & Construction" },
-  { name: "Chimney & Fireplace", slug: "chimney", icon: "🔥", group: "Building & Construction" },
-  { name: "Waterproofing", slug: "waterproofing", icon: "💧", group: "Building & Construction" },
-  { name: "Epoxy Flooring", slug: "epoxy-flooring", icon: "✨", group: "Building & Construction" },
-  { name: "Pipefitter & Steamfitter", slug: "pipefitter", icon: "🔧", group: "Mechanical & Industrial" },
-  { name: "Boilermaker", slug: "boilermaker", icon: "♨️", group: "Mechanical & Industrial" },
-  { name: "Welder", slug: "welder", icon: "👨‍🏭", group: "Mechanical & Industrial" },
-  { name: "Elevator Mechanic", slug: "elevator-mechanic", icon: "🛗", group: "Mechanical & Industrial" },
-  { name: "Millwright", slug: "millwright", icon: "⚙️", group: "Mechanical & Industrial" },
-  { name: "Machinist", slug: "machinist", icon: "🔩", group: "Mechanical & Industrial" },
-  { name: "Tool & Die Maker", slug: "tool-and-die", icon: "📐", group: "Mechanical & Industrial" },
-  { name: "Locksmith & Safe", slug: "locksmith", icon: "🔐", group: "Mechanical & Industrial" },
-  { name: "Auto & Diesel Mechanic", slug: "diesel-mechanic", icon: "🚛", group: "Mechanical & Industrial" },
-  { name: "Solar Installation", slug: "solar", icon: "☀️", group: "Mechanical & Industrial" },
-  { name: "Security & Low Voltage", slug: "security", icon: "📹", group: "Mechanical & Industrial" },
-  { name: "Sewer & Septic", slug: "sewer", icon: "🕳️", group: "Mechanical & Industrial" },
-  { name: "Heavy Equipment Operator", slug: "heavy-equipment", icon: "🚜", group: "Transport & Heavy Equipment" },
-  { name: "Excavation & Grading", slug: "excavation", icon: "⛏️", group: "Transport & Heavy Equipment" },
-  { name: "Demolition", slug: "demolition", icon: "💥", group: "Transport & Heavy Equipment" },
-  { name: "Crane Operator", slug: "crane-operator", icon: "🏗️", group: "Transport & Heavy Equipment" },
-  { name: "Commercial Truck Driver", slug: "truck-driver", icon: "🚚", group: "Transport & Heavy Equipment" },
-  { name: "Lineman & Utility", slug: "lineman", icon: "🗼", group: "Transport & Heavy Equipment" },
-  { name: "Pool Maintenance", slug: "pool-maintenance", icon: "🏊", group: "Outdoor, Property & Specialty" },
-  { name: "Tennis Court Maintenance", slug: "tennis-court-maintenance", icon: "🎾", group: "Outdoor, Property & Specialty" },
-  { name: "Exterminator & Pest", slug: "exterminator", icon: "🐜", group: "Outdoor, Property & Specialty" },
-  { name: "Driveway Paving", slug: "driveway-paving", icon: "🛣️", group: "Outdoor, Property & Specialty" },
-  { name: "Irrigation & Sprinklers", slug: "irrigation", icon: "💦", group: "Outdoor, Property & Specialty" },
-  { name: "Tree Service & Arborist", slug: "tree-service", icon: "🌳", group: "Outdoor, Property & Specialty" },
-  { name: "Disaster Cleanup", slug: "disaster-cleanup", icon: "🚨", group: "Outdoor, Property & Specialty" },
-  { name: "Mold Remediation", slug: "mold-remediation", icon: "🧪", group: "Outdoor, Property & Specialty" },
-  { name: "Pressure Washing", slug: "pressure-washing", icon: "🧼", group: "Outdoor, Property & Specialty" },
-  { name: "Cleaning Services", slug: "cleaning", icon: "🧹", group: "Outdoor, Property & Specialty" },
-  { name: "Moving & Hauling", slug: "moving-hauling", icon: "📦", group: "Outdoor, Property & Specialty" }
-];
+import SiteFooter from './components/SiteFooter';
+import QuickStartCard from './components/QuickStartCard';
+import { MASTER_TRADES } from './components/tradesData';
 
 export default function HomePage() {
   const groups = [
-    "Featured & Core Trades",
-    "Building & Construction",
+    "Core Residential & Commercial",
+    "Building & Exterior",
     "Mechanical & Industrial",
-    "Transport & Heavy Equipment",
-    "Outdoor, Property & Specialty"
+    "Heavy Equipment & Utility",
+    "Property & Specialty Services",
   ];
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 font-sans p-6 md:p-12 flex flex-col justify-between">
-      <div className="max-w-6xl mx-auto w-full space-y-16">
-        {/* Hero Section */}
-        <div className="text-center space-y-6 pt-6">
-          <div className="inline-flex items-center gap-2 bg-blue-950/80 border border-blue-800/60 text-blue-400 text-xs font-extrabold uppercase tracking-widest px-4 py-1.5 rounded-full">
-            <span>⚡</span> Built for General Contractors, Handymen & 55+ Skilled Trades
-          </div>
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white">
-            JobAllies Command Center
-          </h1>
-          <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto">
-            Speak 30-second quotes from your truck, copy 1-tap supply house order pads, and get paid 10% finder's fees for passing overflow jobs to local pros you trust.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4 pt-2">
-            <Link href="/dashboard" className="bg-blue-600 hover:bg-blue-500 text-white font-extrabold px-8 py-4 rounded-2xl transition shadow-xl shadow-blue-600/25 text-sm">
-              Enter Truck-Cab Command Center (Free)
+    <main className="min-h-screen bg-slate-950 text-slate-100 font-sans p-5 md:p-10 flex flex-col justify-between">
+      <div className="max-w-6xl mx-auto w-full space-y-12">
+        <header className="flex flex-wrap justify-between items-center gap-4 border-b border-slate-800/80 pb-4">
+          <Link href="/" className="flex items-center gap-2.5">
+            <span className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-sm shadow-lg shadow-blue-600/30">
+              JA
+            </span>
+            <span className="text-xl font-black tracking-tight text-white">JobAllies</span>
+          </Link>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Link
+              href="/post-project"
+              className="text-xs font-bold text-slate-300 hover:text-white px-3.5 py-2 rounded-xl border border-slate-800 bg-slate-900/60 transition"
+            >
+              Homeowner? Request a Quote
             </Link>
-            <Link href="/auth/signup" className="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 font-bold px-8 py-4 rounded-2xl transition text-sm">
-              Create Verified Pro Account
+            <Link
+              href="/dashboard/voice-quote"
+              className="text-xs font-bold text-emerald-400 hover:text-emerald-300 px-3.5 py-2 rounded-xl border border-emerald-800/60 bg-emerald-950/40 transition"
+            >
+              🎙️ 30-Sec Voice Quote
+            </Link>
+            <Link
+              href="/dashboard"
+              className="text-xs font-extrabold text-white px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 transition"
+            >
+              Open Pro Workspace →
             </Link>
           </div>
-        </div>
+        </header>
 
-        {/* 5 Core Value Proposition Tiles */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5">
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-2.5">
-            <div className="text-2xl">📍</div>
-            <h3 className="text-lg font-extrabold text-white">Get Local Jobs</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              See homeowner project requests in your town—plus get recommended in local Facebook Groups by your trade allies.
-            </p>
-          </div>
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-2.5">
-            <div className="text-2xl">🎙️</div>
-            <h3 className="text-lg font-extrabold text-white">Talk-to-Quote</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Speak your job notes from the front seat of your truck and text a clean estimate to the customer in 30 seconds.
-            </p>
-          </div>
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-2.5">
-            <div className="text-2xl">🤝</div>
-            <h3 className="text-lg font-extrabold text-white">Sub & Referral Crew</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Partner with reliable local pros in other trades to vouch for each other and pass overflow work back and forth.
-            </p>
-          </div>
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-2.5">
-            <div className="text-2xl">💵</div>
-            <h3 className="text-lg font-extrabold text-white">10% Finder's Fees</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Manage your trusted local subcontractor network and lock in 10% referral commission splits automatically.
-            </p>
-          </div>
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-2.5">
-            <div className="text-2xl">📦</div>
-            <h3 className="text-lg font-extrabold text-white">Supply House Express</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Turn any quote into a 1-tap material order list for Home Depot Pro, Lowe's, Ferguson, or your local counter rep.
-            </p>
-          </div>
-        </div>
+        {/* 5-Second Above-the-Fold Split: Blunt Value on Left, Pre-Filled Action Form on Right */}
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-2">
+          <div className="lg:col-span-6 space-y-5 text-left">
+            <div className="inline-flex items-center gap-2 bg-blue-950/90 border border-blue-800 text-blue-400 text-xs font-extrabold uppercase tracking-widest px-3.5 py-1.5 rounded-full">
+              <span>⚡</span> Built for Busy Contractors • 55 Trades
+            </div>
 
-        {/* Complete Categorized 55-Trade Directory */}
-        <div className="space-y-10 pt-8 border-t border-slate-800">
-          <div className="text-center space-y-2">
-            <h2 className="text-3xl font-extrabold text-white">Select Your Trade</h2>
-            <p className="text-sm text-slate-400">Click any trade below to open its dedicated Command Center and local lead feed.</p>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white leading-[1.1]">
+              Get Local Jobs.<br />
+              <span className="text-blue-500">Speak 30-Second Quotes.</span><br />
+              Earn 10% Referral Fees.
+            </h1>
+
+            <ul className="space-y-3 text-sm md:text-base font-bold text-slate-200 pt-1">
+              <li className="flex items-center gap-3">
+                <span className="w-7 h-7 rounded-lg bg-blue-600/20 border border-blue-500/40 text-blue-400 flex items-center justify-center text-sm">📍</span>
+                <span>Direct homeowner leads in your town ($0 lead fees)</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <span className="w-7 h-7 rounded-lg bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center text-sm">🎙️</span>
+                <span>Speak job notes → text itemized quotes in 30 seconds</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <span className="w-7 h-7 rounded-lg bg-amber-600/20 border border-amber-500/40 text-amber-400 flex items-center justify-center text-sm">💵</span>
+                <span>Pass overflow work to local pros → collect 10% fee</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <span className="w-7 h-7 rounded-lg bg-purple-600/20 border border-purple-500/40 text-purple-400 flex items-center justify-center text-sm">📦</span>
+                <span>1-tap material lists for Home Depot Pro & Lowe's</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="lg:col-span-6">
+            <QuickStartCard defaultTrade="General Contractor" />
+          </div>
+        </section>
+
+        {/* 4 Instant-Action Tool Cards */}
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-slate-900 border border-slate-800 p-5 rounded-3xl flex flex-col justify-between space-y-4">
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-2xl">📍</span>
+                <span className="text-[11px] font-extrabold uppercase text-blue-400 bg-blue-950 px-2.5 py-0.5 rounded-full">Tool 1</span>
+              </div>
+              <h3 className="text-base font-extrabold text-white">Claim Local Jobs</h3>
+              <ul className="text-xs text-slate-300 space-y-1.5">
+                <li>• Homeowner requests in your zip</li>
+                <li>• Direct phone & SMS unlocked</li>
+                <li>• Zero pay-per-lead markups</li>
+              </ul>
+            </div>
+            <Link href="/dashboard" className="block text-center bg-slate-950 hover:bg-blue-600 border border-slate-800 hover:border-blue-500 text-white text-xs font-extrabold py-2.5 rounded-xl transition">
+              View Local Leads →
+            </Link>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 p-5 rounded-3xl flex flex-col justify-between space-y-4">
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-2xl">🎙️</span>
+                <span className="text-[11px] font-extrabold uppercase text-emerald-400 bg-emerald-950 px-2.5 py-0.5 rounded-full">Tool 2</span>
+              </div>
+              <h3 className="text-base font-extrabold text-white">Speak Your Quote</h3>
+              <ul className="text-xs text-slate-300 space-y-1.5">
+                <li>• Tap mic & speak hours + materials</li>
+                <li>• Auto-builds itemized estimate</li>
+                <li>• Texts link to client in 30 seconds</li>
+              </ul>
+            </div>
+            <Link href="/dashboard/voice-quote" className="block text-center bg-slate-950 hover:bg-emerald-600 border border-slate-800 hover:border-emerald-500 text-white text-xs font-extrabold py-2.5 rounded-xl transition">
+              Try Voice Quote →
+            </Link>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 p-5 rounded-3xl flex flex-col justify-between space-y-4">
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-2xl">🤝</span>
+                <span className="text-[11px] font-extrabold uppercase text-amber-400 bg-amber-950 px-2.5 py-0.5 rounded-full">Tool 3</span>
+              </div>
+              <h3 className="text-base font-extrabold text-white">10% Referral Pay</h3>
+              <ul className="text-xs text-slate-300 space-y-1.5">
+                <li>• Hand off jobs you don't do</li>
+                <li>• Vetted local plumbers, sparkys, GCs</li>
+                <li>• 10% finder's fee locked in escrow</li>
+              </ul>
+            </div>
+            <Link href="/dashboard/network" className="block text-center bg-slate-950 hover:bg-amber-500 hover:text-slate-950 border border-slate-800 text-white text-xs font-extrabold py-2.5 rounded-xl transition">
+              See Local Allies →
+            </Link>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 p-5 rounded-3xl flex flex-col justify-between space-y-4">
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-2xl">📦</span>
+                <span className="text-[11px] font-extrabold uppercase text-purple-400 bg-purple-950 px-2.5 py-0.5 rounded-full">Tool 4</span>
+              </div>
+              <h3 className="text-base font-extrabold text-white">1-Tap Supply List</h3>
+              <ul className="text-xs text-slate-300 space-y-1.5">
+                <li>• Turns quote into SKU order list</li>
+                <li>• Home Depot Pro, Lowe's, Ferguson</li>
+                <li>• Copy & paste to counter in 1 tap</li>
+              </ul>
+            </div>
+            <Link href="/dashboard/supplier-cart" className="block text-center bg-slate-950 hover:bg-purple-600 border border-slate-800 hover:border-purple-500 text-white text-xs font-extrabold py-2.5 rounded-xl transition">
+              Open Supply List →
+            </Link>
+          </div>
+        </section>
+
+        {/* 55 Trades Grid */}
+        <section className="space-y-6 pt-4 border-t border-slate-800">
+          <div>
+            <h2 className="text-2xl font-black text-white">Tap Your Trade (Pre-Fills Your Local Setup)</h2>
+            <p className="text-xs text-slate-400">55 licensed & independent trades supported nationwide.</p>
           </div>
 
           {groups.map((groupName) => (
-            <div key={groupName} className="space-y-4">
-              <h3 className="text-xs font-extrabold uppercase tracking-widest text-blue-400 border-b border-slate-800/80 pb-2">
+            <div key={groupName} className="space-y-2.5">
+              <h3 className="text-[11px] font-extrabold uppercase tracking-widest text-blue-400">
                 {groupName}
               </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                {MASTER_TRADES.filter(t => t.group === groupName).map((t) => (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
+                {MASTER_TRADES.filter((t) => t.group === groupName).map((t) => (
                   <Link
                     key={t.slug}
                     href={`/trades/${t.slug}`}
-                    className="bg-slate-900 hover:bg-blue-600/20 border border-slate-800 hover:border-blue-500 p-3.5 rounded-2xl flex items-center gap-2.5 text-xs font-bold transition text-slate-200 hover:text-white shadow-sm"
+                    className="bg-slate-900 hover:bg-blue-600/20 border border-slate-800 hover:border-blue-500 p-3 rounded-2xl flex items-center gap-2 text-xs font-bold transition text-slate-200 hover:text-white"
                   >
-                    <span className="text-lg">{t.icon}</span>
-                    <span>{t.name}</span>
+                    <span className="text-base">{t.icon}</span>
+                    <span className="truncate">{t.name}</span>
                   </Link>
                 ))}
               </div>
             </div>
           ))}
-        </div>
+        </section>
       </div>
 
-      <footer className="max-w-6xl mx-auto w-full text-center border-t border-slate-800/80 pt-8 mt-16 text-xs text-slate-500">
-        © {new Date().getFullYear()} JobAllies (from UpLevel Labs, Inc.) — All rights reserved.
-      </footer>
+      <SiteFooter />
     </main>
   );
 }

@@ -1,63 +1,52 @@
-import React from 'react';
 import Link from 'next/link';
-
-export const metadata = {
-  title: 'Privacy Policy | JobAllies & JobAllies Scout Chrome Extension',
-  description: 'Official Privacy Policy and Chrome Web Store Data Usage Disclosure for JobAllies.'
-};
+import SiteFooter from '../components/SiteFooter';
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans py-16 px-6">
-      <div className="max-w-3xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-8 space-y-6 shadow-2xl">
-        <div className="border-b border-slate-800 pb-4 flex items-center justify-between">
+    <main className="min-h-screen bg-slate-950 text-slate-100 font-sans p-6 md:p-12 flex flex-col justify-between">
+      <div className="max-w-4xl mx-auto w-full space-y-8">
+        <div className="flex justify-between items-center border-b border-slate-800 pb-6">
           <div>
-            <span className="text-xs font-bold uppercase text-emerald-400">Official Policy</span>
-            <h1 className="text-2xl sm:text-3xl font-black text-white mt-1">JobAllies Privacy Policy</h1>
-            <p className="text-xs text-slate-400 mt-1">Effective Date: October 13, 2026</p>
+            <span className="text-xs font-extrabold text-blue-400 uppercase tracking-widest">UpLevel Labs, Inc.</span>
+            <h1 className="text-3xl font-extrabold text-white">Privacy Policy</h1>
+            <p className="text-xs text-slate-400 mt-1">Effective Date: October 2026</p>
           </div>
-          <Link href="/" className="text-xs font-bold text-emerald-400 hover:underline">
-            ← Back to JobAllies.com
+          <Link href="/" className="bg-slate-900 border border-slate-800 hover:bg-slate-800 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-300">
+            ← Home
           </Link>
         </div>
 
-        <section className="space-y-2 text-sm leading-relaxed text-slate-300">
-          <h2 className="text-base font-bold text-white">1. Overview & Single Purpose</h2>
-          <p>
-            JobAllies (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;) operates the JobAllies web platform (https://joballies.com) and the optional <strong>JobAllies Scout — Facebook Group Co-Pilot &amp; Ally Vouch</strong> Chrome Extension. Our single purpose is to help licensed trade contractors discover homeowner service requests, generate project estimates, coordinate trade referrals, and copy pre-drafted responses to their clipboard.
-          </p>
-        </section>
+        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl space-y-6 text-sm text-slate-300 leading-relaxed">
+          <section className="space-y-2">
+            <h2 className="text-lg font-extrabold text-white">1. Information We Collect</h2>
+            <p>
+              JobAllies (operated by UpLevel Labs, Inc.) collects information provided directly by trade professionals and homeowners, including name, business name, state contractor license credentials, email address, mobile telephone number, service radius, and project estimate details.
+            </p>
+          </section>
 
-        <section className="space-y-2 text-sm leading-relaxed text-slate-300">
-          <h2 className="text-base font-bold text-white">2. Chrome Extension Data Collection &amp; Permissions</h2>
-          <p>The JobAllies Scout Chrome Extension requests only the minimum permissions necessary to function:</p>
-          <ul className="list-disc pl-5 space-y-1 text-xs text-slate-300">
-            <li><strong>activeTab &amp; Host Permissions (facebook.com/groups/* &amp; joballies.com):</strong> Used strictly to detect homeowner trade requests on the active page and, only when clicked by the user, send the selected post text and URL to the user&apos;s JobAllies Lead Radar.</li>
-            <li><strong>storage:</strong> Used to locally store the contractor&apos;s company name, service town, and preferred trade ally name inside the browser&apos;s local storage (<code>chrome.storage.local</code>).</li>
-            <li><strong>clipboardWrite:</strong> Used only when the user clicks &ldquo;Copy Peer Ally Vouch&rdquo; or &ldquo;Copy Direct Reply&rdquo; to place the drafted text onto their clipboard.</li>
-          </ul>
-        </section>
+          <section className="space-y-2">
+            <h2 className="text-lg font-extrabold text-white">2. SMS & Mobile Communications Policy (A2P 10DLC Compliance)</h2>
+            <p>
+              By providing your mobile phone number on JobAllies, you consent to receive transactional text messages relating to account verification (OTP codes), homeowner quote requests, project updates, and escrow referral notifications. <strong>No mobile information will be shared with third parties or affiliates for marketing or promotional purposes.</strong> All the above categories exclude text messaging originator opt-in data and consent; this information will not be shared with any third parties. You may reply <strong>STOP</strong> at any time to opt out of SMS notifications.
+            </p>
+          </section>
 
-        <section className="space-y-2 text-sm leading-relaxed text-slate-300">
-          <h2 className="text-base font-bold text-white">3. Google Chrome Web Store Limited Use Certification</h2>
-          <p>
-            Our use of information received from Google APIs and Chrome Extension permissions adheres strictly to the Chrome Web Store Developer Program Policies, including the Limited Use requirements:
-          </p>
-          <ul className="list-disc pl-5 space-y-1 text-xs text-slate-300">
-            <li>We do <strong>not</strong> sell, rent, or transfer user data to third parties.</li>
-            <li>We do <strong>not</strong> use or transfer user data for purposes unrelated to the extension&apos;s single purpose.</li>
-            <li>We do <strong>not</strong> use or transfer user data to determine creditworthiness or for lending purposes.</li>
-            <li>We do <strong>not</strong> execute any remote code; all extension scripts are bundled locally within the extension package.</li>
-          </ul>
-        </section>
+          <section className="space-y-2">
+            <h2 className="text-lg font-extrabold text-white">3. Voice-to-Quote & Browser Data</h2>
+            <p>
+              When you use Talk-to-Quote or our optional Chrome Extension, speech transcription and clipboard actions are processed strictly to generate your requested estimates and referral text. We do not sell personal data to third-party lead brokers.
+            </p>
+          </section>
 
-        <section className="space-y-2 text-sm leading-relaxed text-slate-300">
-          <h2 className="text-base font-bold text-white">4. Contact Us</h2>
-          <p>
-            For privacy questions or data deletion requests, contact us via <Link href="/post-project" className="text-emerald-400 underline">https://joballies.com</Link>.
-          </p>
-        </section>
+          <section className="space-y-2">
+            <h2 className="text-lg font-extrabold text-white">4. Contact Us</h2>
+            <p>
+              For privacy inquiries or data removal requests, contact UpLevel Labs, Inc. at support@joballies.com.
+            </p>
+          </section>
+        </div>
       </div>
-    </div>
+      <SiteFooter />
+    </main>
   );
 }

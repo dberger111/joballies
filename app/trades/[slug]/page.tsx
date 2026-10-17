@@ -1,122 +1,122 @@
 import Link from 'next/link';
-
-const tradesMap: Record<string, string> = {
-  "general-contractor": "General Contractor",
-  "handyman": "Handyman",
-  "electrician": "Electrician",
-  "mason": "Mason",
-  "plumber": "Plumber",
-  "landscaper": "Landscaper",
-  "carpenter": "Carpenter",
-  "hvac": "HVAC Technician",
-  "painter": "Painter & Decorator",
-  "roofing": "Roofer",
-  "roofer": "Roofer",
-  "paving": "Driveway Paving",
-  "driveway-paving": "Driveway Paving",
-  "exterminator": "Exterminator & Pest Control",
-  "pool-maintenance": "Pool Maintenance",
-  "tennis-court-maintenance": "Tennis Court Maintenance",
-  "drywall": "Drywall Installer",
-  "flooring": "Flooring & Tiler",
-  "siding": "Siding & Exterior",
-  "fencing": "Fencing",
-  "concrete": "Concrete & Foundations",
-  "excavation": "Excavation & Grading",
-  "demolition": "Demolition",
-  "insulation": "Insulation Installer",
-  "sewer": "Sewer & Septic",
-  "solar": "Solar Installation",
-  "security": "Security & Low Voltage",
-  "locksmith": "Locksmith & Safe",
-  "glass": "Glazier & Glass",
-  "tile": "Flooring & Tiler",
-  "stucco": "Plasterer & Stucco",
-  "tree-service": "Tree Service & Arborist",
-  "pressure-washing": "Pressure Washing",
-  "gutter": "Gutter Installation",
-  "chimney": "Chimney & Fireplace",
-  "waterproofing": "Waterproofing",
-  "disaster-cleanup": "Disaster Cleanup",
-  "cleaning": "Cleaning Services",
-  "irrigation": "Irrigation & Sprinklers",
-  "epoxy-flooring": "Epoxy Flooring",
-  "mold-remediation": "Mold Remediation",
-  "moving-hauling": "Moving & Hauling",
-  "ironworker": "Ironworker",
-  "sheet-metal": "Sheet Metal Worker",
-  "scaffolder": "Scaffolder",
-  "pile-driver": "Pile Driver",
-  "pipefitter": "Pipefitter & Steamfitter",
-  "boilermaker": "Boilermaker",
-  "welder": "Welder",
-  "elevator-mechanic": "Elevator Mechanic",
-  "millwright": "Millwright",
-  "machinist": "Machinist",
-  "tool-and-die": "Tool & Die Maker",
-  "diesel-mechanic": "Auto & Diesel Mechanic",
-  "heavy-equipment": "Heavy Equipment Operator",
-  "crane-operator": "Crane Operator",
-  "truck-driver": "Commercial Truck Driver",
-  "lineman": "Lineman & Utility"
-};
+import SiteFooter from '../../components/SiteFooter';
+import QuickStartCard from '../../components/QuickStartCard';
+import { MASTER_TRADES } from '../../components/tradesData';
 
 export async function generateStaticParams() {
-  return Object.keys(tradesMap).map((slug) => ({ slug }));
+  return MASTER_TRADES.map((t) => ({ slug: t.slug }));
 }
 
 export default async function TradeLandingPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const tradeName = tradesMap[slug] || slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  const matched = MASTER_TRADES.find((t) => t.slug === slug);
+  const tradeName = matched ? matched.name : slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  const tradeIcon = matched ? matched.icon : '⚡';
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 font-sans p-6 md:p-12 flex flex-col justify-between">
-      <div className="max-w-5xl mx-auto w-full space-y-12">
-        <div className="text-center space-y-4 pt-6">
-          <span className="bg-blue-900/50 text-blue-400 text-xs font-extrabold uppercase tracking-widest px-4 py-1.5 rounded-full border border-blue-700/50">
-            JobAllies Trade Command Center
-          </span>
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white">
-            Win, Quote & Share More <span className="text-blue-500">{tradeName}</span> Jobs
-          </h1>
-          <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-            Built for independent {tradeName} pros: speak 30-second estimates from your truck, copy 1-tap supply house material lists, and lock in 10% referral finder's fees with local trade allies.
-          </p>
-          <div className="pt-4 flex flex-wrap justify-center gap-4">
-            <Link href={`/auth/signup?trade=${encodeURIComponent(tradeName)}`} className="bg-blue-600 hover:bg-blue-500 text-white font-extrabold px-8 py-4 rounded-2xl transition inline-block text-sm shadow-xl shadow-blue-600/25">
-              Launch {tradeName} Command Center (Free)
-            </Link>
-            <Link href="/dashboard" className="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 font-bold px-8 py-4 rounded-2xl transition inline-block text-sm">
-              Open Truck-Cab Tools
-            </Link>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-2">
-            <h3 className="text-xl font-bold text-blue-400">🎙️ 30-Second Talk-to-Quote</h3>
-            <p className="text-sm text-slate-400">Speak your {tradeName.toLowerCase()} job notes out loud and text a clean estimate before you leave the driveway.</p>
-          </div>
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-2">
-            <h3 className="text-xl font-bold text-emerald-400">🤝 10% Referral Finder's Fees</h3>
-            <p className="text-sm text-slate-400">Partner with local General Contractors, Handymen, Plumbers, and Electricians to pass overflow work and split finder's fees.</p>
-          </div>
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-2">
-            <h3 className="text-xl font-bold text-orange-400">📦 Supply House Express</h3>
-            <p className="text-sm text-slate-400">Grab a 1-tap material order pad from any quote to paste into Home Depot Pro, Lowe's, or text to your counter rep.</p>
-          </div>
-        </div>
-
-        <div className="text-center pt-8 border-t border-slate-800">
-          <Link href="/" className="text-slate-400 hover:text-white text-sm font-bold transition">
-            ← Back to All 55+ Trades & Homepage
+    <main className="min-h-screen bg-slate-950 text-slate-100 font-sans p-5 md:p-10 flex flex-col justify-between">
+      <div className="max-w-6xl mx-auto w-full space-y-12">
+        <header className="flex justify-between items-center border-b border-slate-800 pb-4">
+          <Link href="/" className="flex items-center gap-2.5">
+            <span className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-black text-xs">
+              JA
+            </span>
+            <span className="font-black text-white text-lg">JobAllies</span>
           </Link>
-        </div>
+          <div className="flex items-center gap-2.5">
+            <Link
+              href={`/post-project?trade=${encodeURIComponent(tradeName)}`}
+              className="text-xs font-bold text-blue-400 hover:text-blue-300 bg-blue-950/60 border border-blue-800/60 px-3.5 py-2 rounded-xl"
+            >
+              Need a {tradeName}? Request Quote
+            </Link>
+            <Link
+              href="/"
+              className="text-xs font-bold text-slate-400 hover:text-white bg-slate-900 border border-slate-800 px-3.5 py-2 rounded-xl transition"
+            >
+              All 55 Trades
+            </Link>
+          </div>
+        </header>
+
+        {/* 5-Second Above-the-Fold Split: Blunt Trade Value + Pre-Filled Trade & IP Intake Form */}
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="lg:col-span-6 space-y-5">
+            <div className="inline-flex items-center gap-2 bg-blue-950/90 border border-blue-800 text-blue-400 text-xs font-extrabold uppercase tracking-widest px-3.5 py-1.5 rounded-full">
+              <span>{tradeIcon}</span> Built for Busy {tradeName} Pros
+            </div>
+
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white leading-[1.1]">
+              More Local <span className="text-blue-500">{tradeName}</span> Jobs.<br />
+              30-Second Voice Quotes.
+            </h1>
+
+            <ul className="space-y-3 text-sm md:text-base font-bold text-slate-200">
+              <li className="flex items-center gap-3">
+                <span className="w-7 h-7 rounded-lg bg-blue-600/20 border border-blue-500/40 text-blue-400 flex items-center justify-center text-sm">📍</span>
+                <span>Homeowner {tradeName.toLowerCase()} requests in your town ($0 lead fees)</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <span className="w-7 h-7 rounded-lg bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center text-sm">🎙️</span>
+                <span>Speak {tradeName.toLowerCase()} scope → text estimate in 30 seconds</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <span className="w-7 h-7 rounded-lg bg-amber-600/20 border border-amber-500/40 text-amber-400 flex items-center justify-center text-sm">💵</span>
+                <span>Collect 10% referral fees from local GCs & allied subs</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <span className="w-7 h-7 rounded-lg bg-purple-600/20 border border-purple-500/40 text-purple-400 flex items-center justify-center text-sm">📦</span>
+                <span>1-tap {tradeName.toLowerCase()} material list for supply houses</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="lg:col-span-6">
+            <QuickStartCard defaultTrade={tradeName} />
+          </div>
+        </section>
+
+        {/* 3 Direct Action Cards */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-3">
+            <div className="flex items-center gap-2.5">
+              <span className="text-2xl">📍</span>
+              <h3 className="text-base font-extrabold text-white">Local {tradeName} Leads</h3>
+            </div>
+            <ul className="text-xs text-slate-300 space-y-1.5">
+              <li>• Filtered strictly for {tradeName.toLowerCase()} jobs</li>
+              <li>• Direct client phone & text unlocked</li>
+              <li>• Keep 100% of your job margin</li>
+            </ul>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-3">
+            <div className="flex items-center gap-2.5">
+              <span className="text-2xl">🎙️</span>
+              <h3 className="text-base font-extrabold text-white">30-Second Voice Quote</h3>
+            </div>
+            <ul className="text-xs text-slate-300 space-y-1.5">
+              <li>• Speak labor hours & material costs</li>
+              <li>• Instant clean SMS & email link</li>
+              <li>• Client approves & funds online</li>
+            </ul>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-3">
+            <div className="flex items-center gap-2.5">
+              <span className="text-2xl">🤝</span>
+              <h3 className="text-base font-extrabold text-white">10% Referral Network</h3>
+            </div>
+            <ul className="text-xs text-slate-300 space-y-1.5">
+              <li>• Trade leads with vetted local pros</li>
+              <li>• Automatic 10% referral fee split</li>
+              <li>• Digital lien waiver included</li>
+            </ul>
+          </div>
+        </section>
       </div>
 
-      <footer className="max-w-5xl mx-auto w-full text-center border-t border-slate-800/80 pt-8 mt-16 text-xs text-slate-500">
-        © {new Date().getFullYear()} JobAllies (from UpLevel Labs, Inc.) — All rights reserved.
-      </footer>
+      <SiteFooter />
     </main>
   );
 }

@@ -1,59 +1,45 @@
-import React from 'react';
 import Link from 'next/link';
+import SiteFooter from '../components/SiteFooter';
 
-export const metadata = {
-  title: 'Terms of Service & Escrow Agreement | JobAllies',
-  description: 'Official Terms of Service, 14-Day Free Trial Billing Terms, and Peer Referral Escrow Rules for JobAllies.'
-};
-
-export default function TermsOfServicePage() {
+export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans py-16 px-6">
-      <div className="max-w-3xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-8 space-y-6 shadow-2xl">
-        <div className="border-b border-slate-800 pb-4 flex items-center justify-between">
+    <main className="min-h-screen bg-slate-950 text-slate-100 font-sans p-6 md:p-12 flex flex-col justify-between">
+      <div className="max-w-4xl mx-auto w-full space-y-8">
+        <div className="flex justify-between items-center border-b border-slate-800 pb-6">
           <div>
-            <span className="text-xs font-bold uppercase text-emerald-400">Legal Agreement</span>
-            <h1 className="text-2xl sm:text-3xl font-black text-white mt-1">Terms of Service &amp; Escrow Policy</h1>
-            <p className="text-xs text-slate-400 mt-1">Effective Date: October 13, 2026</p>
+            <span className="text-xs font-extrabold text-blue-400 uppercase tracking-widest">UpLevel Labs, Inc.</span>
+            <h1 className="text-3xl font-extrabold text-white">Terms & Conditions</h1>
+            <p className="text-xs text-slate-400 mt-1">Platform Usage, Estimates & Referral Escrow Terms</p>
           </div>
-          <Link href="/" className="text-xs font-bold text-emerald-400 hover:underline">
-            ← Back to JobAllies.com
+          <Link href="/" className="bg-slate-900 border border-slate-800 hover:bg-slate-800 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-300">
+            ← Home
           </Link>
         </div>
 
-        <section className="space-y-2 text-sm leading-relaxed text-slate-300">
-          <h2 className="text-base font-bold text-white">1. Platform Purpose &amp; Eligibility</h2>
-          <p>
-            JobAllies provides a software-as-a-service command center for trade contractors, specialty service professionals, and property owners. Contractors are solely responsible for maintaining all required state, provincial, or municipal trade licenses, insurance, and permits for work performed.
-          </p>
-        </section>
+        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl space-y-6 text-sm text-slate-300 leading-relaxed">
+          <section className="space-y-2">
+            <h2 className="text-lg font-extrabold text-white">1. Independent Contractor Relationship</h2>
+            <p>
+              JobAllies (from UpLevel Labs, Inc.) provides software command center tools, quote formatting, directory listings, and peer-to-peer referral tracking for independent trade professionals. JobAllies is not a general contractor, employer, or party to any construction contract between a homeowner and a trade professional.
+            </p>
+          </section>
 
-        <section className="space-y-2 text-sm leading-relaxed text-slate-300">
-          <h2 className="text-base font-bold text-white">2. 14-Day Free Trial &amp; Subscription Billing</h2>
-          <p>
-            Browsing the Lead Radar and drafting estimates is free. Your 14-day free trial begins only when you accept your first lead or approve your first client quote. After the 14-day trial period concludes, Pro Membership is billed at $49.00/month via Stripe unless cancelled prior to the trial end date.
-          </p>
-        </section>
+          <section className="space-y-2">
+            <h2 className="text-lg font-extrabold text-white">2. Estimates, Milestones & Finder's Fee Splits</h2>
+            <p>
+              Contractors are solely responsible for verifying the accuracy of their labor rates, material quantities, code compliance, and state or municipal licensing requirements. Referral commission splits (such as 10% finder's fees between allied trades) are governed by the terms agreed upon by the referring and receiving trade professionals at the time of handoff.
+            </p>
+          </section>
 
-        <section className="space-y-2 text-sm leading-relaxed text-slate-300">
-          <h2 className="text-base font-bold text-white">3. Retailer Pro Account Integrations</h2>
-          <p>
-            JobAllies allows users to link third-party wholesale or Pro accounts (including Home Depot Pro Xtra, Lowe&apos;s Pro, SiteOne Landscape Supply, and Ferguson) to generate Purchase Orders and Quick-Order CSV carts. All material purchases are governed by the respective retailer&apos;s terms of sale.
-          </p>
-        </section>
-
-        <section className="space-y-2 text-sm leading-relaxed text-slate-300">
-          <h2 className="text-base font-bold text-white">4. Peer-to-Peer (P2P) Referral Escrow</h2>
-          <p>
-            When contractors lock referral commission splits in JobAllies P2P Escrow, funds are held pending confirmation that the referred subcontractor has commenced or completed the contracted scope.
-          </p>
-        </section>
-
-        <div className="pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
-          <Link href="/privacy" className="text-emerald-400 hover:underline font-bold">View Privacy Policy →</Link>
-          <span>© 2026 JobAllies. All rights reserved.</span>
+          <section className="space-y-2">
+            <h2 className="text-lg font-extrabold text-white">3. Public Registry Profiles</h2>
+            <p>
+              Publicly seeded directory profiles use official public state licensing records (such as the State of Connecticut Department of Consumer Protection Open Data registry) to display active credential numbers and municipal coverage areas. Contractors may claim, update, or request removal of their profile at any time.
+            </p>
+          </section>
         </div>
       </div>
-    </div>
+      <SiteFooter />
+    </main>
   );
 }

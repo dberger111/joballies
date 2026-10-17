@@ -12,17 +12,56 @@ interface LiveContractor {
   state: string;
   slug: string;
   claimUrl: string;
+  email?: string;
 }
 
 export default function FounderGrowthConsole() {
   const [unlocked, setUnlocked] = useState(false);
   const [passcode, setPasscode] = useState('');
-  const [activeTab, setActiveTab] = useState<'live-ct' | 'all-states' | 'campaigns' | 'qr'>('live-ct');
+  const [activeTab, setActiveTab] = useState<'seeder' | 'campaigns'>('seeder');
+  
+  const [selectedState, setSelectedState] = useState('CT');
   const [cityQuery, setCityQuery] = useState('WESTPORT');
+  const [tradeFilter, setTradeFilter] = useState('ALL');
+  const [fetchLimit, setFetchLimit] = useState('250');
+  
   const [loadingRegistry, setLoadingRegistry] = useState(false);
   const [liveContractors, setLiveContractors] = useState<LiveContractor[]>([]);
   const [registrySource, setRegistrySource] = useState('');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  const [campaignType, setCampaignType] = useState<'claim' | 'quote_request'>('claim');
+  const [customScope, setCustomScope] = useState('Looking for a licensed professional for upcoming project work in the local area. Estimated budget: $3,500.');
+  const [dispatching, setDispatching] = useState(false);
+  const [dispatchResult, setDispatchResult] = useState<any>(null);
+
+  const [testEmail, setTestEmail] = useState('');
+  const [testStatus, setTestStatus] = useState('');
+
+  const usStates = [
+    'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 
+    'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 
+    'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 
+    'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 
+    'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
+  ];
+
+  const tradesList = [
+    "General Contractor", "Handyman", "Electrician", "Plumber", "Mason & Stonework", 
+    "Carpenter", "HVAC Technician", "Landscaper", "Roofer", "Painter & Decorator", 
+    "Drywall Installer", "Flooring & Tiler", "Driveway Paving", "Pool Maintenance"
+  ];
+
+  const samplePro = {
+    businessName: "Mike's Stonework & Masonry",
+    contactName: "Mike Johnson",
+    licenseNumber: "HIC.0649281",
+    town: "Westport, CT",
+    trade: "Mason & Stonework",
+    slug: "mikes-stonework-masonry"
+  };
+
+  const sampleClaimUrl = `https://joballies.com/profile/${samplePro.slug}?claim=true`;
 
   const copyText = (key: string, text: string) => {
     navigator.clipboard.writeText(text);
@@ -34,20 +73,29 @@ export default function FounderGrowthConsole() {
     e.preventDefault();
     if (passcode === 'uplevel2026') {
       setUnlocked(true);
-      fetchCTContractors('WESTPORT');
+      fetchContractors('CT', 'WESTPORT', 'ALL', '250');
     } else {
       alert('Invalid Founder Passcode.');
     }
   };
 
-  const fetchCTContractors = async (targetCity: string) => {
+  const fetchContractors = async (state: string, targetCity: string, trade: string, limit: string) => {
     setLoadingRegistry(true);
     try {
-      const res = await fetch(`/api/state-licenses?state=CT&city=${encodeURIComponent(targetCity)}&limit=50`);
+      const res = await fetch(`/api/state-licenses?state=${state}&city=${encodeURIComponent(targetCity)}&limit=${limit}`);
       const data = await res.json();
       if (data.contractors) {
-        setLiveContractors(data.contractors);
-        setRegistrySource(data.source || 'State of Connecticut Open Data API');
+        let filtered = data.contractors;
+        if (trade !== 'ALL') {
+          filtered = filtered.filter((c: any) => c.trade.toLowerCase().includes(trade.toLowerCase()));
+        }
+        // Attach a mock test email if none exists so campaign dispatches work seamlessly
+        const enhanced = filtered.map((c: any, idx: number) => ({
+          ...c,
+          email: c.email || `contractor_${idx}_${c.slug.substring(0, 8)}@example.com`
+        }));
+        setLiveContractors(enhanced);
+        setRegistrySource(data.source || `${state} State Licensing Board`);
       }
     } catch (err) {
       console.error(err);
@@ -56,41 +104,63 @@ export default function FounderGrowthConsole() {
     }
   };
 
-  const handleExportCTCSV = () => {
-    const headers = ['Business Name', 'License Holder Name', 'CT License Number', 'Trade', 'Town', 'Pre-Built Claim URL', 'Ready-to-Send Outreach Message'];
-    const rows = liveContractors.map((c) => {
-      const msg = `Hi ${c.contactName || c.businessName} — Because you hold active CT license ${c.licenseNumber} in ${c.town}, we pre-built your Digital Yard Sign & homeowner quote catcher on JobAllies. Claim your page free in 15 seconds: ${c.claimUrl}`;
-      return [c.businessName, c.contactName, c.licenseNumber, c.trade, c.town, c.claimUrl, msg]
-        .map(v => `"${String(v || '').replace(/"/g, '""')}"`)
-        .join(',');
-    });
-    const csv = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows].join('\n');
-    const link = document.createElement('a');
-    link.setAttribute('href', encodeURI(csv));
-    link.setAttribute('download', `CT_Licensed_Contractors_${cityQuery}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleExecuteCampaign = async () => {
+    if (!confirm(`Are you sure you want to execute campaign "${campaignType}" for ${liveContractors.length} pros in ${cityQuery}, ${selectedState}?`)) return;
+    setDispatching(true);
+    setDispatchResult(null);
+    try {
+      const res = await fetch("/api/admin/dispatch-campaign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contractors: liveContractors,
+          campaignType,
+          customProjectScope: customScope,
+          founderPasscode: "uplevel2026"
+        })
+      });
+      const data = await res.json();
+      setDispatchResult(data);
+    } catch (err) {
+      alert("Error dispatching campaign: " + String(err));
+    } finally {
+      setDispatching(false);
+    }
   };
 
-  const ctTowns = ['WESTPORT', 'WESTON', 'FAIRFIELD', 'STAMFORD', 'NORWALK', 'GREENWICH', 'DARIEN', 'NEW CANAAN', 'RIDGEFIELD', 'WILTON', 'DANBURY', 'NEW HAVEN', 'HARTFORD'];
-
-  const statePortals = [
-    { state: 'Connecticut (CT)', status: 'Live Socrata API Connected', count: '135,000+ Licenses', url: 'https://data.ct.gov/Business/Home-Improvement-Contractor-Licenses-Includes-Acti/5r9m-qgni', notes: 'Live 1-click pull active in Tab 1 via data.ct.gov' },
-    { state: 'New York (NY)', status: 'Open Data + County Registries', count: '95,000+ Licenses', url: 'https://data.ny.gov', notes: 'Westchester, Nassau, Suffolk & NYC DOB bulk CSVs available' },
-    { state: 'California (CA)', status: 'CSLB Public Data Portal', count: '285,000+ Licenses', url: 'https://www.cslb.ca.gov/onlineservices/dataportal/', notes: 'Includes business phone numbers & bond status in bulk CSV/Excel download' },
-    { state: 'Texas (TX)', status: 'TDLR Socrata Open Data API', count: '190,000+ Licenses', url: 'https://data.texas.gov', notes: 'Electricians, HVAC (ACR), and Plumbers available via REST API & CSV' },
-    { state: 'Florida (FL)', status: 'DBPR Bulk License Roster', count: '240,000+ Licenses', url: 'https://www2.myfloridalicense.com/construction-industry/public-records/', notes: 'Free daily CSV download of all Certified General, Electrical & Plumbing pros' },
-    { state: 'New Jersey (NJ)', status: 'NJ DCA Home Improvement Roster', count: '110,000+ Licenses', url: 'https://newjersey.mylicense.com/verification/', notes: 'Statewide HIC, Electrical & Master Plumber registry' }
-  ];
+  const handleSendTest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!testEmail) return;
+    setTestStatus('Sending test email via Resend...');
+    try {
+      const res = await fetch('/api/admin/dispatch-campaign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contractors: [{ ...samplePro, email: testEmail, town: `${cityQuery}, ${selectedState}`, claimUrl: sampleClaimUrl }],
+          campaignType,
+          customProjectScope: customScope,
+          founderPasscode: 'uplevel2026'
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTestStatus(`✓ Test email successfully sent to ${testEmail}! Check your inbox.`);
+      } else {
+        setTestStatus(`Error: ${data.error}`);
+      }
+    } catch (err) {
+      setTestStatus(`Error: ${String(err)}`);
+    }
+  };
 
   if (!unlocked) {
     return (
       <main className="min-h-screen bg-slate-950 text-slate-100 font-sans p-6 flex items-center justify-center">
         <form onSubmit={handleUnlock} className="max-w-sm w-full bg-slate-900 border border-slate-800 p-8 rounded-3xl space-y-5 shadow-2xl text-center">
           <span className="text-xs font-extrabold uppercase tracking-widest text-amber-400">Restricted Founder Portal</span>
-          <h1 className="text-2xl font-extrabold text-white">UpLevel Labs Growth Console</h1>
-          <p className="text-xs text-slate-400">Live State License Auto-Seeder & First 2,000 Users Acquisition Engine.</p>
+          <h1 className="text-2xl font-extrabold text-white">UpLevel Labs Marketing Hub</h1>
+          <p className="text-xs text-slate-400">50-State Seeder & Targeted Trade Campaigns.</p>
           <input 
             type="password" 
             placeholder="Enter Founder Passcode"
@@ -99,7 +169,7 @@ export default function FounderGrowthConsole() {
             className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white text-center"
           />
           <button type="submit" className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold py-3 rounded-xl text-xs transition">
-            Unlock Founder Growth Console
+            Unlock Marketing Hub
           </button>
         </form>
       </main>
@@ -112,124 +182,114 @@ export default function FounderGrowthConsole() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-6 gap-4">
           <div>
             <span className="text-xs font-extrabold text-amber-400 uppercase tracking-widest">Founder / Admin Only • UpLevel Labs, Inc.</span>
-            <h1 className="text-3xl font-extrabold text-white">State License Auto-Seeder & 2,000-User Engine</h1>
+            <h1 className="text-3xl font-extrabold text-white">Targeted Trade Marketing & 50-State Seeder</h1>
             <p className="text-xs text-slate-400 mt-1">
-              Connected live to the State of Connecticut eLicense Open Data API (`data.ct.gov`) + 50-State Bulk Seeder.
+              Filter by 50 U.S. States & specific trade types, test campaigns, and dispatch live Resend emails.
             </p>
           </div>
-          <div className="flex gap-3">
-            <Link href="/dashboard" className="bg-slate-900 border border-slate-800 hover:bg-slate-800 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-300">
-              Contractor Dashboard ↗
-            </Link>
-          </div>
+          <Link href="/dashboard" className="bg-slate-900 border border-slate-800 hover:bg-slate-800 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-300">
+            Contractor Dashboard ↗
+          </Link>
         </div>
 
         {/* Navigation Tabs */}
         <div className="flex flex-wrap gap-2 border-b border-slate-800 pb-4">
-          <button onClick={() => setActiveTab('live-ct')} className={`px-4 py-2.5 rounded-xl text-xs font-extrabold transition ${activeTab === 'live-ct' ? 'bg-amber-500 text-slate-950' : 'bg-slate-900 text-slate-300 hover:bg-slate-800'}`}>
-            ⚡ 1. Live Connecticut State License Pull (data.ct.gov API)
-          </button>
-          <button onClick={() => setActiveTab('all-states')} className={`px-4 py-2.5 rounded-xl text-xs font-extrabold transition ${activeTab === 'all-states' ? 'bg-amber-500 text-slate-950' : 'bg-slate-900 text-slate-300 hover:bg-slate-800'}`}>
-            🌎 2. 50-State Bulk Registry Hubs (CA, FL, TX, NY, NJ)
+          <button onClick={() => setActiveTab('seeder')} className={`px-4 py-2.5 rounded-xl text-xs font-extrabold transition ${activeTab === 'seeder' ? 'bg-amber-500 text-slate-950' : 'bg-slate-900 text-slate-300 hover:bg-slate-800'}`}>
+            🌎 1. 50-State Seeder & Trade Filter
           </button>
           <button onClick={() => setActiveTab('campaigns')} className={`px-4 py-2.5 rounded-xl text-xs font-extrabold transition ${activeTab === 'campaigns' ? 'bg-amber-500 text-slate-950' : 'bg-slate-900 text-slate-300 hover:bg-slate-800'}`}>
-            📣 3. UTM Links & Cold Outreach Scripts
+            🚀 2. Campaign Launcher & Visual Preview
           </button>
         </div>
 
-        {/* TAB 1: LIVE CONNECTICUT SOCRATA API PULL */}
-        {activeTab === 'live-ct' && (
+        {/* TAB 1: 50-STATE SEEDER & TRADE FILTER */}
+        {activeTab === 'seeder' && (
           <div className="space-y-6">
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="flex justify-between items-center">
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Live Official Government Feed: {registrySource}</span>
-                  <h3 className="text-xl font-extrabold text-white">Pull Active Licensed Contractors by Connecticut Town</h3>
-                  <p className="text-xs text-slate-400">Click any town below (or type any CT municipality) to pull real active licensed pros and pre-build their live JobAllies pages.</p>
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Active Source: {registrySource}</span>
+                  <h3 className="text-xl font-extrabold text-white">Filter by State, Municipality & Trade</h3>
                 </div>
-                <button 
-                  onClick={handleExportCTCSV}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold px-5 py-3 rounded-xl whitespace-nowrap shadow-lg"
-                >
-                  📥 Export {cityQuery} Pros CSV ({liveContractors.length})
-                </button>
+                <span className="text-xs font-extrabold bg-blue-950 text-blue-400 px-3 py-1.5 rounded-xl border border-blue-800">
+                  {liveContractors.length} Matching Pros Loaded
+                </span>
               </div>
 
-              {/* Quick Town Pills */}
-              <div className="flex flex-wrap gap-2 pt-1">
-                {ctTowns.map((town) => (
-                  <button
-                    key={town}
-                    onClick={() => { setCityQuery(town); fetchCTContractors(town); }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition ${
-                      cityQuery === town 
-                        ? 'bg-amber-500 text-slate-950 border-amber-400' 
-                        : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-600'
-                    }`}
+              {/* 50-State & Trade Filter Controls */}
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2">
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 mb-1">Select U.S. State</label>
+                  <select
+                    value={selectedState}
+                    onChange={(e) => setSelectedState(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white font-bold"
                   >
-                    {town}
+                    {usStates.map(st => (
+                      <option key={st} value={st}>{st} - State Board</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 mb-1">City / Town</label>
+                  <input 
+                    type="text" 
+                    value={cityQuery}
+                    onChange={(e) => setCityQuery(e.target.value.toUpperCase())}
+                    placeholder="Enter City..."
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 mb-1">Specific Trade Type</label>
+                  <select
+                    value={tradeFilter}
+                    onChange={(e) => setTradeFilter(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white font-bold"
+                  >
+                    <option value="ALL">All Trades (Any)</option>
+                    {tradesList.map(t => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex items-end">
+                  <button 
+                    onClick={() => fetchContractors(selectedState, cityQuery, tradeFilter, fetchLimit)}
+                    className="w-full bg-blue-600 hover:bg-blue-500 text-white font-extrabold py-3 rounded-xl text-xs"
+                  >
+                    {loadingRegistry ? 'Filtering...' : '🔍 Pull & Filter Pros'}
                   </button>
-                ))}
-              </div>
-
-              {/* Custom Town Input */}
-              <div className="flex gap-3 pt-2">
-                <input 
-                  type="text" 
-                  value={cityQuery}
-                  onChange={(e) => setCityQuery(e.target.value.toUpperCase())}
-                  placeholder="Type any CT Town (e.g., TRUMBULL, MONROE, GREENWICH)..."
-                  className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white font-mono"
-                />
-                <button 
-                  onClick={() => fetchCTContractors(cityQuery)}
-                  className="bg-blue-600 hover:bg-blue-500 text-white font-extrabold px-6 py-3 rounded-xl text-xs"
-                >
-                  {loadingRegistry ? 'Pulling State API...' : '🔍 Pull Live CT Registry'}
-                </button>
+                </div>
               </div>
             </div>
 
             {/* Results Table */}
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4">
-              <div className="flex justify-between items-center">
-                <h4 className="text-base font-extrabold text-white">
-                  Pre-Populated Contractor Pages in {cityQuery}, CT ({liveContractors.length} Active Pros Loaded)
-                </h4>
-                <span className="text-xs text-slate-400">Every page below has the Live Homeowner Quote Catcher active</span>
-              </div>
+              <h4 className="text-base font-extrabold text-white">
+                Filtered Results in {cityQuery}, {selectedState} ({liveContractors.length} Pros Ready)
+              </h4>
 
-              <div className="space-y-2.5 max-h-[600px] overflow-y-auto pr-1">
+              <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
                 {liveContractors.map((pro, idx) => (
-                  <div key={idx} className="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div className="space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
+                  <div key={idx} className="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
+                    <div>
+                      <div className="flex items-center gap-2">
                         <span className="font-extrabold text-white text-sm">{pro.businessName}</span>
                         <span className="text-xs bg-emerald-950 text-emerald-400 border border-emerald-700/50 px-2.5 py-0.5 rounded-full font-mono">
-                          {pro.licenseNumber}
+                          {pro.trade}
                         </span>
                         <span className="text-xs text-slate-400">{pro.town}</span>
                       </div>
-                      <p className="text-xs text-slate-400">
-                        License Holder: <strong className="text-slate-200">{pro.contactName}</strong> • Status: {pro.status}
-                      </p>
-                      <p className="text-[11px] font-mono text-blue-400 break-all">{pro.claimUrl}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">License: {pro.licenseNumber} • Email: {pro.email}</p>
                     </div>
-                    <div className="flex items-center gap-2 self-end md:self-center">
-                      <button
-                        onClick={() => copyText(`ct-${idx}`, pro.claimUrl)}
-                        className="bg-slate-800 hover:bg-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl text-white whitespace-nowrap"
-                      >
-                        {copiedKey === `ct-${idx}` ? '✓ Claim URL Copied' : 'Copy Claim Link'}
-                      </button>
-                      <Link
-                        href={`/profile/${pro.slug}?license=${encodeURIComponent(pro.licenseNumber)}&town=${encodeURIComponent(pro.town)}&claim=true`}
-                        target="_blank"
-                        className="bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold px-4 py-2 rounded-xl whitespace-nowrap"
-                      >
-                        Open Pre-Built Page ↗
-                      </Link>
-                    </div>
+                    <Link
+                      href={`/profile/${pro.slug}?license=${encodeURIComponent(pro.licenseNumber)}&town=${encodeURIComponent(pro.town)}&claim=true`}
+                      target="_blank"
+                      className="bg-slate-800 hover:bg-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl text-white whitespace-nowrap"
+                    >
+                      View Page ↗
+                    </Link>
                   </div>
                 ))}
               </div>
@@ -237,62 +297,126 @@ export default function FounderGrowthConsole() {
           </div>
         )}
 
-        {/* TAB 2: 50-STATE BULK REGISTRY HUBS */}
-        {activeTab === 'all-states' && (
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-6">
-            <div>
-              <h3 className="text-xl font-extrabold text-white">50-State Licensed Contractor Data Portals</h3>
-              <p className="text-xs text-slate-400 mt-1">
-                California (CSLB), Florida (DBPR), and Texas (TDLR) publish downloadable bulk CSVs that include phone numbers, addresses, and license classifications.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {statePortals.map((s, i) => (
-                <div key={i} className="bg-slate-950 border border-slate-800 p-5 rounded-2xl space-y-2 flex flex-col justify-between">
-                  <div className="space-y-1">
-                    <div className="flex justify-between items-center">
-                      <span className="font-extrabold text-white text-base">{s.state}</span>
-                      <span className="text-xs font-bold text-amber-400 bg-amber-950/60 px-2.5 py-1 rounded-full border border-amber-700/40">{s.count}</span>
-                    </div>
-                    <p className="text-xs text-emerald-400 font-bold">{s.status}</p>
-                    <p className="text-xs text-slate-400">{s.notes}</p>
-                  </div>
-                  <div className="pt-3">
-                    <a href={s.url} target="_blank" className="text-xs font-extrabold text-blue-400 hover:underline">
-                      Open Official State Data Portal ↗
-                    </a>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: CAMPAIGNS & SCRIPTS */}
+        {/* TAB 2: CAMPAIGN LAUNCHER & VISUAL PREVIEW */}
         {activeTab === 'campaigns' && (
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4">
-            <h3 className="text-lg font-extrabold text-white">High-Converting "Claim Your Pre-Built License Page" Outreach Script</h3>
-            <pre className="text-xs text-slate-200 bg-slate-950 p-5 rounded-2xl border border-slate-800 whitespace-pre-wrap font-sans leading-relaxed">
-{`Subject: Homeowner quote requests for {{Business_Name}} (CT License #{{License_Number}})
+          <div className="space-y-6">
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-6 shadow-xl">
+              <h3 className="text-xl font-extrabold text-white">Select & Launch Campaign</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button
+                  onClick={() => setCampaignType('claim')}
+                  className={`p-5 rounded-2xl border text-left transition space-y-2 ${campaignType === 'claim' ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-slate-950 border-slate-800 text-slate-400'}`}
+                >
+                  <div className="font-extrabold text-sm text-white">1. "Claim Your Profile Page & Digital Yard Sign"</div>
+                  <p className="text-xs text-slate-300">Invites contractors to verify their state license and claim their pre-built local page.</p>
+                </button>
 
-Hi {{Contact_Name}},
+                <button
+                  onClick={() => setCampaignType('quote_request')}
+                  className={`p-5 rounded-2xl border text-left transition space-y-2 ${campaignType === 'quote_request' ? 'bg-emerald-600/20 border-emerald-500 text-white' : 'bg-slate-950 border-slate-800 text-slate-400'}`}
+                >
+                  <div className="font-extrabold text-sm text-white">2. "There is a Local Quote Request for You"</div>
+                  <p className="text-xs text-slate-300">Alerts pros in their exact trade that a homeowner in their town submitted a project.</p>
+                </button>
+              </div>
 
-Because you hold active Connecticut license #{{License_Number}} in {{Town}}, we pre-built your verified Digital Yard Sign and local quote catcher on JobAllies:
-{{Claim_URL}}
+              {campaignType === 'quote_request' && (
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-slate-400">Homeowner Project Scope to Broadcast:</label>
+                  <textarea
+                    rows={3}
+                    value={customScope}
+                    onChange={(e) => setCustomScope(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-white"
+                  />
+                </div>
+              )}
 
-When homeowners or other local pros in {{Town}} need a contractor, they can send project requests straight to your page—and you can reply from your truck in 30 seconds using our Talk-to-Quote voice tool.
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <button
+                  onClick={handleExecuteCampaign}
+                  disabled={dispatching}
+                  className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-8 py-4 rounded-2xl text-sm transition shadow-xl shadow-amber-500/25 flex-1"
+                >
+                  {dispatching ? 'Dispatching Campaign...' : `🚀 Blast Campaign to All ${liveContractors.length} Filtered Pros`}
+                </button>
+              </div>
 
-Tap here to verify your phone/email in 15 seconds and claim your free page:
-{{Claim_URL}}
+              {dispatchResult && (
+                <div className="bg-emerald-950/70 border border-emerald-500/50 p-4 rounded-xl text-emerald-300 text-xs font-bold text-center">
+                  ✓ Successfully dispatched {dispatchResult.dispatchedCount} emails via Resend!
+                </div>
+              )}
+            </div>
 
-— JobAllies Local Trade Network (from UpLevel Labs, Inc.)`}
-            </pre>
+            {/* Test Dispatcher & Live Render */}
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-5">
+              <h3 className="text-lg font-extrabold text-white">Test Send to Your Personal Email</h3>
+              <form onSubmit={handleSendTest} className="flex gap-3">
+                <input 
+                  type="email" 
+                  required
+                  placeholder="Enter your email to test..."
+                  value={testEmail}
+                  onChange={(e) => setTestEmail(e.target.value)}
+                  className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white"
+                />
+                <button type="submit" className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-6 py-3 rounded-xl text-xs whitespace-nowrap">
+                  Send Test 🚀
+                </button>
+              </form>
+              {testStatus && <p className="text-xs font-bold text-blue-400 text-center">{testStatus}</p>}
+
+              <div className="space-y-2 pt-4 border-t border-slate-800">
+                <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Live Inbox Visual Preview</h4>
+                <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 overflow-x-auto">
+                  <div dangerouslySetInnerHTML={{ __html: campaignType === 'quote_request' ? `
+                    <div style="font-family: sans-serif; background: #020617; color: #f8fafc; padding: 32px; border-radius: 24px;">
+                      <div style="max-width: 600px; margin: 0 auto; background: #0f172a; padding: 32px; border-radius: 20px; border: 1px solid #1e293b;">
+                        <div style="font-size: 14px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
+                          JobAllies Instant Lead Radar (from UpLevel Labs, Inc.)
+                        </div>
+                        <h1 style="font-size: 24px; font-weight: 900; color: #ffffff; margin-top: 0; line-height: 1.3;">
+                          New Local Quote Request for ${samplePro.businessName} (Mason)
+                        </h1>
+                        <p style="font-size: 15px; color: #94a3b8; line-height: 1.6;">Hi <strong>${samplePro.contactName}</strong>,</p>
+                        <p style="font-size: 15px; color: #94a3b8; line-height: 1.6;">A homeowner in <strong>${samplePro.town}</strong> just submitted a project request matching your specialty (<strong>Mason</strong>):</p>
+                        <div style="background: #1e293b; padding: 20px; border-radius: 14px; margin: 24px 0; border-left: 4px solid #10b981;">
+                          <p style="margin: 0; font-size: 14px; color: #e2e8f0; font-weight: 600;">📋 Project Scope:</p>
+                          <p style="margin: 8px 0 0 0; color: #94a3b8; font-size: 14px; line-height: 1.5;">"${customScope}"</p>
+                        </div>
+                        <div style="text-align: center; margin: 32px 0;">
+                          <a href="${sampleClaimUrl}" style="background: #10b981; color: #020617; padding: 16px 32px; border-radius: 12px; font-weight: 800; text-decoration: none; display: inline-block; font-size: 15px;">Claim Lead & Send 30-Second Quote →</a>
+                        </div>
+                      </div>
+                    </div>
+                  ` : `
+                    <div style="font-family: sans-serif; background: #020617; color: #f8fafc; padding: 32px; border-radius: 24px;">
+                      <div style="max-width: 600px; margin: 0 auto; background: #0f172a; padding: 32px; border-radius: 20px; border: 1px solid #1e293b;">
+                        <div style="font-size: 14px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
+                          JobAllies Pro Network (from UpLevel Labs, Inc.)
+                        </div>
+                        <h1 style="font-size: 24px; font-weight: 900; color: #ffffff; margin-top: 0; line-height: 1.3;">
+                          Active License Verification for ${samplePro.businessName}
+                        </h1>
+                        <p style="font-size: 15px; color: #94a3b8; line-height: 1.6;">Hi <strong>${samplePro.contactName}</strong>,</p>
+                        <p style="font-size: 15px; color: #94a3b8; line-height: 1.6;">Because you hold active state license <strong>${samplePro.licenseNumber}</strong> in <strong>${samplePro.town}</strong>, we have pre-built your verified Digital Yard Sign.</p>
+                        <div style="text-align: center; margin: 32px 0;">
+                          <a href="${sampleClaimUrl}" style="background: #2563eb; color: #ffffff; padding: 16px 32px; border-radius: 12px; font-weight: 800; text-decoration: none; display: inline-block; font-size: 15px;">Claim Your Free Profile & Page →</a>
+                        </div>
+                      </div>
+                    </div>
+                  `}} />
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
 
       <footer className="max-w-6xl mx-auto w-full text-center border-t border-slate-800/80 pt-8 mt-16 text-xs text-slate-500">
-        © {new Date().getFullYear()} JobAllies — Internal Founder Growth Console (from UpLevel Labs, Inc.)
+        © {new Date().getFullYear()} JobAllies — Founder Marketing Hub (from UpLevel Labs, Inc.)
       </footer>
     </main>
   );
