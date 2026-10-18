@@ -10,68 +10,80 @@ export default function HomePage() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [trade, setTrade] = useState('Architect');
+  const [trade, setTrade] = useState('General Contractor');
   const [location, setLocation] = useState('Weston, CT');
   const [radiusMiles, setRadiusMiles] = useState(25);
   const [notificationPref, setNotificationPref] = useState<'sms' | 'email'>('sms');
 
+  // Master 55+ Trades with Icons sorted alphabetically by category
   const trades = [
-    'Architect',
-    'Carpentry & Framing',
-    'Chimney & Masonry',
-    'Cleaning & Housekeeping',
-    'Concrete & Foundation',
-    'Demolition & Hauling',
-    'Disaster & Mold Remediation',
-    'Driveway Paving & Sealcoating',
-    'Drywall & Plastering',
-    'Electrical & Lighting',
-    'Elevator Mechanic',
-    'Epoxy & Specialized Flooring',
-    'Exterminator & Pest Control',
-    'Fencing & Gate',
-    'Flooring & Tile',
-    'General Contractor',
-    'Glass & Window Repair',
-    'Gutter Cleaning & Installation',
-    'Handyman Services',
-    'HVAC & Mechanical',
-    'Insulation & Weatherproofing',
-    'Interior Designer',
-    'Irrigation & Sprinkler Systems',
-    'Landscaping & Grounds',
-    'Locksmith & Security',
-    'Moving Services',
-    'Painter & Wallpaper',
-    'Plumbing & Water Systems',
-    'Pool Maintenance & Repair',
-    'Pressure Washing',
-    'Property Management',
-    'Remodeling & Additions',
-    'Roofing & Siding',
-    'Security & Smart Home',
-    'Septic & Sewer Systems',
-    'Solar & Alternative Energy',
-    'Structural Engineer',
-    'Stucco & Plaster',
-    'Tennis Court Maintenance',
-    'Tree Care & Arborist',
-    'Waterproofing & Drainage',
-    'Welding & Metalwork'
+    { name: 'Architect', icon: '📐' },
+    { name: 'Auto & Diesel Mechanic', icon: '🚛' },
+    { name: 'Boilermaker', icon: '♨️' },
+    { name: 'Carpenter', icon: '🪚' },
+    { name: 'Chimney & Fireplace', icon: '🔥' },
+    { name: 'Cleaning Services', icon: '🧹' },
+    { name: 'Commercial Truck Driver', icon: '🚚' },
+    { name: 'Concrete & Foundations', icon: '🪨' },
+    { name: 'Crane Operator', icon: '🏗️' },
+    { name: 'Demolition', icon: '💥' },
+    { name: 'Disaster Cleanup', icon: '🚨' },
+    { name: 'Driveway Paving', icon: '🛣️' },
+    { name: 'Drywall Installer', icon: '📏' },
+    { name: 'Electrical & Lighting', icon: '⚡' },
+    { name: 'Elevator Mechanic', icon: '🛗' },
+    { name: 'Epoxy Flooring', icon: '✨' },
+    { name: 'Excavation & Grading', icon: '⛏️' },
+    { name: 'Exterminator & Pest', icon: '🐜' },
+    { name: 'Fencing', icon: '🚧' },
+    { name: 'Flooring & Tiler', icon: '🪵' },
+    { name: 'General Contractor', icon: '🏗️' },
+    { name: 'Glazier & Glass', icon: '🪟' },
+    { name: 'Gutter Installation', icon: '🌧️' },
+    { name: 'Handyman', icon: '🛠️' },
+    { name: 'Heavy Equipment Operator', icon: '🚜' },
+    { name: 'HVAC Technician', icon: '❄️' },
+    { name: 'Insulation Installer', icon: '🌡️' },
+    { name: 'Ironworker', icon: '🔩' },
+    { name: 'Irrigation & Sprinklers', icon: '💦' },
+    { name: 'Landscaper', icon: '🌲' },
+    { name: 'Lineman & Utility', icon: '🗼' },
+    { name: 'Locksmith & Safe', icon: '🔐' },
+    { name: 'Machinist', icon: '🔩' },
+    { name: 'Mason', icon: '🧱' },
+    { name: 'Millwright', icon: '⚙️' },
+    { name: 'Mold Remediation', icon: '🧪' },
+    { name: 'Moving & Hauling', icon: '📦' },
+    { name: 'Painter & Decorator', icon: '🎨' },
+    { name: 'Pile Driver', icon: '🔨' },
+    { name: 'Pipefitter & Steamfitter', icon: '🔧' },
+    { name: 'Plasterer & Stucco', icon: '🏛️' },
+    { name: 'Plumber', icon: '🚰' },
+    { name: 'Pool Maintenance', icon: '🏊' },
+    { name: 'Pressure Washing', icon: '🧼' },
+    { name: 'Property Management', icon: '🏢' },
+    { name: 'Roofer', icon: '🏠' },
+    { name: 'Scaffolder', icon: '🪜' },
+    { name: 'Security & Low Voltage', icon: '📹' },
+    { name: 'Sewer & Septic', icon: '🕳️' },
+    { name: 'Sheet Metal Worker', icon: '🛡️' },
+    { name: 'Siding & Exterior', icon: '🏡' },
+    { name: 'Solar Installation', icon: '☀️' },
+    { name: 'Tennis Court Maintenance', icon: '🎾' },
+    { name: 'Tool & Die Maker', icon: '📐' },
+    { name: 'Tree Service & Arborist', icon: '🌳' },
+    { name: 'Waterproofing', icon: '💧' },
+    { name: 'Welder', icon: '👨‍🏭' }
   ];
 
   const formatPhoneNumber = (input: string) => {
-    // Strip all non-digit characters
     const digits = input.replace(/\D/g, '');
-    // If it starts with 1 and has 11 digits, format as +1XXXXXXXXXX
     if (digits.length === 11 && digits.startsWith('1')) {
       return '+' + digits;
     }
-    // If it has 10 digits, prepend +1
     if (digits.length === 10) {
       return '+1' + digits;
     }
-    // Return original if invalid length
     return input.trim();
   };
 
@@ -84,7 +96,7 @@ export default function HomePage() {
 
     const formattedPhone = formatPhoneNumber(phone);
     if (!formattedPhone.startsWith('+1') || formattedPhone.length !== 12) {
-      alert('Please enter a valid 10-digit U.S. mobile phone number (e.g. 2035550199 or +12035550199).');
+      alert('Please enter a valid 10-digit U.S. mobile phone number (e.g. 2035550199).');
       return;
     }
 
@@ -147,7 +159,7 @@ export default function HomePage() {
               <input
                 type="tel"
                 required
-                placeholder="e.g. 203-555-0199"
+                placeholder="203-555-0199"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white font-bold focus:outline-none focus:border-blue-500"
@@ -168,14 +180,14 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-2">Select Your Trade (All 42 Alphabetical)</label>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-2">Select Your Trade (Alphabetical with Icons)</label>
               <select
                 value={trade}
                 onChange={(e) => setTrade(e.target.value)}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white font-bold focus:outline-none focus:border-blue-500"
               >
                 {trades.map((t) => (
-                  <option key={t} value={t}>{t}</option>
+                  <option key={t.name} value={t.name}>{t.icon} {t.name}</option>
                 ))}
               </select>
             </div>
