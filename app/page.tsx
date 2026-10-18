@@ -15,7 +15,6 @@ export default function HomePage() {
   const [radiusMiles, setRadiusMiles] = useState(25);
   const [notificationPref, setNotificationPref] = useState<'sms' | 'email'>('sms');
 
-  // Master 55+ Trades with Icons sorted alphabetically by category
   const trades = [
     { name: 'Architect', icon: '📐' },
     { name: 'Auto & Diesel Mechanic', icon: '🚛' },
@@ -103,18 +102,33 @@ export default function HomePage() {
     const userData = { name, phone: formattedPhone, email, trade, location, radiusMiles, notificationPref };
     localStorage.setItem('joballies_temp_user', JSON.stringify(userData));
 
-    // Send confirmation welcome message and guide suggestions via Twilio / API
+    // Dispatch welcome guide confirmation based on user preference (Resend Email vs Twilio SMS)
     try {
-      const welcomeMessage = `JobAllies (from UpLevel Labs, Inc.): Welcome ${name}! Your ${trade} workspace for ${location} is active. Tips: 1. Set your ${radiusMiles}-mile radius. 2. Review verified public leads. 3. Invite your sub crew. Reply STOP to opt out.`;
-      await fetch('/api/send-sms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: formattedPhone,
-          message: welcomeMessage
-        })
-      });
-    } catch {}
+      if (notificationPref === 'email') {
+        await fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: email,
+            name,
+            trade,
+            subject: `Welcome to JobAllies - Your ${trade} Workspace in ${location} is Active`
+          })
+        });
+      } else {
+        const welcomeMessage = `JobAllies (from UpLevel Labs, Inc.): Welcome ${name}! Your ${trade} workspace for ${location} is active. Tips: 1. Set your ${radiusMiles}-mile radius. 2. Review verified public leads. 3. Invite your sub crew. Reply STOP to opt out.`;
+        await fetch('/api/send-sms', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: formattedPhone,
+            message: welcomeMessage
+          })
+        });
+      }
+    } catch (err) {
+      console.error('Failed to send welcome confirmation:', err);
+    }
 
     router.push('/dashboard');
   };
