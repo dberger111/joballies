@@ -11,49 +11,74 @@ export default function HomePage() {
   const [trade, setTrade] = useState('Architect');
   const [location, setLocation] = useState('Weston, CT');
   const [radiusMiles, setRadiusMiles] = useState(25);
+  const [notificationPref, setNotificationPref] = useState<'sms' | 'email'>('sms');
 
+  // Comprehensive list of all trade industries sorted strictly alphabetically
   const trades = [
     'Architect',
     'Carpentry & Framing',
     'Chimney & Masonry',
+    'Cleaning & Housekeeping',
     'Concrete & Foundation',
+    'Demolition & Hauling',
+    'Disaster & Mold Remediation',
+    'Driveway Paving & Sealcoating',
     'Drywall & Plastering',
     'Electrical & Lighting',
     'Elevator Mechanic',
+    'Epoxy & Specialized Flooring',
     'Exterminator & Pest Control',
     'Fencing & Gate',
     'Flooring & Tile',
     'General Contractor',
+    'Glass & Window Repair',
+    'Gutter Cleaning & Installation',
     'Handyman Services',
     'HVAC & Mechanical',
     'Insulation & Weatherproofing',
     'Interior Designer',
+    'Irrigation & Sprinkler Systems',
     'Landscaping & Grounds',
+    'Locksmith & Security',
+    'Moving Services',
     'Painter & Wallpaper',
-    'Paving & Driveway',
     'Plumbing & Water Systems',
     'Pool Maintenance & Repair',
+    'Pressure Washing',
     'Property Management',
     'Remodeling & Additions',
     'Roofing & Siding',
     'Security & Smart Home',
+    'Septic & Sewer Systems',
     'Solar & Alternative Energy',
     'Structural Engineer',
+    'Stucco & Plaster',
     'Tennis Court Maintenance',
     'Tree Care & Arborist',
     'Waterproofing & Drainage',
-    'Welding & Metalwork',
-    'Window & Door Installation'
+    'Welding & Metalwork'
   ];
 
-  const handleStart = (e: React.FormEvent) => {
+  const handleStart = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
       alert('Please enter your name.');
       return;
     }
-    const userData = { name, trade, location, radiusMiles };
+    const userData = { name, trade, location, radiusMiles, notificationPref };
     localStorage.setItem('joballies_temp_user', JSON.stringify(userData));
+
+    // Trigger confirmation welcome message with usage suggestions
+    try {
+      await fetch('/api/send-sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `JobAllies (from UpLevel Labs, Inc.): Welcome ${name}! Your ${trade} workspace for ${location} is active. Tips: 1. Set your ${radiusMiles}-mile radius. 2. Review verified public leads. 3. Invite your sub crew. Reply STOP to opt out.`
+        })
+      });
+    } catch {}
+
     router.push('/dashboard');
   };
 
@@ -94,7 +119,7 @@ export default function HomePage() {
             </div>
 
             <div>
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-2">Select Your Trade (Alphabetical)</label>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-2">Select Your Trade (All 42 Alphabetical)</label>
               <select
                 value={trade}
                 onChange={(e) => setTrade(e.target.value)}
@@ -139,11 +164,40 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* Notification Opt-In Preference */}
+          <div className="bg-slate-950 border border-slate-800 p-4 rounded-2xl space-y-3">
+            <label className="block text-xs font-extrabold uppercase tracking-wider text-amber-400">
+              🔔 Notification & Alert Preference (Opt-In)
+            </label>
+            <div className="flex gap-6 text-xs text-slate-200">
+              <label className="flex items-center gap-2 cursor-pointer font-semibold">
+                <input
+                  type="radio"
+                  name="notificationPref"
+                  checked={notificationPref === 'sms'}
+                  onChange={() => setNotificationPref('sms')}
+                  className="accent-amber-500"
+                />
+                Receive Instant SMS Text Alerts
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer font-semibold">
+                <input
+                  type="radio"
+                  name="notificationPref"
+                  checked={notificationPref === 'email'}
+                  onChange={() => setNotificationPref('email')}
+                  className="accent-amber-500"
+                />
+                Receive Email Summaries
+              </label>
+            </div>
+          </div>
+
           <button
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-xl text-sm transition shadow-xl shadow-blue-600/30 tracking-wide"
           >
-            Launch Pro Workspace →
+            Launch Pro Workspace & Send Welcome Guide →
           </button>
         </form>
       </div>
