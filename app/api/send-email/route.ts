@@ -4,10 +4,11 @@ import { Resend } from 'resend';
 export async function POST(request: Request) {
   try {
     const apiKey = process.env.RESEND_API_KEY;
-    const { to, subject, name, trade, location } = await request.json();
+    const body = await request.json();
+    const { to, subject, name, trade, location } = body;
 
     if (!apiKey) {
-      console.log(`[Resend Simulated] To: ${to} | Subject: ${subject}`);
+      console.log('[Resend Simulated]', { to, subject });
       return NextResponse.json({ success: true, simulated: true });
     }
 
