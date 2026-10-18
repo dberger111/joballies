@@ -144,7 +144,7 @@ export default function DashboardPage() {
     fetchLeads();
   }, []);
 
-  const handleAddAlly = (e: React.FormEvent) => {
+  const handleAddAlly = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!allyName.trim() || !allyPhone.trim()) return;
     const newAlly: TradeAlly = {
@@ -154,9 +154,22 @@ export default function DashboardPage() {
       phone: allyPhone.trim()
     };
     setAllies([...allies, newAlly]);
+    
+    // Dispatch live SMS invite via Twilio
+    try {
+      await fetch('/api/send-sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: allyPhone.trim(),
+          message: `JobAllies (from UpLevel Labs, Inc.): ${userProfile.name} (${userProfile.trade}) has invited you to join their trusted crew on JobAllies as a verified ${allyTrade}. Accept your invite and launch your free Pro workspace at https://joballies.com. Reply STOP to opt out.`
+        })
+      });
+    } catch {}
+
     setAllyName('');
     setAllyPhone('');
-    alert(`✓ ${newAlly.name} (${newAlly.trade}) has been successfully added to your trusted referral network!`);
+    alert(`✓ ${newAlly.name} (${newAlly.trade}) has been added to your trusted network and sent a live SMS invite to join JobAllies.com!`);
   };
 
   const removeAlly = (id: string) => {
