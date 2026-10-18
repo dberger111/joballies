@@ -356,7 +356,12 @@ export default function DashboardPage() {
         <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl space-y-6 shadow-xl">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-4">
             <div>
+              <div className="space-y-1">
               <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">⚡ Live Verified State & Municipal Leads Feed</span>
+              <p className="text-xs text-slate-300 font-medium">
+                Leads below are pulled directly from <strong className="text-white">publicly filed requests for service and official municipal/state permit filings</strong> across your active territory.
+              </p>
+            </div>
               <h2 className="text-xl font-extrabold text-white">
                 Active {userProfile.trade} Leads in {userProfile.location} ({leads.length} Available)
               </h2>
