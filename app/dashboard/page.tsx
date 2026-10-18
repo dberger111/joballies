@@ -104,7 +104,7 @@ export default function Dashboard() {
 
     // Dispatch live SMS invite via Twilio signed personally by the user with link back to joballies.com
     try {
-      const personalInvite = `JobAllies: Hi ${newAlly.name}, it's ${userProfile.name} (${userProfile.trade}). I've added you to my trusted crew on JobAllies. Accept your invite and join my trusted network at https://joballies.com. Reply STOP to opt out.`;
+      const personalInvite = `JobAllies: Hi ${newAlly.name}, you have been invited by ${userProfile.name} (${userProfile.trade}) to join their trusted crew as a verified ${allyTrade}. Accept your invite and join at https://joballies.com. Reply STOP to opt out.`;
       await fetch('/api/send-sms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
