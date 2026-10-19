@@ -117,7 +117,7 @@ export default function Dashboard() {
 
     setAllyName('');
     setAllyPhone('');
-    alert(`✓ ${newAlly.name} (${newAlly.trade}) has been added to your trusted network! They have been sent a personal SMS invite from href ${userProfile.name} to join JobAllies.com.`);
+    alert(`✓ ${newAlly.name} (${newAlly.trade}) has been added to your trusted network! They have been sent a personal SMS invite from ${userProfile.name} to join your trusted network on jobAllies.com.`);
   };
 
   const handleSendTradeMsg = async (lead: Lead) => {
