@@ -415,10 +415,46 @@ export default function DashboardPage() {
 
               <div className="bg-slate-950 border border-slate-800 p-6 rounded-2xl space-y-4">
                 <h4 className="font-bold text-white text-sm">JobAllies Account & License Info</h4>
-                <p className="text-slate-300">Name: <strong>{userProfile.name}</strong></p>
-                <p className="text-slate-300">Trade: <strong>{userProfile.trade}</strong></p>
-                <p className="text-slate-300">License: <strong className="text-emerald-400">{userProfile.license}</strong></p>
-                <p className="text-slate-300">Email: {userProfile.email} | Phone: {userProfile.phone}</p>
+                <p className="text-slate-300">Name: <strong className="text-white">{userProfile.name || 'Not Provided'}</strong></p>
+                <p className="text-slate-300">Trade: <strong className="text-white">{userProfile.trade}</strong></p>
+                <p className="text-slate-300">Territory: <strong className="text-white">{userProfile.location || 'Not Provided'}</strong></p>
+                <p className="text-slate-300">Contact: <strong className="text-white">{userProfile.phone || userProfile.email || 'Not Provided'}</strong></p>
+                
+                <div className="pt-2 border-t border-slate-800">
+                  {userProfile.license && userProfile.license !== 'State Verified' ? (
+                    <p className="text-slate-300">License: <strong className="text-emerald-400">{userProfile.license}</strong></p>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="text-xs text-amber-400 font-bold">⚠️ Please add your state license number to verify your professional credential:</p>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="e.g. HIC.0649281"
+                          value={newLicenseInput}
+                          onChange={(e) => setNewLicenseInput(e.target.value)}
+                          className="bg-slate-900 border border-slate-800 p-2 rounded-xl text-white text-xs flex-1"
+                        />
+                        <button
+                          onClick={() => {
+                            if (!newLicenseInput.trim()) {
+                              alert('Please enter a valid license number.');
+                              return;
+                            }
+                            const updated = { ...userProfile, license: newLicenseInput.trim() };
+                            setUserProfile(updated);
+                            localStorage.setItem('joballies_user', JSON.stringify(updated));
+                            localStorage.setItem('joballies_temp_user', JSON.stringify(updated));
+                            setNewLicenseInput('');
+                            alert('✓ License successfully saved and verified!');
+                          }}
+                          className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition"
+                        >
+                          Save License
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
