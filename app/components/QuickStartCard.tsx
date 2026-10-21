@@ -8,6 +8,7 @@ export default function QuickStartCard({ defaultTrade = 'General Contractor' }: 
   const [trade, setTrade] = useState(defaultTrade);
   const [location, setLocation] = useState('Weston, CT');
   const [name, setName] = useState('');
+  const [businessName, setBusinessName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [detecting, setDetecting] = useState(true);
@@ -53,13 +54,14 @@ export default function QuickStartCard({ defaultTrade = 'General Contractor' }: 
 
   const handleLaunch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !email.trim() || !phone.trim()) {
-      alert('Please fill in your name, email address, and mobile phone number.');
+    if (!name.trim() || !businessName.trim() || !email.trim() || !phone.trim()) {
+      alert('Please fill in your name, business name, email address, and mobile phone number.');
       return;
     }
 
     const userObj = {
       name: name.trim(),
+      businessName: businessName.trim(),
       email: email.trim(),
       phoneOrEmail: phone.trim(),
       trade,
@@ -117,48 +119,61 @@ export default function QuickStartCard({ defaultTrade = 'General Contractor' }: 
           </div>
         </div>
 
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
-              Your Name or Business Name *
+              Your Name *
             </label>
             <input
               type="text"
               required
-              placeholder="e.g. Mike Johnson Construction"
+              placeholder="e.g. Mike Johnson"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white"
             />
           </div>
+          <div>
+            <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+              Business Name *
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Johnson Construction LLC"
+              value={businessName}
+              onChange={(e) => setBusinessName(e.target.value)}
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white"
+            />
+          </div>
+        </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
-                Email Address *
-              </label>
-              <input
-                type="email"
-                required
-                placeholder="mike@ contractor.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
-                Mobile Phone *
-              </label>
-              <input
-                type="tel"
-                required
-                placeholder="(203) 555-0199"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white"
-              />
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+              Email Address *
+            </label>
+            <input
+              type="email"
+              required
+              placeholder="mike@contractor.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+              Mobile Phone *
+            </label>
+            <input
+              type="tel"
+              required
+              placeholder="(203) 555-0199"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white"
+            />
           </div>
         </div>
 
