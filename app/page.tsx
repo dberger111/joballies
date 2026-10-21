@@ -139,6 +139,9 @@ export default function HomePage() {
       <div className="max-w-3xl mx-auto w-full space-y-12">
         <header className="flex justify-between items-center border-b border-slate-800 pb-5">
           <Logo />
+          <Link href="/pricing" className="text-xs font-bold text-amber-400 bg-amber-950/60 border border-amber-800 px-3.5 py-1.5 rounded-xl transition hover:bg-amber-900/60">
+            Pricing - Zero charge until you win a job through JobAllies!
+          </Link>
           <Link href="/post-project" className="text-xs font-bold text-blue-400 hover:text-blue-300">
             Homeowner? Post a Project →
           </Link>
