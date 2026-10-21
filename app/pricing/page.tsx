@@ -1,9 +1,26 @@
 'use client';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import SiteFooter from '../components/SiteFooter';
 import Logo from '../components/Logo';
 
 export default function PricingPage() {
+  const router = useRouter();
+
+  const handleGetStarted = (e: React.MouseEvent) => {
+    e.preventDefault();
+    try {
+      const isAuth = localStorage.getItem('joballies_authenticated') || localStorage.getItem('joballies_user') || localStorage.getItem('joballies_temp_user');
+      if (isAuth) {
+        router.push('/dashboard');
+      } else {
+        router.push('/auth/signup');
+      }
+    } catch {
+      router.push('/auth/signup');
+    }
+  };
+
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 font-sans p-6 md:p-12 flex flex-col justify-between">
       <div className="max-w-4xl mx-auto w-full space-y-12">
@@ -39,9 +56,12 @@ export default function PricingPage() {
                 <li>✓ Trusted crew job sharing & escrow</li>
               </ul>
             </div>
-            <Link href="/dashboard" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-3.5 rounded-xl text-xs text-center transition block">
+            <button 
+              onClick={handleGetStarted}
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-3.5 rounded-xl text-xs text-center transition block shadow-lg shadow-blue-600/30"
+            >
               Get Started Free →
-            </Link>
+            </button>
           </div>
 
           <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950/40 border border-blue-500/50 p-8 rounded-3xl space-y-6 shadow-2xl flex flex-col justify-between">
@@ -55,9 +75,12 @@ export default function PricingPage() {
                 <li>✓ Dedicated priority support & dispute resolution</li>
               </ul>
             </div>
-            <Link href="/dashboard" className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3.5 rounded-xl text-xs text-center transition block">
+            <button 
+              onClick={handleGetStarted}
+              className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3.5 rounded-xl text-xs text-center transition block shadow-lg shadow-emerald-500/30"
+            >
               Launch Your Pro Workspace →
-            </Link>
+            </button>
           </div>
         </div>
       </div>
