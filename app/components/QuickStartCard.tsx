@@ -27,19 +27,10 @@ export default function QuickStartCard({ defaultTrade = 'General Contractor' }: 
     let cancelled = false;
     async function detectIP() {
       try {
-        const res = await fetch('/api/geo');
+        const res = await fetch('https://ipapi.co/json/');
         const data = await res.json();
-        if (!cancelled && data?.location) {
-          setLocation(data.location);
-          setDetecting(false);
-          return;
-        }
-      } catch {}
-      try {
-        const ipRes = await fetch('https://ipapi.co/json/');
-        const ipData = await ipRes.json();
-        if (!cancelled && ipData?.city && ipData?.region_code) {
-          setLocation(`${ipData.city}, ${ipData.region_code}`);
+        if (!cancelled && data?.city && data?.region_code) {
+          setLocation(`${data.city}, ${data.region_code}`);
           setDetecting(false);
           return;
         }
@@ -107,7 +98,7 @@ export default function QuickStartCard({ defaultTrade = 'General Contractor' }: 
 
           <div>
             <label className="block text-[11px] font-extrabold uppercase tracking-wider text-emerald-400 mb-1">
-              Your Town ({detecting ? 'Detecting IP...' : 'Editable'})
+              Your Town ({detecting ? 'Detecting IP...' : 'Auto-Detected • Editable'})
             </label>
             <input
               type="text"
