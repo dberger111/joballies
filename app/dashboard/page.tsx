@@ -179,9 +179,8 @@ export default function DashboardPage() {
                   </button>
                 </div>
 
-                <div className="bg-slate-950 p-3 rounded-xl space-y-1 text-xs">
-                  <p className="font-bold text-white">Active Post: Mike's Framing & Carpentry</p>
-                  <p className="text-slate-300">Need licensed electrician for 2 days rough-in wiring in Westport.</p>
+                <div className="bg-slate-950 p-4 rounded-xl text-center text-xs text-slate-400 italic">
+                  No active tradesperson requests yet. Submit a request above or connect with your trade network.
                 </div>
               </div>
             </div>
