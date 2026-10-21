@@ -49,7 +49,7 @@ export default function DashboardPage() {
   const leads: LeadItem[] = [
     {
       id: 'L-1',
-      source: 'Tradesperson Registry (Weston, CT)',
+      source: 'Permit filing in Weston, CT)',
       trade: userProfile.trade,
       town: userProfile.location,
       budget: '$4,500 – $8,000',
@@ -141,7 +141,7 @@ export default function DashboardPage() {
                     <textarea value={leadMessage} onChange={e => setLeadMessage(e.target.value)} className="w-full bg-slate-900 border border-slate-800 p-2.5 rounded-xl text-white text-xs" rows={2} />
                   </div>
                   <button onClick={() => sendTwilioSMS(l.clientPhone, leadMessage)} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl transition">
-                    💬 Send SMS via Twilio to Pro
+                    💬 Send SMS to Pro
                   </button>
                 </div>
               ))}
