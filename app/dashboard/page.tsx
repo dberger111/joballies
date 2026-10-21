@@ -110,11 +110,7 @@ export default function DashboardPage() {
               <h1 className="text-xl font-extrabold text-white">JobAllies Pro Command Center</h1>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Link className="bg-slate-900 border border-slate-800 text-slate-200 text-xs font-bold px-4 py-2.5 rounded-xl transition hover:border-blue-500" href="/">
-              ← Return to Dashboard
-            </Link>
-          </div>
+          
         </header>
 
         {/* Navigation Tabs */}
