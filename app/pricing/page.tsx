@@ -83,6 +83,7 @@ export default function PricingPage() {
                 <h3 className="text-4xl font-black text-white mt-2">$0 <span className="text-sm text-slate-400 font-normal">/ forever</span></h3>
               </div>
               <ul className="space-y-4 text-sm md:text-base text-slate-200">
+                <li className="flex items-start gap-3"><span className="text-emerald-400 font-bold">✓</span> <strong className="text-white">0% Commission on Client Jobs</strong> — keep 100% of your earnings.</li>
                 <li className="flex items-start gap-3"><span className="text-blue-400 font-bold">✓</span> Unlimited homeowner lead views</li>
                 <li className="flex items-start gap-3"><span className="text-blue-400 font-bold">✓</span> Angi & Thumbtack lead aggregator sync</li>
                 <li className="flex items-start gap-3"><span className="text-blue-400 font-bold">✓</span> Voice estimate generator</li>
