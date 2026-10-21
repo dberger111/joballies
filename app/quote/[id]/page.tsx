@@ -6,11 +6,21 @@ import Logo from '../../components/Logo';
 
 export default function QuoteWizardPage() {
   const [laborHours, setLaborHours] = useState(12);
-  const [hourlyRate, setHourlyRate] = useState(135);
+  const [seniority, setSeniority] = useState('Skilled Trade');
   const [markup, setMarkup] = useState(20);
   const [selectedRetailer, setSelectedRetailer] = useState<'homedepot' | 'lowes' | 'siteone'>('homedepot');
 
-  // Retailer base pricing catalog
+  // Seniority rate mapping
+  const seniorityRates: Record<string, number> = {
+    'Senior Supervisor': 165,
+    'Supervisor': 145,
+    'Specialty Trade': 135,
+    'Skilled Trade': 115,
+    'Worker': 85
+  };
+
+  const hourlyRate = seniorityRates[seniority] || 115;
+
   const materials = [
     { id: 1, name: 'PVC Schedule 40 Pipe & Fittings', qty: 6, homedepot: 24.50, lowes: 23.80, siteone: 26.00 },
     { id: 2, name: 'Waterproof Membrane Roll (300 sq ft)', qty: 2, homedepot: 185.00, lowes: 189.00, siteone: 179.00 },
@@ -34,7 +44,7 @@ export default function QuoteWizardPage() {
             <Link href="/dashboard"><Logo size="sm" /></Link>
             <div>
               <h1 className="text-xl font-extrabold text-white">Interactive Quote Wizard #SAMPLE-QUOTE</h1>
-              <p className="text-xs text-slate-400">Select Retailers, Adjust Labor & Apply Custom Markups</p>
+              <p className="text-xs text-slate-400">Select Retailers, Set Seniority Level & Apply Custom Markups</p>
             </div>
           </div>
           <Link href="/dashboard" className="bg-slate-900 border border-slate-800 hover:border-blue-500 text-slate-200 text-xs font-bold px-4 py-2 rounded-xl transition">
@@ -49,24 +59,9 @@ export default function QuoteWizardPage() {
               <h3 className="text-lg font-extrabold text-white">Compare & Select Supplier</h3>
             </div>
             <div className="flex gap-2">
-              <button
-                onClick={() => setSelectedRetailer('homedepot')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition border ${selectedRetailer === 'homedepot' ? 'bg-orange-600 border-orange-500 text-white' : 'bg-slate-950 border-slate-800 text-slate-400'}`}
-              >
-                Home Depot Pro
-              </button>
-              <button
-                onClick={() => setSelectedRetailer('lowes')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition border ${selectedRetailer === 'lowes' ? 'bg-blue-600 border-blue-500 text-white' : 'bg-slate-950 border-slate-800 text-slate-400'}`}
-              >
-                Lowe's Pro
-              </button>
-              <button
-                onClick={() => setSelectedRetailer('siteone')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition border ${selectedRetailer === 'siteone' ? 'bg-emerald-600 border-emerald-500 text-white' : 'bg-slate-950 border-slate-800 text-slate-400'}`}
-              >
-                SiteOne Supply
-              </button>
+              <button onClick={() => setSelectedRetailer('homedepot')} className={`px-3.5 py-2 rounded-xl text-xs font-bold transition border ${selectedRetailer === 'homedepot' ? 'bg-orange-600 border-orange-500 text-white' : 'bg-slate-950 border-slate-800 text-slate-400'}`}>Home Depot Pro</button>
+              <button onClick={() => setSelectedRetailer('lowes')} className={`px-3.5 py-2 rounded-xl text-xs font-bold transition border ${selectedRetailer === 'lowes' ? 'bg-blue-600 border-blue-500 text-white' : 'bg-slate-950 border-slate-800 text-slate-400'}`}>Lowe's Pro</button>
+              <button onClick={() => setSelectedRetailer('siteone')} className={`px-3.5 py-2 rounded-xl text-xs font-bold transition border ${selectedRetailer === 'siteone' ? 'bg-emerald-600 border-emerald-500 text-white' : 'bg-slate-950 border-slate-800 text-slate-400'}`}>SiteOne Supply</button>
             </div>
           </div>
 
@@ -88,20 +83,25 @@ export default function QuoteWizardPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-slate-800 pt-6">
             <div>
+              <label className="block text-xs font-bold text-slate-400 mb-1">Seniority Level</label>
+              <select
+                value={seniority}
+                onChange={(e) => setSeniority(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-amber-400"
+              >
+                <option value="Senior Supervisor">Senior Supervisor (${seniorityRates['Senior Supervisor']}/hr)</option>
+                <option value="Supervisor">Supervisor (${seniorityRates['Supervisor']}/hr)</option>
+                <option value="Specialty Trade">Specialty Trade (${seniorityRates['Specialty Trade']}/hr)</option>
+                <option value="Skilled Trade">Skilled Trade (${seniorityRates['Skilled Trade']}/hr)</option>
+                <option value="Worker">Worker (${seniorityRates['Worker']}/hr)</option>
+              </select>
+            </div>
+            <div>
               <label className="block text-xs font-bold text-slate-400 mb-1">Man Hours</label>
               <input
                 type="number"
                 value={laborHours}
                 onChange={(e) => setLaborHours(Number(e.target.value))}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-white"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-400 mb-1">Hourly Rate ($)</label>
-              <input
-                type="number"
-                value={hourlyRate}
-                onChange={(e) => setHourlyRate(Number(e.target.value))}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-white"
               />
             </div>
@@ -118,7 +118,7 @@ export default function QuoteWizardPage() {
 
           <div className="bg-slate-950 border border-slate-800 p-6 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-4">
             <div>
-              <p className="text-xs text-slate-400">Calculated Final Estimate Total</p>
+              <p className="text-xs text-slate-400">Calculated Final Estimate Total (Rate: ${hourlyRate}/hr)</p>
               <p className="text-3xl font-black text-white">${grandTotal.toFixed(2)}</p>
             </div>
             <button
