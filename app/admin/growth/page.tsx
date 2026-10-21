@@ -405,22 +405,22 @@ export default function FounderGrowthConsole() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-2 shadow-xl">
                 <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Total Registered Pros</span>
-                <h3 className="text-3xl font-black text-white">1,428</h3>
-                <p className="text-xs text-emerald-400 font-bold">+18.4% this week</p>
+                <h3 className="text-3xl font-black text-white">0</h3>
+                <p className="text-xs text-slate-500 font-bold">Waiting for first signup</p>
               </div>
               <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-2 shadow-xl">
                 <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Daily Visitors (Today)</span>
-                <h3 className="text-3xl font-black text-white">3,892</h3>
-                <p className="text-xs text-blue-400 font-bold">Peak traffic: 2:00 PM</p>
+                <h3 className="text-3xl font-black text-white">1</h3>
+                <p className="text-xs text-blue-400 font-bold">Active Founder Session</p>
               </div>
               <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-2 shadow-xl">
                 <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Active Pro Subscriptions</span>
-                <h3 className="text-3xl font-black text-white">$4,263 <span className="text-xs text-slate-400 font-normal">/ mo</span></h3>
-                <p className="text-xs text-amber-400 font-bold">92 Pro Subscribers ($49/mo)</p>
+                <h3 className="text-3xl font-black text-white">$0 <span className="text-xs text-slate-400 font-normal">/ mo</span></h3>
+                <p className="text-xs text-slate-500 font-bold">Connected to Stripe Live</p>
               </div>
               <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-2 shadow-xl">
                 <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Escrow Volume & Fees</span>
-                <h3 className="text-3xl font-black text-white">$28,450</h3>
+                <h3 className="text-3xl font-black text-white">$0</h3>
                 <p className="text-xs text-emerald-400 font-bold">0% Direct Commission • 10% P2P Splits</p>
               </div>
             </div>
@@ -428,73 +428,17 @@ export default function FounderGrowthConsole() {
             <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl space-y-6 shadow-xl">
               <div className="flex justify-between items-center border-b border-slate-800 pb-4">
                 <div>
-                  <h3 className="text-xl font-extrabold text-white">Daily Traffic & Visitor Growth (Last 7 Days)</h3>
-                  <p className="text-xs text-slate-400">Unique contractor sessions, landing page conversions, and onboarding completion.</p>
+                  <h3 className="text-xl font-extrabold text-white">Real-Time Contractor Signups & Utilization Ledger</h3>
+                  <p className="text-xs text-slate-400">Live feed of verified contractors who complete onboarding on the homepage.</p>
                 </div>
                 <span className="text-xs font-bold text-emerald-400 bg-emerald-950 px-3 py-1 rounded-full border border-emerald-800">
-                  Live Analytics Feed Active
+                  Awaiting First Live User
                 </span>
               </div>
 
-              <div className="space-y-3 font-mono text-xs">
-                {[
-                  { date: 'Today (Oct 21)', visitors: '3,892', signups: '142', conversion: '3.6%', revenue: '$343.00' },
-                  { date: 'Yesterday (Oct 20)', visitors: '4,120', signups: '156', conversion: '3.7%', revenue: '$392.00' },
-                  { date: 'Sunday (Oct 19)', visitors: '2,950', signups: '98', conversion: '3.3%', revenue: '$196.00' },
-                  { date: 'Saturday (Oct 18)', visitors: '2,410', signups: '84', conversion: '3.4%', revenue: '$147.00' },
-                  { date: 'Friday (Oct 17)', visitors: '4,890', signups: '192', conversion: '3.9%', revenue: '$490.00' },
-                  { date: 'Thursday (Oct 16)', visitors: '4,650', signups: '178', conversion: '3.8%', revenue: '$441.00' },
-                  { date: 'Wednesday (Oct 15)', visitors: '4,310', signups: '164', conversion: '3.8%', revenue: '$392.00' },
-                ].map((row, idx) => (
-                  <div key={idx} className="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                    <span className="font-extrabold text-white">{row.date}</span>
-                    <div className="flex flex-wrap gap-4 text-slate-300">
-                      <span>👥 Visitors: <strong className="text-blue-400">{row.visitors}</strong></span>
-                      <span>✍️ Signups: <strong className="text-emerald-400">{row.signups}</strong></span>
-                      <span>📊 Conv: <strong className="text-amber-400">{row.conversion}</strong></span>
-                      <span>💳 Rev: <strong className="text-white">{row.revenue}</strong></span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl space-y-6 shadow-xl">
-              <div className="flex justify-between items-center border-b border-slate-800 pb-4">
-                <div>
-                  <h3 className="text-xl font-extrabold text-white">Recent Contractor Signups & Utilization Ledger</h3>
-                  <p className="text-xs text-slate-400">Live feed of pros who completed onboarding, their active plan, and tool utilization.</p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                {[
-                  { name: 'Mike Johnson', business: 'Johnson Construction LLC', trade: 'General Contractor', town: 'Westport, CT', plan: 'Pro ($49/mo)', utilization: 'Voice Quotes (14), Supply Copier (8)', status: 'Active' },
-                  { name: 'David Miller', business: 'Soundview Plumbing', trade: 'Plumbing & Water Systems', town: 'Stamford, CT', plan: 'Standard ($19/yr 1)', utilization: 'Lead Views (42), Escrow Vaults (2)', status: 'Active' },
-                  { name: 'Anthony Russo', business: 'Fairfield County Masonry', trade: 'Chimney & Masonry', town: 'Fairfield, CT', plan: 'Pro ($49/mo)', utilization: 'Permit Radar (6), Review Blaster (31)', status: 'Active' },
-                  { name: 'Robert Vance', business: 'Vance Electric', trade: 'Electrical & Lighting', town: 'Greenwich, CT', plan: 'Standard ($19/yr 1)', utilization: 'Voice Quotes (5), Supply Copier (3)', status: 'Active' },
-                ].map((pro, idx) => (
-                  <div key={idx} className="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div className="space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-extrabold text-white text-sm">{pro.name} ({pro.business})</span>
-                        <span className="text-xs bg-blue-950 text-blue-400 border border-blue-800 px-2.5 py-0.5 rounded-full font-bold">
-                          {pro.trade}
-                        </span>
-                        <span className="text-xs text-slate-400">📍 {pro.town}</span>
-                      </div>
-                      <p className="text-xs text-slate-400">Utilization: <strong className="text-slate-200">{pro.utilization}</strong></p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs font-bold text-amber-400 bg-amber-950 px-3 py-1 rounded-full border border-amber-800">
-                        {pro.plan}
-                      </span>
-                      <span className="text-xs font-extrabold text-emerald-400 bg-emerald-950 px-3 py-1 rounded-full border border-emerald-800">
-                        {pro.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+              <div className="bg-slate-950 border border-slate-800 p-8 rounded-2xl text-center text-slate-500 text-xs font-bold space-y-2">
+                <p>No contractor signups recorded yet.</p>
+                <p className="text-slate-400">When contractors submit the quick-start form on <Link href="/" className="text-blue-400 underline" target="_blank">joballies.com</Link>, their profile, business name, plan tier, and tool utilization will populate here instantly.</p>
               </div>
             </div>
           </div>
