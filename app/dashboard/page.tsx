@@ -391,25 +391,73 @@ export default function DashboardPage() {
                 href={
                   modalRetailer === 'Home Depot Pro Xtra' ? 'https://www.homedepot.com/c/Pro_Xtra' :
                   modalRetailer === "Lowe's ProServices" ? 'https://www.lowes.com/l/pro/proservices' :
-                  modalRetailer === 'SiteOne Landscape Supply' ? 'https://www.siteone.com' :
-                  modalRetailer === 'Sherwin Williams Pro' ? 'https://www.sherwin-williams.com/pro' :
-                  modalRetailer === 'Amazon Business' ? 'https://www.amazon.com/business' :
-                  modalRetailer === 'Ferguson Plumbing & Building' ? 'https://www.ferguson.com' :
-                  modalRetailer === 'Contractors Direct' ? 'https://www.contractorsdirect.com' :
-                  modalRetailer === 'Northern Tool & Equipment' ? 'https://www.northerntool.com' :
-                  modalRetailer === 'Grainger Industrial Supply' ? 'https://www.grainger.com' :
-                  modalRetailer === 'Sonepar Electrical' ? 'https://www.sonepar.com' :
-                  modalRetailer === 'Graybar Electric' ? 'https://www.graybar.com' :
-                  modalRetailer === 'Rexel USA' ? 'https://www.rexelusa.com' :
-                  modalRetailer === 'Contractors Supply' ? 'https://www.contractors-supply.com' :
-                  modalRetailer === 'Ace Hardware Pro' ? 'https://www.acehardware.com' :
-                  modalRetailer === 'True Value Hardware' ? 'https://www.truevalue.com' :
-                  modalRetailer === 'Wesco International' ? 'https://www.wesco.com' :
-                  modalRetailer === 'Consolidated Electrical (CED)' ? 'https://www.cednet.com' :
-                  modalRetailer === 'SupplyHouse.com' ? 'https://www.supplyhouse.com' :
-                  modalRetailer === 'Pool Corp' ? 'https://www.poolcorp.com' :
+                  modalRetailer === 'SiteOne Landscape Supply' ? 'https://www.siteone.com/account/login' :
+                  modalRetailer === 'Sherwin Williams Pro' ? 'https://www.sherwin-williams.com/pro/account/login' :
+                  modalRetailer === 'Amazon Business' ? 'https://www.amazon.com/business/register/landing' :
+                  modalRetailer === 'Ferguson Plumbing & Building' ? 'https://www.ferguson.com/login' :
+                  modalRetailer === 'Contractors Direct' ? 'https://www.contractorsdirect.com/login' :
+                  modalRetailer === 'Northern Tool & Equipment' ? 'https://www.northerntool.com/signin' :
+                  modalRetailer === 'Grainger Industrial Supply' ? 'https://www.grainger.com/login' :
+                  modalRetailer === 'Sonepar Electrical' ? 'https://www.sonepar.com/en-us/login' :
+                  modalRetailer === 'Graybar Electric' ? 'https://www.graybar.com/login' :
+                  modalRetailer === 'Rexel USA' ? 'https://www.rexelusa.com/login' :
+                  modalRetailer === 'Contractors Supply' ? 'https://www.contractors-supply.com/login' :
+                  modalRetailer === 'Ace Hardware Pro' ? 'https://acehardware.myhomeprojectcenter.com/sign-in/' :
+                  modalRetailer === 'True Value Hardware' ? 'https://www.truevalue.com/customer/account/login/' :
+                  modalRetailer === 'Wesco International' ? 'https://www.wesco.com/us/en/login.html' :
+                  modalRetailer === 'Consolidated Electrical (CED)' ? 'https://www.cednet.com/login' :
+                  modalRetailer === 'SupplyHouse.com' ? 'https://www.supplyhouse.com/login' :
+                  modalRetailer === 'Pool Corp' ? 'https://www.poolcorp.com/login' :
                   modalRetailer === "Leslie's Pool Pro" ? 'https://lesliespool.com/commercial-pool-services.html' :
-                  'https://www.google.com/search?q=' + encodeURIComponent(modalRetailer + ' pro login')
+                  modalRetailer === 'ABC Supply Co.' ? 'https://www.abcsupply.com/contractor-center/myabcsupply/' :
+                  modalRetailer === 'Beacon Building Products' ? 'https://www.beaconproplus.com/' :
+                  modalRetailer === 'Fastenal Pro' ? 'https://www.fastenal.com/account/login' :
+                  modalRetailer === 'Hilti Online' ? 'https://www.hilti.com/login' :
+                  modalRetailer === 'HD Supply' ? 'https://hdsupply.com/login' :
+                  modalRetailer === 'Watsco HVAC' ? 'https://www.watsco.com/login' :
+                  modalRetailer === 'Carrier Enterprise' ? 'https://www.carrierenterprise.com/login' :
+                  modalRetailer === 'Trane Commercial' ? 'https://www.trane.com/commercial/north-america/us/en/login.html' :
+                  modalRetailer === 'Johnstone Supply' ? 'https://www.johnstonesupply.com/login' :
+                  modalRetailer === 'Mars Supply' ? 'https://www.marssupply.com/login' :
+                  modalRetailer === 'MSC Industrial Supply' ? 'https://www.mscdirect.com/signin' :
+                  modalRetailer === 'McMaster-Carr' ? 'https://www.mcmaster.com/login' :
+                  modalRetailer === 'Applied Industrial Technologies' ? 'https://www.applied.com/login' :
+                  modalRetailer === 'Motion Industries' ? 'https://www.motion.com/login' :
+                  modalRetailer === 'Century Group' ? 'https://www.centurygrp.com/login' :
+                  modalRetailer === 'Sunbelt Rentals Pro' ? 'https://www.sunbeltrentals.com/login/' :
+                  modalRetailer === 'United Rentals Pro' ? 'https://www.unitedrentals.com/en/login' :
+                  modalRetailer === 'Herc Rentals' ? 'https://www.hercrentals.com/us/login.html' :
+                  modalRetailer === 'Sunstate Equipment' ? 'https://www.sunstateequip.com/login' :
+                  modalRetailer === 'Empire Today Pro' ? 'https://www.empiretoday.com/login' :
+                  modalRetailer === 'Floor & Decor Pro' ? 'https://www.flooranddecor.com/login' :
+                  modalRetailer === 'Lumber Liquidators Pro' ? 'https://www.llflooring.com/login' :
+                  modalRetailer === '84 Lumber' ? 'https://www.84sales.com/' :
+                  modalRetailer === 'U.S. LBM Holdings' ? 'https://www.uslbm.com/login' :
+                  modalRetailer === 'Koppers' ? 'https://www.koppers.com/login' :
+                  modalRetailer === 'Blue Linx' ? 'https://bluelinxco.com/login/' :
+                  modalRetailer === 'Boise Cascade' ? 'https://www.pro.cascades.com/en/login/' :
+                  modalRetailer === 'Weyerhaeuser' ? 'https://www.weyerhaeuser.com/login' :
+                  modalRetailer === 'PPG Paints Pro' ? 'https://www.ppgpaints.com/pro/login' :
+                  modalRetailer === 'Benjamin Moore Pro' ? 'https://www.benjaminmoore.com/en-us/login' :
+                  modalRetailer === 'Valspar Pro' ? 'https://www.valspar.com/login' :
+                  modalRetailer === 'Behr Pro' ? 'https://mascocg--sfq.sandbox.my.site.com/s/registration' :
+                  modalRetailer === 'Glidden Pro' ? 'https://www.glidden.com/login' :
+                  modalRetailer === 'Dunn-Edwards' ? 'https://www.dunnedwards.com/login' :
+                  modalRetailer === 'Rodda Paint' ? 'https://www.roddapaint.com/login' :
+                  modalRetailer === 'Kelly-Moore Paints' ? 'https://www.kellymoore.com/login' :
+                  modalRetailer === 'Rheem Pro' ? 'https://www.rheem.com/login' :
+                  modalRetailer === 'Lennox Pro' ? 'https://www.lennoxpros.com/' :
+                  modalRetailer === 'York HVAC' ? 'https://www.york.com/login' :
+                  modalRetailer === 'Goodman HVAC' ? 'https://www.goodmanmfg.com/login' :
+                  modalRetailer === 'Daikin Pro' ? 'https://www.daikinac.com/login' :
+                  modalRetailer === 'Mitsubishi Electric HVAC' ? 'https://www.mitsubishicomfort.com/login' :
+                  modalRetailer === 'Kohler Pro' ? 'https://www.kohler.com/en/pro/login' :
+                  modalRetailer === 'Moen Pro' ? 'https://pro.moen.com/login' :
+                  modalRetailer === 'Delta Faucet Pro' ? 'https://www.deltafaucet.com/pro/login' :
+                  modalRetailer === 'American Standard Pro' ? 'https://www.asairhome.com/' :
+                  modalRetailer === 'Toto Pro' ? 'https://www.totousa.com/login' :
+                  modalRetailer === 'InSinkErator Pro' ? 'https://www.insinkerator.com/login' :
+                  modalRetailer === 'Rinnai Pro' ? 'https://www.rinnai.us/login' : 'https://www.navieninc.com/login'
                 }
                 target="_blank"
                 rel="noopener noreferrer"
