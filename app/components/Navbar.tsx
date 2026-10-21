@@ -11,7 +11,7 @@ export default function Navbar() {
         href="/dashboard"
         className="text-xs font-extrabold text-white px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 transition shadow-lg shadow-blue-600/25"
       >
-        My Dashboard →
+        Open Dashboard →
       </Link>
     </header>
   );
