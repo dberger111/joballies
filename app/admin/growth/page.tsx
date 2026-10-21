@@ -234,7 +234,7 @@ export default function FounderGrowthConsole() {
                   <label className="block text-xs font-bold text-slate-400 mb-1">City / Town</label>
                   <input 
                     type="text" 
-                    value={cityQuery}
+                    value={cityQuery} placeholder="Leave blank for Statewide..."
                     onChange={(e) => setCityQuery(e.target.value.toUpperCase())}
                     placeholder="Enter City..."
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white font-mono"
