@@ -1,89 +1,136 @@
 'use client';
-import { useState, use } from 'react';
+import { useState } from 'react';
+import Link from 'next/link';
+import SiteFooter from '../../components/SiteFooter';
+import Logo from '../../components/Logo';
 
-const MULTIPLIER_TRADES = [
-  "General Contractor", "Handyman", "Electrician", "Plumber", 
-  "Mason / Stonework", "Carpenter", "HVAC Tech", "Painter / Drywall", 
-  "Roofer", "Landscaper", "Flooring / Tile", "Driveway Paving", 
-  "Pool Maintenance", "Tennis Court Maintenance", "Exterminator", "Tree Service", 
-  "Irrigation", "Disaster Cleanup", "Mold Remediation", "Cleaning / Hauling"
-];
+export default function QuoteWizardPage() {
+  const [laborHours, setLaborHours] = useState(12);
+  const [hourlyRate, setHourlyRate] = useState(135);
+  const [markup, setMarkup] = useState(20);
+  const [selectedRetailer, setSelectedRetailer] = useState<'homedepot' | 'lowes' | 'siteone'>('homedepot');
 
-export default function QuoteApprovalPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
-  const [approved, setApproved] = useState(false);
-  const [extraTradeRequested, setExtraTradeRequested] = useState<string | null>(null);
+  // Retailer base pricing catalog
+  const materials = [
+    { id: 1, name: 'PVC Schedule 40 Pipe & Fittings', qty: 6, homedepot: 24.50, lowes: 23.80, siteone: 26.00 },
+    { id: 2, name: 'Waterproof Membrane Roll (300 sq ft)', qty: 2, homedepot: 185.00, lowes: 189.00, siteone: 179.00 },
+    { id: 3, name: 'Cement Backer Board (1/2 in)', qty: 15, homedepot: 16.75, lowes: 16.50, siteone: 17.25 },
+  ];
+
+  const rawMaterialsTotal = materials.reduce((acc, m) => acc + m.qty * m[selectedRetailer], 0);
+  const markedUpMaterials = rawMaterialsTotal * (1 + markup / 100);
+  const laborTotal = laborHours * hourlyRate;
+  const grandTotal = laborTotal + markedUpMaterials;
+
+  const handleApprove = () => {
+    alert(`✓ Quote approved and successfully dispatched to homeowner! Grand Total: $${grandTotal.toFixed(2)} (Sourced from ${selectedRetailer.toUpperCase()} with ${markup}% markup).`);
+  };
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 font-sans p-6 md:p-12 flex flex-col justify-between">
-      <div className="max-w-3xl mx-auto w-full space-y-8 pt-6">
-        <div className="flex justify-between items-center border-b border-slate-800 pb-6">
-          <div>
-            <span className="text-xs font-extrabold text-blue-400 uppercase tracking-widest">Official JobAllies Estimate</span>
-            <h1 className="text-3xl font-extrabold text-white">Quote #{id.toUpperCase()}</h1>
-          </div>
-          <div className="text-right">
-            <span className="text-3xl font-extrabold text-emerald-400">$950.00</span>
-            <p className="text-xs text-slate-400">Milestone & Lien Waiver Protected</p>
-          </div>
-        </div>
-
-        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl space-y-5 shadow-xl">
-          <h3 className="text-lg font-extrabold text-white">Scope of Work & Materials</h3>
-          <p className="text-slate-300 text-sm leading-relaxed">
-            Complete installation, code-compliant hardware and materials, site cleanup, and digital lien waiver receipt upon completion.
-          </p>
-
-          {!approved ? (
-            <button 
-              onClick={() => setApproved(true)}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-6 py-4 rounded-2xl transition w-full text-sm shadow-xl shadow-emerald-600/25"
-            >
-              ✓ Approve Quote & Lock In Schedule ($950.00)
-            </button>
-          ) : (
-            <div className="space-y-6 pt-2">
-              <div className="bg-emerald-950/70 border border-emerald-500/50 p-5 rounded-2xl text-center space-y-1">
-                <p className="text-base font-extrabold text-emerald-400">✓ Estimate Approved! Your Contractor Has Been Notified.</p>
-                <p className="text-xs text-slate-300">Digital Receipt & Mechanic's Lien Waiver Protection #LW-{id.toUpperCase()} is now active.</p>
-              </div>
-
-              <div className="bg-slate-950 border-2 border-blue-500/40 p-6 rounded-2xl space-y-4">
-                <div className="space-y-1">
-                  <span className="text-xs font-extrabold uppercase tracking-wider text-blue-400">Need Another Trade on This Project?</span>
-                  <h4 className="text-base font-extrabold text-white">
-                    Tap any trade below (General Contractor, Handyman, or Specialty Pro) and our contractor's trusted local ally will text you a fast quote:
-                  </h4>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                  {MULTIPLIER_TRADES.map((trade) => (
-                    <button
-                      key={trade}
-                      onClick={() => setExtraTradeRequested(trade)}
-                      className={`p-3 rounded-xl text-xs font-extrabold border transition ${
-                        extraTradeRequested === trade
-                          ? 'bg-emerald-600 border-emerald-400 text-white'
-                          : 'bg-slate-900 border-slate-800 hover:border-blue-400 text-slate-200'
-                      }`}
-                    >
-                      + {trade}
-                    </button>
-                  ))}
-                </div>
-                {extraTradeRequested && (
-                  <p className="text-xs font-bold text-emerald-400 text-center pt-1">
-                    ✓ Got it! We just alerted the top-rated local {extraTradeRequested} in your zip code to text you a quote.
-                  </p>
-                )}
-              </div>
+      <div className="max-w-4xl mx-auto w-full space-y-8">
+        <header className="flex justify-between items-center border-b border-slate-800 pb-5">
+          <div className="flex items-center gap-3">
+            <Link href="/dashboard"><Logo size="sm" /></Link>
+            <div>
+              <h1 className="text-xl font-extrabold text-white">Interactive Quote Wizard #SAMPLE-QUOTE</h1>
+              <p className="text-xs text-slate-400">Select Retailers, Adjust Labor & Apply Custom Markups</p>
             </div>
-          )}
-        </div>
-      </div>
+          </div>
+          <Link href="/dashboard" className="bg-slate-900 border border-slate-800 hover:border-blue-500 text-slate-200 text-xs font-bold px-4 py-2 rounded-xl transition">
+            ← Return to Dashboard
+          </Link>
+        </header>
 
-      <footer className="max-w-3xl mx-auto w-full text-center border-t border-slate-800/80 pt-8 mt-12 text-xs text-slate-500">
-        © {new Date().getFullYear()} JobAllies (from UpLevel Labs, Inc.) — All rights reserved.
-      </footer>
+        <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl space-y-6 shadow-xl">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800 pb-4">
+            <div>
+              <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">📦 Material Sourcing & Retailer Pricing</span>
+              <h3 className="text-lg font-extrabold text-white">Compare & Select Supplier</h3>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setSelectedRetailer('homedepot')}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition border ${selectedRetailer === 'homedepot' ? 'bg-orange-600 border-orange-500 text-white' : 'bg-slate-950 border-slate-800 text-slate-400'}`}
+              >
+                Home Depot Pro
+              </button>
+              <button
+                onClick={() => setSelectedRetailer('lowes')}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition border ${selectedRetailer === 'lowes' ? 'bg-blue-600 border-blue-500 text-white' : 'bg-slate-950 border-slate-800 text-slate-400'}`}
+              >
+                Lowe's Pro
+              </button>
+              <button
+                onClick={() => setSelectedRetailer('siteone')}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition border ${selectedRetailer === 'siteone' ? 'bg-emerald-600 border-emerald-500 text-white' : 'bg-slate-950 border-slate-800 text-slate-400'}`}
+              >
+                SiteOne Supply
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {materials.map((m) => {
+              const unitPrice = m[selectedRetailer];
+              const lineTotal = m.qty * unitPrice * (1 + markup / 100);
+              return (
+                <div key={m.id} className="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex justify-between items-center text-xs">
+                  <div>
+                    <p className="font-bold text-white">{m.name} (Qty: {m.qty})</p>
+                    <p className="text-slate-400">Base Sourced from {selectedRetailer.toUpperCase()}: ${unitPrice.toFixed(2)} / unit</p>
+                  </div>
+                  <span className="text-emerald-400 font-black text-sm">${lineTotal.toFixed(2)}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-slate-800 pt-6">
+            <div>
+              <label className="block text-xs font-bold text-slate-400 mb-1">Man Hours</label>
+              <input
+                type="number"
+                value={laborHours}
+                onChange={(e) => setLaborHours(Number(e.target.value))}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-400 mb-1">Hourly Rate ($)</label>
+              <input
+                type="number"
+                value={hourlyRate}
+                onChange={(e) => setHourlyRate(Number(e.target.value))}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-400 mb-1">Material Markup (%)</label>
+              <input
+                type="number"
+                value={markup}
+                onChange={(e) => setMarkup(Number(e.target.value))}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-amber-400"
+              />
+            </div>
+          </div>
+
+          <div className="bg-slate-950 border border-slate-800 p-6 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+              <p className="text-xs text-slate-400">Calculated Final Estimate Total</p>
+              <p className="text-3xl font-black text-white">${grandTotal.toFixed(2)}</p>
+            </div>
+            <button
+              onClick={handleApprove}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-8 py-4 rounded-xl text-xs transition shadow-lg shadow-emerald-600/30 w-full sm:w-auto text-center"
+            >
+              ✓ Approve Quote & Lock In Schedule (${grandTotal.toFixed(2)})
+            </button>
+          </div>
+        </section>
+      </div>
+      <SiteFooter />
     </main>
   );
 }
