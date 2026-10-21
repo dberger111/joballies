@@ -52,7 +52,7 @@ export async function GET(request: Request) {
 
     // 2. Nationwide 50-State Dynamic Roster Generator
     const tradesList = ['General Contractor', 'Home Improvement Contractor', 'Master Electrician', 'Master Plumber', 'Masonry & Stonework', 'HVAC Mechanical', 'Roofing Contractor'];
-    const mockCount = Math.min(parseInt(limit, 10) || 50, 1000);
+    const mockCount = Math.min(parseInt(limit, 10) || 250, 5000);
     const generated = Array.from({ length: mockCount }).map((_, idx) => {
       const bizTypes = ['CONSTRUCTION LLC', 'BUILDERS INC', 'CONTRACTING GROUP', 'RESTO & DESIGN', 'PROPERTY SERVICES', 'EXPERT PLUMBING & ELECTRICAL', 'STATEWIDE REMODELING'];
       const firstNames = ['MICHAEL', 'DAVID', 'JOHN', 'ROBERT', 'ANTHONY', 'JAMES', 'WILLIAM', 'JOSEPH', 'THOMAS', 'CHRISTOPHER'];

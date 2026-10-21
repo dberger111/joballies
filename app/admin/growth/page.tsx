@@ -23,7 +23,7 @@ export default function FounderGrowthConsole() {
   const [selectedState, setSelectedState] = useState('CT');
   const [cityQuery, setCityQuery] = useState('WESTPORT');
   const [tradeFilter, setTradeFilter] = useState('ALL');
-  const [fetchLimit, setFetchLimit] = useState('250');
+  const [fetchLimit, setFetchLimit] = useState('5000');
   
   const [loadingRegistry, setLoadingRegistry] = useState(false);
   const [liveContractors, setLiveContractors] = useState<LiveContractor[]>([]);
