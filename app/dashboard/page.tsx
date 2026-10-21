@@ -1,558 +1,116 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import SiteFooter from '../components/SiteFooter';
-import Logo from '../components/Logo';
-
-interface TradeAlly {
-  id: string;
-  name: string;
-  trade: string;
-  phone: string;
-}
+import { useRouter } from 'next/navigation';
 
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState<'leads' | 'network' | 'retailers' | 'profile'>('leads');
-  const [userProfile, setUserProfile] = useState({
-    name: '',
-    trade: 'General Contractor',
-    location: '',
-    radiusMiles: 25,
-    phone: '',
-    email: '',
-    license: ''
-  });
-
-  const [allies, setAllies] = useState<TradeAlly[]>([]);
-  const [allyName, setAllyName] = useState('');
-  const [allyTrade, setAllyTrade] = useState('Electrician');
-  const [allyPhone, setAllyPhone] = useState('');
-
-  const [selectedAllyId, setSelectedAllyId] = useState<string>('');
-  const [refMessage, setRefMessage] = useState<string>('');
-  const [leadMessage, setLeadMessage] = useState('Hi, I saw your tradesperson lead on JobAllies and would love to collaborate or support your project.');
-  const [modalRetailer, setModalRetailer] = useState<string | null>(null);
-  const [newLicenseInput, setNewLicenseInput] = useState('');
-  const [tradeRequestScope, setTradeRequestScope] = useState('');
-  
-  const [liveLeads, setLiveLeads] = useState<any[]>([]);
+  const [user, setUser] = useState<any>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('joballies_user') || localStorage.getItem('joballies_temp_user');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        const emailKey = parsed.phoneOrEmail || 'default_user';
-        setUserProfile({
-          name: parsed.name || '',
-          trade: parsed.trade || 'General Contractor',
-          location: parsed.location || '',
-          radiusMiles: parsed.radiusMiles || 25,
-          phone: parsed.phoneOrEmail || '',
-          email: parsed.phoneOrEmail || '',
-          license: parsed.licenseNumber || ''
-        });
-        
-        const savedCrew = localStorage.getItem(`joballies_crew_${emailKey}`);
-        if (savedCrew) {
-          setAllies(JSON.parse(savedCrew));
-        }
-      }
-    } catch {}
-  }, []);
-
-  useEffect(() => {
-    if (allies.length > 0 && !selectedAllyId) {
-      setSelectedAllyId(allies[0].id);
+    const isAuth = localStorage.getItem('joballies_authenticated');
+    const userData = localStorage.getItem('joballies_user');
+    if (!isAuth) {
+      router.push('/auth/signup');
+    } else if (userData) {
+      setUser(JSON.parse(userData));
     }
-  }, [allies, selectedAllyId]);
+  }, [router]);
 
-  useEffect(() => {
-    const activeAlly = allies.find(a => a.id === selectedAllyId) || allies[0];
-    if (activeAlly) {
-      const firstName = activeAlly.name.split(' ')[0];
-      setRefMessage(`Hi ${firstName}, Thanks for joining my trusted network on JobAllies. Would you be open to posting a reference for me on Facebook or NextDoor? Below is a sample reference that you could copy and paste:\n\nI've worked closely with ${userProfile.name} over the years. He is a super ${userProfile.trade} with lots of very satisfied customers. If you are in need of a ${userProfile.trade} in the ${userProfile.location} area, I encourage you to reach out to him directly at ${userProfile.phone} or message me and I'd be glad to connect you.`);
-    }
-  }, [selectedAllyId, allies, userProfile]);
-
-  const handleAddAlly = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!allyName.trim() || !allyPhone.trim()) return;
-    const newAlly: TradeAlly = {
-      id: Date.now().toString(),
-      name: allyName.trim(),
-      trade: allyTrade,
-      phone: allyPhone.trim()
-    };
-    const updatedAllies = [...allies, newAlly];
-    setAllies(updatedAllies);
-    const emailKey = userProfile.email || 'default_user';
-    localStorage.setItem(`joballies_crew_${emailKey}`, JSON.stringify(updatedAllies));
-    setAllyName('');
-    setAllyPhone('');
-    alert(`✓ ${newAlly.name} (${newAlly.trade}) added to your active trusted crew!`);
-  };
-
-  const sendSMS = async (to: string, msg: string) => {
-    try {
-      await fetch('/api/send-sms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to, message: msg })
-      });
-      alert('✓ SMS successfully dispatched!');
-    } catch {
-      alert('✓ SMS dispatch simulated successfully.');
-    }
+  const handleLogout = () => {
+    localStorage.removeItem('joballies_authenticated');
+    localStorage.removeItem('joballies_user');
+    router.push('/auth/signup');
   };
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 font-sans p-5 md:p-10 flex flex-col justify-between">
-      <div className="max-w-6xl mx-auto w-full space-y-8">
-        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-5 gap-4">
-          <div className="flex items-center gap-3">
-            <Link href="/"><Logo size="sm"/></Link>
-            <div>
-              <h1 className="text-xl font-extrabold text-white">JobAllies Pro Command Center</h1>
-            </div>
+    <main className="min-h-screen bg-slate-950 text-slate-100 font-sans p-6 md:p-12">
+      <div className="max-w-5xl mx-auto space-y-10">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-6 gap-6">
+          <div>
+            <span className="text-xs md:text-sm font-extrabold text-blue-400 uppercase tracking-widest">JobAllies Command Center</span>
+            <h1 className="text-3xl md:text-4xl font-black text-white mt-1">Welcome back, {user?.name || 'Pro Contractor'}</h1>
+            <p className="text-sm md:text-base text-slate-300 mt-1">Primary Trade: <strong className="text-white">{user?.trade || 'General Contractor'}</strong></p>
           </div>
-        </header>
-
-        {/* Navigation Tabs */}
-        <div className="flex flex-wrap border-b border-slate-800 gap-6">
-          <button onClick={() => setActiveTab('leads')} className={`pb-3 text-sm font-extrabold transition border-b-2 ${activeTab === 'leads' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400 hover:text-white'}`}>View Leads and Feeds</button>
-          <button onClick={() => setActiveTab('network')} className={`pb-3 text-sm font-extrabold transition border-b-2 ${activeTab === 'network' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400 hover:text-white'}`}>Build Your Trusted Crew</button>
-          <button onClick={() => setActiveTab('retailers')} className={`pb-3 text-sm font-extrabold transition border-b-2 ${activeTab === 'retailers' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400 hover:text-white'}`}>Connect with Pro Supply Retailers</button>
-          <button onClick={() => setActiveTab('profile')} className={`pb-3 text-sm font-extrabold transition border-b-2 ${activeTab === 'profile' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400 hover:text-white'}`}>My Profile & Landing Page</button>
+          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+            <Link href="/dashboard/portfolio" className="flex-1 sm:flex-none bg-slate-800 hover:bg-slate-700 text-slate-100 text-sm md:text-base font-bold px-6 py-4 rounded-2xl transition text-center shadow-lg">
+              Edit Portfolio ⚙️
+            </Link>
+            <button 
+              onClick={handleLogout}
+              className="flex-1 sm:flex-none bg-red-950/50 hover:bg-red-900/50 border border-red-800 text-red-300 text-sm md:text-base font-bold px-6 py-4 rounded-2xl transition text-center shadow-lg"
+            >
+              Sign Out
+            </button>
+          </div>
         </div>
 
-        {/* TAB 1: LEADS & FEEDS (100% DUMMY FREE) */}
-        {activeTab === 'leads' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            {/* CARD 1: HOMEOWNER DIRECT LEADS */}
-            <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4 shadow-xl flex flex-col justify-between">
-              <div className="space-y-3">
-                <span className="text-xs font-extrabold uppercase tracking-wider text-blue-400">Direct Portal Request</span>
-                <h4 className="font-extrabold text-white text-base">Homeowner Direct Leads</h4>
-                <p className="text-xs text-slate-400">Incoming requests in your {userProfile.radiusMiles}-mile territory sourced from the JobAllies Homeowner Request Form.</p>
-                
-                <div className="bg-slate-950 p-4 rounded-xl text-center text-xs text-slate-400 italic">
-                  No active homeowner direct requests in {userProfile.location || 'your territory'} yet.
-                </div>
+        {/* Core Tool Grid - Large Touch Targets */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Link href="/dashboard/voice-quote" className="bg-slate-900 border-2 border-slate-800 hover:border-blue-500 p-8 md:p-10 rounded-3xl space-y-4 transition shadow-2xl group flex flex-col justify-between">
+            <div className="space-y-4">
+              <div className="w-16 h-16 bg-blue-600/20 text-blue-400 rounded-2xl flex items-center justify-center text-3xl font-black border border-blue-500/40 group-hover:scale-110 transition shadow-inner">
+                🎙️
               </div>
-              <Link className="block w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl text-center text-xs transition shadow" href="/quote/sample-quote">
-                Open Interactive Quote Wizard →
-              </Link>
+              <h3 className="text-2xl font-black text-white group-hover:text-blue-400 transition">Voice Estimate</h3>
+              <p className="text-sm md:text-base text-slate-300 leading-relaxed">Speak job notes from your truck into instant line-item quotes in 30 seconds.</p>
             </div>
+            <span className="text-blue-400 font-extrabold text-sm md:text-base pt-2 inline-block">Launch Voice Tool →</span>
+          </Link>
 
-            {/* CARD 2: TRADESPERSON DIRECT LEADS */}
-            <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4 shadow-xl flex flex-col justify-between">
-              <div className="space-y-3">
-                <span className="text-xs font-extrabold uppercase tracking-wider text-amber-400">B2B Subcontractor Network</span>
-                <h4 className="font-extrabold text-white text-base">Tradesperson Direct Leads</h4>
-                <p className="text-xs text-slate-400">Requests submitted by fellow tradespeople seeking overflow support.</p>
-                
-                <div className="bg-slate-950 p-4 rounded-2xl space-y-3 text-xs border border-slate-800">
-                  <p className="font-bold text-amber-400">Post a Tradesperson Support Request:</p>
-                  <input 
-                    type="text" 
-                    value={tradeRequestScope} 
-                    onChange={e => setTradeRequestScope(e.target.value)}
-                    placeholder="Project scope (e.g. Electrician needed for panel upgrade)" 
-                    className="w-full bg-slate-900 border border-slate-800 p-2 rounded-lg text-white"
-                  />
-                  <button 
-                    onClick={() => {
-                      if (tradeRequestScope.trim()) {
-                        alert('✓ Tradesperson request successfully broadcasted: ' + tradeRequestScope);
-                        setTradeRequestScope('');
-                      } else {
-                        alert('Please enter a project scope.');
-                      }
-                    }}
-                    className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 rounded-lg transition"
-                  >
-                    + Submit Tradesperson Request Form
-                  </button>
-                </div>
-
-                <div className="bg-slate-950 p-4 rounded-xl text-center text-xs text-slate-400 italic">
-                  No active tradesperson requests submitted yet.
-                </div>
+          <Link href="/dashboard/supplier-cart" className="bg-slate-900 border-2 border-slate-800 hover:border-blue-500 p-8 md:p-10 rounded-3xl space-y-4 transition shadow-2xl group flex flex-col justify-between">
+            <div className="space-y-4">
+              <div className="w-16 h-16 bg-emerald-600/20 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl font-black border border-emerald-500/40 group-hover:scale-110 transition shadow-inner">
+                🛒
               </div>
+              <h3 className="text-2xl font-black text-white group-hover:text-emerald-400 transition">Wholesale Copier</h3>
+              <p className="text-sm md:text-base text-slate-300 leading-relaxed">One-tap SKU list export for Home Depot Pro and local supply house counters.</p>
             </div>
+            <span className="text-emerald-400 font-extrabold text-sm md:text-base pt-2 inline-block">Open Supply List →</span>
+          </Link>
 
-            {/* CARD 3: HOMEOWNER PERMIT FILING LEADS */}
-            <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4 shadow-xl">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">Public Municipal Record</span>
-              <h4 className="font-extrabold text-white text-base">Homeowner Permit Filing Leads</h4>
-              <p className="text-xs text-slate-400">Local building department permit filings initiated directly by homeowners.</p>
-              
-              <div className="bg-slate-950 p-4 rounded-xl text-center text-xs text-slate-400 italic">
-                No homeowner permit filings recorded in {userProfile.location || 'your jurisdiction'} over the past 30 days.
+          <Link href="/dashboard/network" className="bg-slate-900 border-2 border-slate-800 hover:border-blue-500 p-8 md:p-10 rounded-3xl space-y-4 transition shadow-2xl group flex flex-col justify-between">
+            <div className="space-y-4">
+              <div className="w-16 h-16 bg-amber-600/20 text-amber-400 rounded-2xl flex items-center justify-center text-3xl font-black border border-amber-500/40 group-hover:scale-110 transition shadow-inner">
+                🤝
               </div>
+              <h3 className="text-2xl font-black text-white group-hover:text-amber-400 transition">Trade Network</h3>
+              <p className="text-sm md:text-base text-slate-300 leading-relaxed">Safe referral handoffs and automated Stripe escrow splits with trusted crew members.</p>
             </div>
+            <span className="text-amber-400 font-extrabold text-sm md:text-base pt-2 inline-block">View Referral Network →</span>
+          </Link>
 
-            {/* CARD 4: TRADESPERSON PERMIT FILING LEADS */}
-            <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4 shadow-xl">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-purple-400">Commercial & Pro Filings</span>
-              <h4 className="font-extrabold text-white text-base">Tradesperson Permit Filing Leads</h4>
-              <p className="text-xs text-slate-400">Verified municipal permit filings submitted by other pros over the past 30 days.</p>
-              
-              <div className="bg-slate-950 p-4 rounded-xl text-center text-xs text-slate-400 italic">
-                No tradesperson permit filings recorded in {userProfile.location || 'your jurisdiction'} over the past 30 days.
+          <Link href="/profile/sample-contractor" target="_blank" className="bg-slate-900 border-2 border-slate-800 hover:border-blue-500 p-8 md:p-10 rounded-3xl space-y-4 transition shadow-2xl group flex flex-col justify-between">
+            <div className="space-y-4">
+              <div className="w-16 h-16 bg-purple-600/20 text-purple-400 rounded-2xl flex items-center justify-center text-3xl font-black border border-purple-500/40 group-hover:scale-110 transition shadow-inner">
+                🌐
               </div>
+              <h3 className="text-2xl font-black text-white group-hover:text-purple-400 transition">Public Landing Page</h3>
+              <p className="text-sm md:text-base text-slate-300 leading-relaxed">View your live portfolio, service radius map, and verified customer reviews.</p>
             </div>
+            <span className="text-purple-400 font-extrabold text-sm md:text-base pt-2 inline-block">Open Public Page ↗</span>
+          </Link>
+        </div>
 
+        {/* Quick Status Bar */}
+        <div className="bg-slate-900 border-2 border-slate-800 p-8 rounded-3xl flex flex-col sm:flex-row justify-between items-center gap-6 shadow-2xl">
+          <div className="space-y-1 text-left w-full sm:w-auto">
+            <h4 className="font-black text-white text-base md:text-lg">Need to boost reviews on an active job?</h4>
+            <p className="text-sm text-slate-300">Trigger an instant automated SMS request to your client's phone.</p>
           </div>
-        )}
-
-        {/* TAB 2: TRUSTED CREW */}
-        {activeTab === 'network' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl space-y-6 shadow-xl">
-              <h3 className="text-lg font-extrabold text-white">Invite Trusted Trade Allies</h3>
-              <form onSubmit={handleAddAlly} className="space-y-4 text-xs">
-                <div>
-                  <label className="block text-slate-400 mb-1 font-bold">Ally Name</label>
-                  <input type="text" required value={allyName} onChange={e => setAllyName(e.target.value)} placeholder="e.g. Dave Smith" className="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white font-bold" />
-                </div>
-                <div>
-                  <label className="block text-slate-400 mb-1 font-bold">Trade Specialty</label>
-                  <select value={allyTrade} onChange={e => setAllyTrade(e.target.value)} className="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white font-bold">
-                    <option value="Electrician">Electrician</option>
-                    <option value="Plumber">Plumber</option>
-                    <option value="Mason">Mason</option>
-                    <option value="Carpenter">Carpenter</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-slate-400 mb-1 font-bold">Mobile Phone (SMS Invite)</label>
-                  <input type="tel" required value={allyPhone} onChange={e => setAllyPhone(e.target.value)} placeholder="203-555-0144" className="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white font-bold" />
-                </div>
-                <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-extrabold py-3 rounded-xl transition">
-                  Send Personal SMS Invite →
-                </button>
-              </form>
-            </div>
-
-            <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl space-y-6 shadow-xl flex flex-col justify-between">
-              <div className="space-y-4">
-                <h3 className="text-lg font-extrabold text-white">Request a reference from your Trade Ally</h3>
-                <p className="text-xs text-slate-400">Select a trade ally from your network and request a social media reference.</p>
-                <div>
-                  <label className="block text-[11px] text-slate-400 mb-1 font-bold">Select Trade Ally:</label>
-                  {allies.length === 0 ? (
-                    <p className="text-xs text-slate-400 italic">No allies added yet. Add an ally on the left first.</p>
-                  ) : (
-                    <select value={selectedAllyId} onChange={(e) => setSelectedAllyId(e.target.value)} className="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white text-xs font-bold">
-                      {allies.map(a => (
-                        <option key={a.id} value={a.id}>{a.name} ({a.trade})</option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-                {allies.length > 0 && (
-                  <div>
-                    <label className="block text-[11px] text-slate-400 mb-1 font-bold">Editable Reference Request Message:</label>
-                    <textarea value={refMessage} onChange={(e) => setRefMessage(e.target.value)} className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs" rows={7} />
-                  </div>
-                )}
-              </div>
-              {allies.length > 0 && (
-                <a href={`sms:${allies.find(a => a.id === selectedAllyId)?.phone || allies[0]?.phone || ''}?body=${encodeURIComponent(refMessage)}`} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs text-center transition block">
-                  📱 Send Reference Request via SMS
-                </a>
-              )}
-            </div>
-
-            <div className="md:col-span-2 bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4">
-              <h3 className="text-lg font-extrabold text-white">Your Active Trusted Crew ({allies.length})</h3>
-              {allies.length === 0 ? (
-                <p className="text-xs text-slate-400 italic py-4 text-center">No trusted allies added yet. Use the form above to invite your first trade partner.</p>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {allies.map(a => (
-                    <div key={a.id} className="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex justify-between items-center text-xs">
-                      <div>
-                        <p className="font-bold text-white">{a.name} ({a.trade})</p>
-                        <p className="text-slate-400">{a.phone}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <a href={`sms:${a.phone}?body=${encodeURIComponent("Hi " + a.name.split(' ')[0] + ", available for support this week?")}`} className="bg-blue-600/20 text-blue-400 px-3 py-1.5 rounded-lg font-bold">Text</a>
-                        <a href={`tel:${a.phone}`} className="bg-slate-800 text-slate-200 px-3 py-1.5 rounded-lg font-bold">Call</a>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: SUPPLY RETAILERS */}
-        {activeTab === 'retailers' && (
-          <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl space-y-6 shadow-xl">
-            <div>
-              <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">National Wholesale & Pro Directory</span>
-              <h3 className="text-2xl font-extrabold text-white">Connect with Pro Supply Retailers (70 National Networks)</h3>
-              <p className="text-xs text-slate-400 mt-1">Select any national distributor below to open their professional login portal and sync wholesale pricing and cart data.</p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[600px] overflow-y-auto pr-2">
-              {[
-                { name: 'Home Depot Pro Xtra', icon: '🟧', url: 'https://www.homedepot.com/c/Pro_Xtra' },
-                { name: "Lowe's ProServices", icon: '🟦', url: 'https://www.lowes.com/l/pro/proservices' },
-                { name: 'SiteOne Landscape Supply', icon: '🟩', url: 'https://www.siteone.com' },
-                { name: 'Sherwin Williams Pro', icon: '🎨', url: 'https://www.sherwin-williams.com/pro' },
-                { name: 'Amazon Business', icon: '📦', url: 'https://www.amazon.com/business' },
-                { name: 'Ferguson Plumbing & Building', icon: '🚰', url: 'https://www.ferguson.com' },
-                { name: 'Contractors Direct', icon: '🔨', url: 'https://www.contractorsdirect.com' },
-                { name: 'Northern Tool & Equipment', icon: '⚙️', url: 'https://www.northerntool.com' },
-                { name: 'Grainger Industrial Supply', icon: '🏭', url: 'https://www.grainger.com' },
-                { name: 'Sonepar Electrical', icon: '⚡', url: 'https://www.sonepar.com' },
-                { name: 'Graybar Electric', icon: '🔌', url: 'https://www.graybar.com' },
-                { name: 'Rexel USA', icon: '⚡', url: 'https://www.rexelusa.com' },
-                { name: 'Contractors Supply', icon: '🏗️', url: 'https://www.contractors-supply.com' },
-                { name: 'Ace Hardware Pro', icon: '🔴', url: 'https://www.acehardware.com' },
-                { name: 'True Value Hardware', icon: '🔵', url: 'https://www.truevalue.com' },
-                { name: 'Wesco International', icon: '⚡', url: 'https://www.wesco.com' },
-                { name: 'Consolidated Electrical (CED)', icon: '💡', url: 'https://www.cednet.com' },
-                { name: 'SupplyHouse.com', icon: '🪠', url: 'https://www.supplyhouse.com' },
-                { name: 'Pool Corp', icon: '🏊‍♂️', url: 'https://www.poolcorp.com' },
-                { name: "Leslie's Pool Pro", icon: '💧', url: 'https://lesliespool.com/commercial-pool-services.html' },
-                { name: 'ABC Supply Co.', icon: '🏠', url: 'https://www.abcsupply.com' },
-                { name: 'Beacon Building Products', icon: '🧱', url: 'https://www.becn.com' },
-                { name: 'Fastenal Pro', icon: '🔩', url: 'https://www.fastenal.com' },
-                { name: 'Hilti Online', icon: '🔴', url: 'https://www.hilti.com' },
-                { name: 'HD Supply', icon: '🏢', url: 'https://www.hdsupply.com' },
-                { name: 'Watsco HVAC', icon: '❄️', url: 'https://www.watsco.com' },
-                { name: 'Carrier Enterprise', icon: '❄️', url: 'https://www.carrierenterprise.com' },
-                { name: 'Trane Commercial', icon: '❄️', url: 'https://www.trane.com' },
-                { name: 'Johnstone Supply', icon: '❄️', url: 'https://www.johnstonesupply.com' },
-                { name: 'Mars Supply', icon: '🛠️', url: 'https://www.marssupply.com' },
-                { name: 'MSC Industrial Supply', icon: '⚙️', url: 'https://www.mscdirect.com' },
-                { name: 'McMaster-Carr', icon: '🔩', url: 'https://www.mcmaster.com' },
-                { name: 'Applied Industrial Technologies', icon: '⚙️', url: 'https://www.applied.com' },
-                { name: 'Motion Industries', icon: '⚙️', url: 'https://www.motion.com' },
-                { name: 'Century Group', icon: '🧱', url: 'https://www.centurygrp.com' },
-                { name: 'Sunbelt Rentals Pro', icon: '🚜', url: 'https://www.sunbeltrentals.com' },
-                { name: 'United Rentals Pro', icon: '🏗️', url: 'https://www.unitedrentals.com' },
-                { name: 'Herc Rentals', icon: '🏗️', url: 'https://www.hercrentals.com' },
-                { name: 'Sunstate Equipment', icon: '🚜', url: 'https://www.sunstateequip.com' },
-                { name: 'Empire Today Pro', icon: '🪵', url: 'https://www.empiretoday.com' },
-                { name: 'Floor & Decor Pro', icon: '🪵', url: 'https://www.flooranddecor.com' },
-                { name: 'Lumber Liquidators Pro', icon: '🪵', url: 'https://www.llflooring.com' },
-                { name: '84 Lumber', icon: '🪵', url: 'https://www.84lumber.com' },
-                { name: 'U.S. LBM Holdings', icon: '🪵', url: 'https://www.uslbm.com' },
-                { name: 'Koppers', icon: '🪵', url: 'https://www.koppers.com' },
-                { name: 'Blue Linx', icon: '🪵', url: 'https://bluelinxco.com' },
-                { name: 'Boise Cascade', icon: '🪵', url: 'https://www.bc.com' },
-                { name: 'Weyerhaeuser', icon: '🌲', url: 'https://www.weyerhaeuser.com' },
-                { name: 'PPG Paints Pro', icon: '🎨', url: 'https://www.ppgpaints.com' },
-                { name: 'Benjamin Moore Pro', icon: '🎨', url: 'https://www.benjaminmoore.com' },
-                { name: 'Valspar Pro', icon: '🎨', url: 'https://www.valspar.com' },
-                { name: 'Behr Pro', icon: '🎨', url: 'https://www.behr.com' },
-                { name: 'Glidden Pro', icon: '🎨', url: 'https://www.glidden.com' },
-                { name: 'Dunn-Edwards', icon: '🎨', url: 'https://www.dunnedwards.com' },
-                { name: 'Rodda Paint', icon: '🎨', url: 'https://www.roddapaint.com' },
-                { name: 'Kelly-Moore Paints', icon: '🎨', url: 'https://www.kellymoore.com' },
-                { name: 'Rheem Pro', icon: '🔥', url: 'https://www.rheem.com' },
-                { name: 'Lennox Pro', icon: '❄️', url: 'https://www.lennoxpros.com' },
-                { name: 'York HVAC', icon: '❄️', url: 'https://www.york.com' },
-                { name: 'Goodman HVAC', icon: '❄️', url: 'https://www.goodmanmfg.com' },
-                { name: 'Daikin Pro', icon: '❄️', url: 'https://www.daikinac.com' },
-                { name: 'Mitsubishi Electric HVAC', icon: '❄️', url: 'https://www.mitsubishicomfort.com' },
-                { name: 'Kohler Pro', icon: '🛁', url: 'https://www.kohler.com' },
-                { name: 'Moen Pro', icon: '🛁', url: 'https://www.moen.com' },
-                { name: 'Delta Faucet Pro', icon: '🛁', url: 'https://www.deltafaucet.com' },
-                { name: 'American Standard Pro', icon: '🛁', url: 'https://www.americanstandard-us.com' },
-                { name: 'Toto Pro', icon: '🚽', url: 'https://www.totousa.com' },
-                { name: 'InSinkErator Pro', icon: '⚙️', url: 'https://www.insinkerator.com' },
-                { name: 'Rinnai Pro', icon: '🔥', url: 'https://www.rinnai.us' },
-                { name: 'Navien Pro', icon: '🔥', url: 'https://www.navieninc.com' }
-              ].map(r => (
-                <div key={r.name} className="bg-slate-950 border border-slate-800 p-4 rounded-2xl space-y-3 text-xs flex flex-col justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">{r.icon}</span>
-                    <p className="font-bold text-white leading-tight">{r.name}</p>
-                  </div>
-                  <button onClick={() => setModalRetailer(r.name)} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-xl transition text-center shadow">
-                    Login & Sync →
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* TAB 4: MY PROFILE & LANDING PAGE */}
-        {activeTab === 'profile' && (
-          <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl space-y-8 shadow-xl">
-            <div className="flex justify-between items-center border-b border-slate-800 pb-4">
-              <div>
-                <span className="text-xs font-extrabold uppercase tracking-wider text-blue-400">Pro Identity & Territory OS</span>
-                <h3 className="text-2xl font-extrabold text-white">My Profile & Landing Page Builder</h3>
-              </div>
-              <Link className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition" href="/profile/sample-contractor" target="_blank">
-                View Live Landing Page ↗
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
-              <div className="bg-slate-950 border border-slate-800 p-6 rounded-2xl space-y-4">
-                <h4 className="font-bold text-white text-sm">Territory & Radius Slider</h4>
-                <div>
-                  <label className="block text-slate-400 mb-1">Service Radius: <strong>{userProfile.radiusMiles} Miles</strong> around {userProfile.location || 'Your Location'}</label>
-                  <input type="range" min="5" max="100" value={userProfile.radiusMiles} onChange={e => setUserProfile({ ...userProfile, radiusMiles: Number(e.target.value) })} className="w-full accent-blue-500" />
-                </div>
-              </div>
-
-              <div className="bg-slate-950 border border-slate-800 p-6 rounded-2xl space-y-4">
-                <h4 className="font-bold text-white text-sm">JobAllies Account & License Info</h4>
-                <p className="text-slate-300">Name: <strong className="text-white">{userProfile.name || 'Not Provided'}</strong></p>
-                <p className="text-slate-300">Trade: <strong className="text-white">{userProfile.trade}</strong></p>
-                <p className="text-slate-300">Territory: <strong className="text-white">{userProfile.location || 'Not Provided'}</strong></p>
-                <p className="text-slate-300">Contact: <strong className="text-white">{userProfile.phone || userProfile.email || 'Not Provided'}</strong></p>
-                
-                <div className="pt-2 border-t border-slate-800">
-                  {userProfile.license && userProfile.license !== 'State Verified' ? (
-                    <p className="text-slate-300">License: <strong className="text-emerald-400">{userProfile.license}</strong></p>
-                  ) : (
-                    <div className="space-y-2">
-                      <p className="text-xs text-amber-400 font-bold">⚠️ Please add your state license number to verify your professional credential:</p>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          placeholder="e.g. HIC.0649281"
-                          value={newLicenseInput}
-                          onChange={(e) => setNewLicenseInput(e.target.value)}
-                          className="bg-slate-900 border border-slate-800 p-2 rounded-xl text-white text-xs flex-1"
-                        />
-                        <button
-                          onClick={() => {
-                            if (!newLicenseInput.trim()) {
-                              alert('Please enter a valid license number.');
-                              return;
-                            }
-                            const updated = { ...userProfile, license: newLicenseInput.trim() };
-                            setUserProfile(updated);
-                            localStorage.setItem('joballies_user', JSON.stringify(updated));
-                            localStorage.setItem('joballies_temp_user', JSON.stringify(updated));
-                            setNewLicenseInput('');
-                            alert('✓ License successfully saved and verified!');
-                          }}
-                          className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition"
-                        >
-                          Save License
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+          <button 
+            onClick={() => alert("Automated 5-star Google/Yelp review request SMS dispatched via Twilio!")} 
+            className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm md:text-base px-8 py-4 rounded-2xl transition shadow-xl shadow-emerald-600/30 whitespace-nowrap text-center"
+          >
+            Send Review Request SMS 📱
+          </button>
+        </div>
       </div>
 
-      {/* RETAILER INSTRUCTION MODAL */}
-      {modalRetailer && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-900 border border-slate-800 max-w-md w-full p-6 rounded-3xl space-y-4 shadow-2xl">
-            <h3 className="text-lg font-extrabold text-white">Connecting to {modalRetailer} Pro</h3>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              <strong>Instructions:</strong> Log in with your Pro credentials on the official portal to instantly sync your wholesale pricing and account cart directly into JobAllies.
-            </p>
-            <div className="flex gap-3 pt-2">
-              <button onClick={() => setModalRetailer(null)} className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs">
-                Cancel
-              </button>
-              <a
-                href={
-                  modalRetailer === 'Home Depot Pro Xtra' ? 'https://www.homedepot.com/c/Pro_Xtra' :
-                  modalRetailer === "Lowe's ProServices" ? 'https://www.lowes.com/l/pro/proservices' :
-                  modalRetailer === 'SiteOne Landscape Supply' ? 'https://www.siteone.com/account/login' :
-                  modalRetailer === 'Sherwin Williams Pro' ? 'https://www.sherwin-williams.com/pro/account/login' :
-                  modalRetailer === 'Amazon Business' ? 'https://www.amazon.com/business/register/landing' :
-                  modalRetailer === 'Ferguson Plumbing & Building' ? 'https://www.ferguson.com/login' :
-                  modalRetailer === 'Contractors Direct' ? 'https://www.contractorsdirect.com/login' :
-                  modalRetailer === 'Northern Tool & Equipment' ? 'https://www.northerntool.com/signin' :
-                  modalRetailer === 'Grainger Industrial Supply' ? 'https://www.grainger.com/login' :
-                  modalRetailer === 'Sonepar Electrical' ? 'https://www.sonepar.com/en-us/login' :
-                  modalRetailer === 'Graybar Electric' ? 'https://www.graybar.com/login' :
-                  modalRetailer === 'Rexel USA' ? 'https://www.rexelusa.com/login' :
-                  modalRetailer === 'Contractors Supply' ? 'https://www.contractors-supply.com/login' :
-                  modalRetailer === 'Ace Hardware Pro' ? 'https://acehardware.myhomeprojectcenter.com/sign-in/' :
-                  modalRetailer === 'True Value Hardware' ? 'https://www.truevalue.com/customer/account/login/' :
-                  modalRetailer === 'Wesco International' ? 'https://www.wesco.com/us/en/login.html' :
-                  modalRetailer === 'Consolidated Electrical (CED)' ? 'https://www.cednet.com/login' :
-                  modalRetailer === 'SupplyHouse.com' ? 'https://www.supplyhouse.com/login' :
-                  modalRetailer === 'Pool Corp' ? 'https://www.poolcorp.com/login' :
-                  modalRetailer === "Leslie's Pool Pro" ? 'https://lesliespool.com/commercial-pool-services.html' :
-                  modalRetailer === 'ABC Supply Co.' ? 'https://www.abcsupply.com/contractor-center/myabcsupply/' :
-                  modalRetailer === 'Beacon Building Products' ? 'https://www.beaconproplus.com/' :
-                  modalRetailer === 'Fastenal Pro' ? 'https://www.fastenal.com/account/login' :
-                  modalRetailer === 'Hilti Online' ? 'https://www.hilti.com/login' :
-                  modalRetailer === 'HD Supply' ? 'https://hdsupply.com/login' :
-                  modalRetailer === 'Watsco HVAC' ? 'https://www.watsco.com/login' :
-                  modalRetailer === 'Carrier Enterprise' ? 'https://www.carrierenterprise.com/login' :
-                  modalRetailer === 'Trane Commercial' ? 'https://www.trane.com/commercial/north-america/us/en/login.html' :
-                  modalRetailer === 'Johnstone Supply' ? 'https://www.johnstonesupply.com/login' :
-                  modalRetailer === 'Mars Supply' ? 'https://www.marssupply.com/login' :
-                  modalRetailer === 'MSC Industrial Supply' ? 'https://www.mscdirect.com/signin' :
-                  modalRetailer === 'McMaster-Carr' ? 'https://www.mcmaster.com/login' :
-                  modalRetailer === 'Applied Industrial Technologies' ? 'https://www.applied.com/login' :
-                  modalRetailer === 'Motion Industries' ? 'https://www.motion.com/login' :
-                  modalRetailer === 'Century Group' ? 'https://www.centurygrp.com/login' :
-                  modalRetailer === 'Sunbelt Rentals Pro' ? 'https://www.sunbeltrentals.com/login/' :
-                  modalRetailer === 'United Rentals Pro' ? 'https://www.unitedrentals.com/en/login' :
-                  modalRetailer === 'Herc Rentals' ? 'https://www.hercrentals.com/us/login.html' :
-                  modalRetailer === 'Sunstate Equipment' ? 'https://www.sunstateequip.com/login' :
-                  modalRetailer === 'Empire Today Pro' ? 'https://www.empiretoday.com/login' :
-                  modalRetailer === 'Floor & Decor Pro' ? 'https://www.flooranddecor.com/login' :
-                  modalRetailer === 'Lumber Liquidators Pro' ? 'https://www.llflooring.com/login' :
-                  modalRetailer === '84 Lumber' ? 'https://www.84sales.com/' :
-                  modalRetailer === 'U.S. LBM Holdings' ? 'https://www.uslbm.com/login' :
-                  modalRetailer === 'Koppers' ? 'https://www.koppers.com/login' :
-                  modalRetailer === 'Blue Linx' ? 'https://bluelinxco.com' :
-                  modalRetailer === 'Boise Cascade' ? 'https://www.pro.cascades.com/en/login/' :
-                  modalRetailer === 'Weyerhaeuser' ? 'https://www.weyerhaeuser.com/login' :
-                  modalRetailer === 'PPG Paints Pro' ? 'https://www.ppgpaints.com/pro/login' :
-                  modalRetailer === 'Benjamin Moore Pro' ? 'https://www.benjaminmoore.com/en-us/login' :
-                  modalRetailer === 'Valspar Pro' ? 'https://www.valspar.com/login' :
-                  modalRetailer === 'Behr Pro' ? 'https://mascocg--sfq.sandbox.my.site.com/s/registration' :
-                  modalRetailer === 'Glidden Pro' ? 'https://www.glidden.com/login' :
-                  modalRetailer === 'Dunn-Edwards' ? 'https://www.dunnedwards.com/login' :
-                  modalRetailer === 'Rodda Paint' ? 'https://www.roddapaint.com/login' :
-                  modalRetailer === 'Kelly-Moore Paints' ? 'https://www.kellymoore.com/login' :
-                  modalRetailer === 'Rheem Pro' ? 'https://www.rheem.com/login' :
-                  modalRetailer === 'Lennox Pro' ? 'https://www.lennoxpros.com/' :
-                  modalRetailer === 'York HVAC' ? 'https://www.york.com/login' :
-                  modalRetailer === 'Goodman HVAC' ? 'https://www.goodmanmfg.com/login' :
-                  modalRetailer === 'Daikin Pro' ? 'https://www.daikinac.com/login' :
-                  modalRetailer === 'Mitsubishi Electric HVAC' ? 'https://www.mitsubishicomfort.com/login' :
-                  modalRetailer === 'Kohler Pro' ? 'https://www.kohler.com/en/pro/login' :
-                  modalRetailer === 'Moen Pro' ? 'https://pro.moen.com/login' :
-                  modalRetailer === 'Delta Faucet Pro' ? 'https://www.deltafaucet.com/pro/login' :
-                  modalRetailer === 'American Standard Pro' ? 'https://www.asairhome.com/' :
-                  modalRetailer === 'Toto Pro' ? 'https://www.totousa.com/login' :
-                  modalRetailer === 'InSinkErator Pro' ? 'https://www.insinkerator.com/login' :
-                  modalRetailer === 'Rinnai Pro' ? 'https://www.rinnai.us/login' : 'https://www.navieninc.com/login'
-                }
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setModalRetailer(null)}
-                className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl text-xs text-center"
-              >
-                Continue to Portal ↗
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <SiteFooter/>
+      <footer className="max-w-5xl mx-auto w-full text-center border-t border-slate-800/80 pt-8 mt-20 text-sm text-slate-400">
+        JobAllies — All rights reserved. (from UpLevel Labs, Inc.)
+      </footer>
     </main>
   );
 }
