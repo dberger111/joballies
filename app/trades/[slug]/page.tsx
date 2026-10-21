@@ -24,10 +24,11 @@ export default async function TradeLandingPage({ params }: { params: Promise<{ s
             <span>{tradeIcon}</span> The #1 platform for {tradeName} pros
           </div>
 
-          <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white leading-[1.1]">
-            Get more <span className="text-blue-500">{tradeName}</span> leads.<br />
-            Quote more quickly.<br />
-            Build your trusted referral network.
+          <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
+            <span className="block text-white">Win More Local Jobs.</span>
+            <span className="block text-blue-400">Compare Material Costs.</span>
+            <span className="block text-emerald-400">Quote By Voice in Seconds.</span>
+            <span className="block text-amber-400">Build Your Trusted Network.</span>
           </h1>
         </div>
 

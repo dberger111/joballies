@@ -151,8 +151,11 @@ export default function HomePage() {
           <span className="bg-blue-950 text-blue-400 border border-blue-800 text-xs font-black uppercase tracking-widest px-3.5 py-1 rounded-full">
             Autonomous Contractor Field & Financial OS
           </span>
-          <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight leading-tight">
-            Win More Local Jobs. Quote in Seconds. <span className="text-blue-500">Build Your Trusted Network</span>
+          <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-tight">
+            <span className="block text-white">Win More Local Jobs.</span>
+            <span className="block text-blue-400">Compare Material Costs.</span>
+            <span className="block text-emerald-400">Quote By Voice in Seconds.</span>
+            <span className="block text-amber-400">Build Your Trusted Network.</span>
           </h1>
           <p className="text-slate-400 max-w-lg mx-auto text-sm leading-relaxed">
             Pulled directly from verified state registries and municipal permit filings. Enter your trade and territory to instantly launch your Pro workspace.
