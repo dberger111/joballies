@@ -36,10 +36,7 @@ export default function DashboardPage() {
     license: 'HIC.0649281'
   });
 
-  const [allies, setAllies] = useState<TradeAlly[]>([
-    { id: '1', name: 'Dave Smith', trade: 'Electrician', phone: '+12035550144' },
-    { id: '2', name: 'Carlos Gomez', trade: 'Plumber', phone: '+12035550188' }
-  ]);
+  const [allies, setAllies] = useState<TradeAlly[]>([]);
   const [allyName, setAllyName] = useState('');
   const [allyTrade, setAllyTrade] = useState('Electrician');
   const [allyPhone, setAllyPhone] = useState('');
@@ -81,7 +78,10 @@ export default function DashboardPage() {
       trade: allyTrade,
       phone: allyPhone.trim()
     };
-    setAllies([...allies, newAlly]);
+    const updatedAllies = [...allies, newAlly];
+    setAllies(updatedAllies);
+    const emailKey = userProfile.email || 'default_user';
+    localStorage.setItem(`joballies_crew_${emailKey}`, JSON.stringify(updatedAllies));
     setAllyName('');
     setAllyPhone('');
     alert(`✓ ${newAlly.name} (${newAlly.trade}) added to your active trusted crew!`);
@@ -256,7 +256,9 @@ export default function DashboardPage() {
                 <div>
                   <label className="block text-[11px] text-slate-400 mb-1 font-bold">Select Trade Ally:</label>
                   <select value={selectedAllyId} onChange={(e) => setSelectedAllyId(e.target.value)} className="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white text-xs font-bold">
-                    {allies.map(a => (
+                    {allies.length === 0 ? (
+                <p className="text-xs text-slate-400 italic text-center py-4">No trusted allies added yet. Use the form above to invite your first trade partner.</p>
+              ) : allies.map(a => (
                       <option key={a.id} value={a.id}>{a.name} ({a.trade})</option>
                     ))}
                   </select>
