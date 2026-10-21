@@ -4,19 +4,6 @@ import Link from 'next/link';
 import SiteFooter from '../components/SiteFooter';
 import Logo from '../components/Logo';
 
-interface LeadItem {
-  id: string;
-  source: string;
-  postedDate: string;
-  proName: string;
-  trade: string;
-  town: string;
-  budget: string;
-  scope: string;
-  clientPhone: string;
-  status: string;
-}
-
 interface TradeAlly {
   id: string;
   name: string;
@@ -27,13 +14,13 @@ interface TradeAlly {
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<'leads' | 'network' | 'retailers' | 'profile'>('leads');
   const [userProfile, setUserProfile] = useState({
-    name: 'Mike Johnson',
+    name: '',
     trade: 'General Contractor',
-    location: 'Weston, CT',
+    location: '',
     radiusMiles: 25,
-    phone: '+12035550199',
-    email: 'mike@joballies.com',
-    license: 'HIC.0649281'
+    phone: '',
+    email: '',
+    license: ''
   });
 
   const [allies, setAllies] = useState<TradeAlly[]>([]);
@@ -41,10 +28,44 @@ export default function DashboardPage() {
   const [allyTrade, setAllyTrade] = useState('Electrician');
   const [allyPhone, setAllyPhone] = useState('');
 
-  const [selectedAllyId, setSelectedAllyId] = useState<string>('1');
+  const [selectedAllyId, setSelectedAllyId] = useState<string>('');
   const [refMessage, setRefMessage] = useState<string>('');
   const [leadMessage, setLeadMessage] = useState('Hi, I saw your tradesperson lead on JobAllies and would love to collaborate or support your project.');
   const [modalRetailer, setModalRetailer] = useState<string | null>(null);
+  const [newLicenseInput, setNewLicenseInput] = useState('');
+  const [tradeRequestScope, setTradeRequestScope] = useState('');
+  
+  const [liveLeads, setLiveLeads] = useState<any[]>([]);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('joballies_user') || localStorage.getItem('joballies_temp_user');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const emailKey = parsed.phoneOrEmail || 'default_user';
+        setUserProfile({
+          name: parsed.name || '',
+          trade: parsed.trade || 'General Contractor',
+          location: parsed.location || '',
+          radiusMiles: parsed.radiusMiles || 25,
+          phone: parsed.phoneOrEmail || '',
+          email: parsed.phoneOrEmail || '',
+          license: parsed.licenseNumber || ''
+        });
+        
+        const savedCrew = localStorage.getItem(`joballies_crew_${emailKey}`);
+        if (savedCrew) {
+          setAllies(JSON.parse(savedCrew));
+        }
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    if (allies.length > 0 && !selectedAllyId) {
+      setSelectedAllyId(allies[0].id);
+    }
+  }, [allies, selectedAllyId]);
 
   useEffect(() => {
     const activeAlly = allies.find(a => a.id === selectedAllyId) || allies[0];
@@ -53,21 +74,6 @@ export default function DashboardPage() {
       setRefMessage(`Hi ${firstName}, Thanks for joining my trusted network on JobAllies. Would you be open to posting a reference for me on Facebook or NextDoor? Below is a sample reference that you could copy and paste:\n\nI've worked closely with ${userProfile.name} over the years. He is a super ${userProfile.trade} with lots of very satisfied customers. If you are in need of a ${userProfile.trade} in the ${userProfile.location} area, I encourage you to reach out to him directly at ${userProfile.phone} or message me and I'd be glad to connect you.`);
     }
   }, [selectedAllyId, allies, userProfile]);
-
-  const leads: LeadItem[] = [
-    {
-      id: 'L-1',
-      source: 'Weston Building & Land Use Permit Portal',
-      postedDate: 'Oct 18, 2026 at 11:42 AM',
-      proName: 'Marcus Vance (Vance Electric & Construction)',
-      trade: userProfile.trade,
-      town: userProfile.location,
-      budget: '$4,500 – $8,000',
-      scope: 'Commercial electrical and framing reinforcement support requested.',
-      clientPhone: '+12035550192',
-      status: 'New'
-    }
-  ];
 
   const handleAddAlly = (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,7 +116,6 @@ export default function DashboardPage() {
               <h1 className="text-xl font-extrabold text-white">JobAllies Pro Command Center</h1>
             </div>
           </div>
-          
         </header>
 
         {/* Navigation Tabs */}
@@ -121,7 +126,7 @@ export default function DashboardPage() {
           <button onClick={() => setActiveTab('profile')} className={`pb-3 text-sm font-extrabold transition border-b-2 ${activeTab === 'profile' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400 hover:text-white'}`}>My Profile & Landing Page</button>
         </div>
 
-        {/* TAB 1: LEADS & FEEDS */}
+        {/* TAB 1: LEADS & FEEDS (100% DUMMY FREE) */}
         {activeTab === 'leads' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
@@ -131,10 +136,9 @@ export default function DashboardPage() {
                 <span className="text-xs font-extrabold uppercase tracking-wider text-blue-400">Direct Portal Request</span>
                 <h4 className="font-extrabold text-white text-base">Homeowner Direct Leads</h4>
                 <p className="text-xs text-slate-400">Incoming requests in your {userProfile.radiusMiles}-mile territory sourced from the JobAllies Homeowner Request Form.</p>
-                <div className="bg-slate-950 p-4 rounded-2xl space-y-2 text-xs">
-                  <p className="font-bold text-white">Sarah Jenkins (Weston, CT)</p>
-                  <p className="text-slate-300">Kitchen & bathroom rough-in plumbing and electrical support needed.</p>
-                  <p className="text-emerald-400 font-bold">Budget: $6,500 | Source: Homeowner Form</p>
+                
+                <div className="bg-slate-950 p-4 rounded-xl text-center text-xs text-slate-400 italic">
+                  No active homeowner direct requests in {userProfile.location || 'your territory'} yet.
                 </div>
               </div>
               <Link className="block w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl text-center text-xs transition shadow" href="/quote/sample-quote">
@@ -142,28 +146,27 @@ export default function DashboardPage() {
               </Link>
             </div>
 
-            {/* CARD 2: TRADESPERSON DIRECT LEADS (WITH SUBMISSION FORM) */}
+            {/* CARD 2: TRADESPERSON DIRECT LEADS */}
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4 shadow-xl flex flex-col justify-between">
               <div className="space-y-3">
                 <span className="text-xs font-extrabold uppercase tracking-wider text-amber-400">B2B Subcontractor Network</span>
                 <h4 className="font-extrabold text-white text-base">Tradesperson Direct Leads</h4>
                 <p className="text-xs text-slate-400">Requests submitted by fellow tradespeople seeking overflow support.</p>
                 
-                {/* Tradesperson Request Submission Form */}
                 <div className="bg-slate-950 p-4 rounded-2xl space-y-3 text-xs border border-slate-800">
                   <p className="font-bold text-amber-400">Post a Tradesperson Support Request:</p>
                   <input 
                     type="text" 
-                    id="new-trade-scope" 
+                    value={tradeRequestScope} 
+                    onChange={e => setTradeRequestScope(e.target.value)}
                     placeholder="Project scope (e.g. Electrician needed for panel upgrade)" 
                     className="w-full bg-slate-900 border border-slate-800 p-2 rounded-lg text-white"
                   />
                   <button 
                     onClick={() => {
-                      const input = document.getElementById('new-trade-scope') as HTMLInputElement;
-                      if (input && input.value) {
-                        alert('✓ Tradesperson request successfully broadcasted to local network: ' + input.value);
-                        input.value = '';
+                      if (tradeRequestScope.trim()) {
+                        alert('✓ Tradesperson request successfully broadcasted: ' + tradeRequestScope);
+                        setTradeRequestScope('');
                       } else {
                         alert('Please enter a project scope.');
                       }
@@ -175,7 +178,7 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="bg-slate-950 p-4 rounded-xl text-center text-xs text-slate-400 italic">
-                  No active tradesperson requests yet. Submit a request above or connect with your trade network.
+                  No active tradesperson requests submitted yet.
                 </div>
               </div>
             </div>
@@ -185,10 +188,9 @@ export default function DashboardPage() {
               <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">Public Municipal Record</span>
               <h4 className="font-extrabold text-white text-base">Homeowner Permit Filing Leads</h4>
               <p className="text-xs text-slate-400">Local building department permit filings initiated directly by homeowners.</p>
-              <div className="bg-slate-950 p-4 rounded-2xl space-y-2 text-xs">
-                <p className="font-bold text-white">Owner-Builder Permit: Solar & Battery Install</p>
-                <p className="text-slate-300">Location: Weston Town Hall Registry • Filed 3 days ago</p>
-                <p className="text-slate-400 text-[11px]">Direct outreach enabled for licensed electrical contractors.</p>
+              
+              <div className="bg-slate-950 p-4 rounded-xl text-center text-xs text-slate-400 italic">
+                No homeowner permit filings recorded in {userProfile.location || 'your jurisdiction'} over the past 30 days.
               </div>
             </div>
 
@@ -197,30 +199,16 @@ export default function DashboardPage() {
               <span className="text-xs font-extrabold uppercase tracking-wider text-purple-400">Commercial & Pro Filings</span>
               <h4 className="font-extrabold text-white text-base">Tradesperson Permit Filing Leads</h4>
               <p className="text-xs text-slate-400">Verified municipal permit filings submitted by other pros over the past 30 days.</p>
-              {leads.map(l => (
-                <div key={l.id} className="bg-slate-950 p-4 rounded-xl space-y-3 text-xs">
-                  <div className="space-y-1">
-                    <p className="font-extrabold text-white">Permit filing in {userProfile.location}</p>
-                    <p className="text-blue-400 font-bold">Pro: {l.proName}</p>
-                    <p className="text-slate-400 text-[11px]">Source: {l.source}</p>
-                    <p className="text-slate-400 text-[11px]">Posted: {l.postedDate}</p>
-                  </div>
-                  <p className="text-slate-300 font-semibold">{l.scope}</p>
-                  <div>
-                    <label className="block text-[11px] text-slate-400 mb-1 font-bold">Editable Message to Posting Pro:</label>
-                    <textarea value={leadMessage} onChange={e => setLeadMessage(e.target.value)} className="w-full bg-slate-900 border border-slate-800 p-2.5 rounded-xl text-white text-xs" rows={2} />
-                  </div>
-                  <button onClick={() => sendSMS(l.clientPhone, leadMessage)} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl transition">
-                    💬 Send SMS to Pro
-                  </button>
-                </div>
-              ))}
+              
+              <div className="bg-slate-950 p-4 rounded-xl text-center text-xs text-slate-400 italic">
+                No tradesperson permit filings recorded in {userProfile.location || 'your jurisdiction'} over the past 30 days.
+              </div>
             </div>
 
           </div>
         )}
 
-        {/* TAB 2{/* TAB 2: TRUSTED CREW */}
+        {/* TAB 2: TRUSTED CREW */}
         {activeTab === 'network' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl space-y-6 shadow-xl">
@@ -255,45 +243,55 @@ export default function DashboardPage() {
                 <p className="text-xs text-slate-400">Select a trade ally from your network and request a social media reference.</p>
                 <div>
                   <label className="block text-[11px] text-slate-400 mb-1 font-bold">Select Trade Ally:</label>
-                  <select value={selectedAllyId} onChange={(e) => setSelectedAllyId(e.target.value)} className="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white text-xs font-bold">
-                    {allies.length === 0 ? (
-                <p className="text-xs text-slate-400 italic text-center py-4">No trusted allies added yet. Use the form above to invite your first trade partner.</p>
-              ) : allies.map(a => (
-                      <option key={a.id} value={a.id}>{a.name} ({a.trade})</option>
-                    ))}
-                  </select>
+                  {allies.length === 0 ? (
+                    <p className="text-xs text-slate-400 italic">No allies added yet. Add an ally on the left first.</p>
+                  ) : (
+                    <select value={selectedAllyId} onChange={(e) => setSelectedAllyId(e.target.value)} className="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white text-xs font-bold">
+                      {allies.map(a => (
+                        <option key={a.id} value={a.id}>{a.name} ({a.trade})</option>
+                      ))}
+                    </select>
+                  )}
                 </div>
-                <div>
-                  <label className="block text-[11px] text-slate-400 mb-1 font-bold">Editable Reference Request Message:</label>
-                  <textarea value={refMessage} onChange={(e) => setRefMessage(e.target.value)} className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs" rows={7} />
-                </div>
+                {allies.length > 0 && (
+                  <div>
+                    <label className="block text-[11px] text-slate-400 mb-1 font-bold">Editable Reference Request Message:</label>
+                    <textarea value={refMessage} onChange={(e) => setRefMessage(e.target.value)} className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs" rows={7} />
+                  </div>
+                )}
               </div>
-              <a href={`sms:${allies.find(a => a.id === selectedAllyId)?.phone || allies[0]?.phone || ''}?body=${encodeURIComponent(refMessage)}`} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs text-center transition block">
-                📱 Send Reference Request via SMS
-              </a>
+              {allies.length > 0 && (
+                <a href={`sms:${allies.find(a => a.id === selectedAllyId)?.phone || allies[0]?.phone || ''}?body=${encodeURIComponent(refMessage)}`} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs text-center transition block">
+                  📱 Send Reference Request via SMS
+                </a>
+              )}
             </div>
 
             <div className="md:col-span-2 bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4">
               <h3 className="text-lg font-extrabold text-white">Your Active Trusted Crew ({allies.length})</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {allies.map(a => (
-                  <div key={a.id} className="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex justify-between items-center text-xs">
-                    <div>
-                      <p className="font-bold text-white">{a.name} ({a.trade})</p>
-                      <p className="text-slate-400">{a.phone}</p>
+              {allies.length === 0 ? (
+                <p className="text-xs text-slate-400 italic py-4 text-center">No trusted allies added yet. Use the form above to invite your first trade partner.</p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {allies.map(a => (
+                    <div key={a.id} className="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex justify-between items-center text-xs">
+                      <div>
+                        <p className="font-bold text-white">{a.name} ({a.trade})</p>
+                        <p className="text-slate-400">{a.phone}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <a href={`sms:${a.phone}?body=${encodeURIComponent("Hi " + a.name.split(' ')[0] + ", available for support this week?")}`} className="bg-blue-600/20 text-blue-400 px-3 py-1.5 rounded-lg font-bold">Text</a>
+                        <a href={`tel:${a.phone}`} className="bg-slate-800 text-slate-200 px-3 py-1.5 rounded-lg font-bold">Call</a>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <a href={`sms:${a.phone}?body=${encodeURIComponent("Hi " + a.name.split(' ')[0] + ", available for support this week?")}`} className="bg-blue-600/20 text-blue-400 px-3 py-1.5 rounded-lg font-bold">Text</a>
-                      <a href={`tel:${a.phone}`} className="bg-slate-800 text-slate-200 px-3 py-1.5 rounded-lg font-bold">Call</a>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {/* TAB 3: SUPPLY RETAILERS (70 NATIONAL RETAILERS WITH LOGOS) */}
+        {/* TAB 3: SUPPLY RETAILERS */}
         {activeTab === 'retailers' && (
           <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl space-y-6 shadow-xl">
             <div>
@@ -348,7 +346,7 @@ export default function DashboardPage() {
                 { name: '84 Lumber', icon: '🪵', url: 'https://www.84lumber.com' },
                 { name: 'U.S. LBM Holdings', icon: '🪵', url: 'https://www.uslbm.com' },
                 { name: 'Koppers', icon: '🪵', url: 'https://www.koppers.com' },
-                { name: 'Blue Linx', icon: '🪵', url: 'https://www.bluelinxco.com' },
+                { name: 'Blue Linx', icon: '🪵', url: 'https://bluelinxco.com' },
                 { name: 'Boise Cascade', icon: '🪵', url: 'https://www.bc.com' },
                 { name: 'Weyerhaeuser', icon: '🌲', url: 'https://www.weyerhaeuser.com' },
                 { name: 'PPG Paints Pro', icon: '🎨', url: 'https://www.ppgpaints.com' },
@@ -405,7 +403,7 @@ export default function DashboardPage() {
               <div className="bg-slate-950 border border-slate-800 p-6 rounded-2xl space-y-4">
                 <h4 className="font-bold text-white text-sm">Territory & Radius Slider</h4>
                 <div>
-                  <label className="block text-slate-400 mb-1">Service Radius: <strong>{userProfile.radiusMiles} Miles</strong> around {userProfile.location}</label>
+                  <label className="block text-slate-400 mb-1">Service Radius: <strong>{userProfile.radiusMiles} Miles</strong> around {userProfile.location || 'Your Location'}</label>
                   <input type="range" min="5" max="100" value={userProfile.radiusMiles} onChange={e => setUserProfile({ ...userProfile, radiusMiles: Number(e.target.value) })} className="w-full accent-blue-500" />
                 </div>
               </div>
@@ -517,7 +515,7 @@ export default function DashboardPage() {
                   modalRetailer === '84 Lumber' ? 'https://www.84sales.com/' :
                   modalRetailer === 'U.S. LBM Holdings' ? 'https://www.uslbm.com/login' :
                   modalRetailer === 'Koppers' ? 'https://www.koppers.com/login' :
-                  modalRetailer === 'Blue Linx' ? 'https://bluelinxco.com/login/' :
+                  modalRetailer === 'Blue Linx' ? 'https://bluelinxco.com' :
                   modalRetailer === 'Boise Cascade' ? 'https://www.pro.cascades.com/en/login/' :
                   modalRetailer === 'Weyerhaeuser' ? 'https://www.weyerhaeuser.com/login' :
                   modalRetailer === 'PPG Paints Pro' ? 'https://www.ppgpaints.com/pro/login' :
