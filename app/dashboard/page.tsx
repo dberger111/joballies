@@ -46,15 +46,16 @@ export default function DashboardPage() {
   const [leadMessage, setLeadMessage] = useState('Hi, I saw your tradesperson lead on JobAllies and would love to collaborate or support your project.');
   const [modalRetailer, setModalRetailer] = useState<string | null>(null);
 
-  const leads: LeadItem[] = [
+  const leads = [
     {
       id: 'L-1',
-      source: 'Permit filing in Weston, CT)',
+      source: 'Weston Building & Land Use Permit Portal',
+      postedDate: 'Oct 18, 2026 at 11:42 AM',
+      proName: 'Marcus Vance (Vance Electric & Construction)',
       trade: userProfile.trade,
       town: userProfile.location,
       budget: '$4,500 – $8,000',
       scope: 'Commercial electrical and framing reinforcement support requested.',
-      clientName: 'Pro Dispatch / Registry',
       clientPhone: '+12035550192',
       status: 'New'
     }
