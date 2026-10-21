@@ -63,7 +63,7 @@ export default function PricingPage() {
         </header>
 
         <div className="text-center space-y-4 pt-6">
-          <span className="bg-emerald-950 text-emerald-400 border border-emerald-800 text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full">
+          <span className="bg-emerald-950 text-emerald-400 border border-emerald-800 text-sm md:text-base font-black uppercase tracking-widest px-4 py-2 rounded-full">
             14-Day Free Trial • Cancel Anytime
           </span>
           <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight">
@@ -74,12 +74,12 @@ export default function PricingPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:p-12">
           {/* Standard Free Tier Card */}
-          <div className="bg-slate-900 border border-slate-800 p-8 md:p-10 rounded-3xl space-y-8 shadow-xl flex flex-col justify-between">
+          <div className="bg-slate-900 border border-slate-800 p-10 md:p-12 md:p-10 rounded-3xl space-y-8 shadow-xl flex flex-col justify-between">
             <div className="space-y-6">
               <div>
-                <span className="text-xs font-extrabold uppercase tracking-wider text-blue-400">Standard Access</span>
+                <span className="text-sm md:text-base font-extrabold uppercase tracking-wider text-blue-400">Standard Access</span>
                 <h3 className="text-4xl font-black text-white mt-2">$0 <span className="text-sm text-slate-400 font-normal">/ forever</span></h3>
               </div>
               <ul className="space-y-4 text-sm md:text-base text-slate-200">
@@ -99,13 +99,13 @@ export default function PricingPage() {
           </div>
 
           {/* Pro Command Center Card */}
-          <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950/60 border-2 border-blue-500 p-8 md:p-10 rounded-3xl space-y-8 shadow-2xl flex flex-col justify-between relative overflow-hidden">
-            <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-black uppercase tracking-widest px-5 py-1.5 rounded-bl-2xl shadow">
+          <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950/60 border-2 border-blue-500 p-10 md:p-12 md:p-10 rounded-3xl space-y-8 shadow-2xl flex flex-col justify-between relative overflow-hidden">
+            <div className="absolute top-0 right-0 bg-blue-600 text-white text-sm md:text-base font-black uppercase tracking-widest px-5 py-1.5 rounded-bl-2xl shadow">
               Recommended
             </div>
             <div className="space-y-6">
               <div>
-                <span className="text-xs font-extrabold uppercase tracking-wider text-amber-400">Pro Command Center</span>
+                <span className="text-sm md:text-base font-extrabold uppercase tracking-wider text-amber-400">Pro Command Center</span>
                 <h3 className="text-4xl font-black text-white mt-2">$49 <span className="text-sm text-slate-400 font-normal">/ month (14 days free)</span></h3>
               </div>
               <ul className="space-y-4 text-sm md:text-base text-slate-100 font-medium">

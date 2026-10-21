@@ -86,7 +86,7 @@ export default function QuickStartCard({ defaultTrade = 'General Contractor' }: 
             <select
               value={trade}
               onChange={(e) => setTrade(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-3 text-xs font-extrabold text-white focus:border-blue-400 focus:outline-none"
+              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-5 text-sm md:text-base font-bold font-extrabold text-white focus:border-blue-400 focus:outline-none"
             >
               {MASTER_TRADES.map((t) => (
                 <option key={t.slug} value={t.name}>
@@ -105,7 +105,7 @@ export default function QuickStartCard({ defaultTrade = 'General Contractor' }: 
               required
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-3 text-xs font-extrabold text-white focus:border-emerald-400 focus:outline-none"
+              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-5 text-sm md:text-base font-bold font-extrabold text-white focus:border-emerald-400 focus:outline-none"
             />
           </div>
         </div>
@@ -121,7 +121,7 @@ export default function QuickStartCard({ defaultTrade = 'General Contractor' }: 
               placeholder="e.g. Mike Johnson"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-5 text-sm md:text-base font-bold text-white"
             />
           </div>
           <div>
@@ -134,7 +134,7 @@ export default function QuickStartCard({ defaultTrade = 'General Contractor' }: 
               placeholder="e.g. Johnson Construction LLC"
               value={businessName}
               onChange={(e) => setBusinessName(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-5 text-sm md:text-base font-bold text-white"
             />
           </div>
         </div>
@@ -150,7 +150,7 @@ export default function QuickStartCard({ defaultTrade = 'General Contractor' }: 
               placeholder="mike@contractor.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-5 text-sm md:text-base font-bold text-white"
             />
           </div>
           <div>
@@ -163,14 +163,14 @@ export default function QuickStartCard({ defaultTrade = 'General Contractor' }: 
               placeholder="(203) 555-0199"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-5 text-sm md:text-base font-bold text-white"
             />
           </div>
         </div>
 
         <button
           type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-sm transition shadow-xl shadow-blue-600/30"
+          className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-5 rounded-2xl text-sm transition shadow-xl shadow-blue-600/30"
         >
           View Leads & Auto-Created Quotes →
         </button>
