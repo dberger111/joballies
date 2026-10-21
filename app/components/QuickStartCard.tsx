@@ -3,12 +3,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { MASTER_TRADES } from './tradesData';
 
-export default function QuickStartCard({ defaultTrade }: { defaultTrade?: string }) {
+export default function QuickStartCard({ defaultTrade = 'General Contractor' }: { defaultTrade?: string }) {
   const router = useRouter();
-  const [trade, setTrade] = useState(defaultTrade || '');
+  const [trade, setTrade] = useState(defaultTrade);
   const [location, setLocation] = useState('Weston, CT');
-  const [contact, setContact] = useState('');
-  const [businessName, setBusinessName] = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [detecting, setDetecting] = useState(true);
 
   useEffect(() => {
@@ -52,14 +53,16 @@ export default function QuickStartCard({ defaultTrade }: { defaultTrade?: string
 
   const handleLaunch = (e: React.FormEvent) => {
     e.preventDefault();
-    const resolvedTrade = trade.trim() || 'General Contractor';
-    const resolvedName = businessName.trim() || `Verified ${resolvedTrade} Pro`;
-    const resolvedContact = contact.trim() || 'pro@joballies.com';
+    if (!name.trim() || !email.trim() || !phone.trim()) {
+      alert('Please fill in your name, email address, and mobile phone number.');
+      return;
+    }
 
     const userObj = {
-      name: resolvedName,
-      phoneOrEmail: resolvedContact,
-      trade: resolvedTrade,
+      name: name.trim(),
+      email: email.trim(),
+      phoneOrEmail: phone.trim(),
+      trade,
       location,
       licenseNumber: 'State Verified',
     };
@@ -70,13 +73,14 @@ export default function QuickStartCard({ defaultTrade }: { defaultTrade?: string
     router.push('/dashboard');
   };
 
-  const cardTitle = trade ? `See active ${trade} leads in ${location}` : `See active leads in ${location}`;
-
   return (
-    <div className="max-w-3xl mx-auto bg-slate-900 border-2 border-blue-500/60 rounded-3xl p-6 md:p-8 shadow-2xl shadow-blue-950/40 text-left space-y-5">
-      <div className="border-b border-slate-800 pb-3 text-center">
-        <h2 className="text-xl md:text-2xl font-black text-white capitalize">
-          {cardTitle}
+    <div className="bg-slate-900 border-2 border-blue-500/60 rounded-3xl p-6 md:p-8 shadow-2xl shadow-blue-950/40 text-left space-y-5">
+      <div className="border-b border-slate-800 pb-3">
+        <span className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-400">
+          ⚡ Pre-Filled for Your Area • Instant Access
+        </span>
+        <h2 className="text-xl font-black text-white mt-0.5">
+          See Active {trade} Leads in {location}
         </h2>
       </div>
 
@@ -91,7 +95,6 @@ export default function QuickStartCard({ defaultTrade }: { defaultTrade?: string
               onChange={(e) => setTrade(e.target.value)}
               className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-3 text-xs font-extrabold text-white focus:border-blue-400 focus:outline-none"
             >
-              <option value="">Select trade...</option>
               {MASTER_TRADES.map((t) => (
                 <option key={t.slug} value={t.name}>
                   {t.icon} {t.name}
@@ -114,29 +117,56 @@ export default function QuickStartCard({ defaultTrade }: { defaultTrade?: string
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <input
-            type="text"
-            placeholder="Business Name (Optional)"
-            value={businessName}
-            onChange={(e) => setBusinessName(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white"
-          />
-          <input
-            type="text"
-            required
-            placeholder="Mobile Phone or Email *"
-            value={contact}
-            onChange={(e) => setContact(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white"
-          />
+        <div className="space-y-3">
+          <div>
+            <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+              Your Name or Business Name *
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Mike Johnson Construction"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+                Email Address *
+              </label>
+              <input
+                type="email"
+                required
+                placeholder="mike@ contractor.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+                Mobile Phone *
+              </label>
+              <input
+                type="tel"
+                required
+                placeholder="(203) 555-0199"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white"
+              />
+            </div>
+          </div>
         </div>
 
         <button
           type="submit"
           className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-sm transition shadow-xl shadow-blue-600/30"
         >
-          View Leads & Quick Quotes →
+          View Leads & Auto-Created Quotes →
         </button>
       </form>
     </div>
