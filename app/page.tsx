@@ -1,286 +1,99 @@
 'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import SiteFooter from './components/SiteFooter';
 import Logo from './components/Logo';
+import QuickStartCard from './components/QuickStartCard';
+import { MASTER_TRADES } from './components/tradesData';
 
 export default function HomePage() {
-  const router = useRouter();
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [trade, setTrade] = useState('General Contractor');
-  const [location, setLocation] = useState('Weston, CT');
-  const [radiusMiles, setRadiusMiles] = useState(25);
-  const [notificationPref, setNotificationPref] = useState<'sms' | 'email'>('sms');
+  const [hasUser, setHasUser] = useState(false);
 
-  const trades = [
-    { name: 'Architect', icon: '📐' },
-    { name: 'Auto & Diesel Mechanic', icon: '🚛' },
-    { name: 'Boilermaker', icon: '♨️' },
-    { name: 'Carpenter', icon: '🪚' },
-    { name: 'Chimney & Fireplace', icon: '🔥' },
-    { name: 'Cleaning Services', icon: '🧹' },
-    { name: 'Commercial Truck Driver', icon: '🚚' },
-    { name: 'Concrete & Foundations', icon: '🪨' },
-    { name: 'Crane Operator', icon: '🏗️' },
-    { name: 'Demolition', icon: '💥' },
-    { name: 'Disaster Cleanup', icon: '🚨' },
-    { name: 'Driveway Paving', icon: '🛣️' },
-    { name: 'Drywall Installer', icon: '📏' },
-    { name: 'Electrical & Lighting', icon: '⚡' },
-    { name: 'Elevator Mechanic', icon: '🛗' },
-    { name: 'Epoxy Flooring', icon: '✨' },
-    { name: 'Excavation & Grading', icon: '⛏️' },
-    { name: 'Exterminator & Pest', icon: '🐜' },
-    { name: 'Fencing', icon: '🚧' },
-    { name: 'Flooring & Tiler', icon: '🪵' },
-    { name: 'General Contractor', icon: '🏗️' },
-    { name: 'Glazier & Glass', icon: '🪟' },
-    { name: 'Gutter Installation', icon: '🌧️' },
-    { name: 'Handyman', icon: '🛠️' },
-    { name: 'Heavy Equipment Operator', icon: '🚜' },
-    { name: 'HVAC Technician', icon: '❄️' },
-    { name: 'Insulation Installer', icon: '🌡️' },
-    { name: 'Ironworker', icon: '🔩' },
-    { name: 'Irrigation & Sprinklers', icon: '💦' },
-    { name: 'Landscaper', icon: '🌲' },
-    { name: 'Lineman & Utility', icon: '🗼' },
-    { name: 'Locksmith & Safe', icon: '🔐' },
-    { name: 'Machinist', icon: '🔩' },
-    { name: 'Mason', icon: '🧱' },
-    { name: 'Millwright', icon: '⚙️' },
-    { name: 'Mold Remediation', icon: '🧪' },
-    { name: 'Moving & Hauling', icon: '📦' },
-    { name: 'Painter & Decorator', icon: '🎨' },
-    { name: 'Pile Driver', icon: '🔨' },
-    { name: 'Pipefitter & Steamfitter', icon: '🔧' },
-    { name: 'Plasterer & Stucco', icon: '🏛️' },
-    { name: 'Plumber', icon: '🚰' },
-    { name: 'Pool Maintenance', icon: '🏊' },
-    { name: 'Pressure Washing', icon: '🧼' },
-    { name: 'Property Management', icon: '🏢' },
-    { name: 'Roofer', icon: '🏠' },
-    { name: 'Scaffolder', icon: '🪜' },
-    { name: 'Security & Low Voltage', icon: '📹' },
-    { name: 'Sewer & Septic', icon: '🕳️' },
-    { name: 'Sheet Metal Worker', icon: '🛡️' },
-    { name: 'Siding & Exterior', icon: '🏡' },
-    { name: 'Solar Installation', icon: '☀️' },
-    { name: 'Tennis Court Maintenance', icon: '🎾' },
-    { name: 'Tool & Die Maker', icon: '📐' },
-    { name: 'Tree Service & Arborist', icon: '🌳' },
-    { name: 'Waterproofing', icon: '💧' },
-    { name: 'Welder', icon: '👨‍🏭' }
+  useEffect(() => {
+    try {
+      const u = localStorage.getItem('joballies_user') || localStorage.getItem('joballies_temp_user');
+      if (u) setHasUser(true);
+    } catch {}
+  }, []);
+
+  const groups = [
+    "Core Residential & Commercial",
+    "Building & Exterior",
+    "Mechanical & Industrial",
+    "Heavy Equipment & Utility",
+    "Property & Specialty Services",
   ];
 
-  const formatPhoneNumber = (input: string) => {
-    const digits = input.replace(/\D/g, '');
-    if (digits.length === 11 && digits.startsWith('1')) {
-      return '+' + digits;
-    }
-    if (digits.length === 10) {
-      return '+1' + digits;
-    }
-    return input.trim();
-  };
-
-  const handleStart = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim() || !phone.trim() || !email.trim()) {
-      alert('Please fill in your name, mobile phone number, and email address.');
-      return;
-    }
-
-    const formattedPhone = formatPhoneNumber(phone);
-    if (!formattedPhone.startsWith('+1') || formattedPhone.length !== 12) {
-      alert('Please enter a valid 10-digit U.S. mobile phone number (e.g. 2035550199).');
-      return;
-    }
-
-    const userData = { name, phone: formattedPhone, email, trade, location, radiusMiles, notificationPref };
-    localStorage.setItem('joballies_temp_user', JSON.stringify(userData));
-
-    try {
-      if (notificationPref === 'email') {
-        await fetch('/api/send-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            to: email,
-            email,
-            name,
-            trade,
-            location,
-            subject: `Welcome to JobAllies - Your ${trade} Workspace in ${location} is Active`
-          })
-        });
-      } else {
-        const welcomeMessage = `JobAllies (from UpLevel Labs, Inc.): Welcome ${name}! Your ${trade} workspace for ${location} is active. Tips: 1. Set your ${radiusMiles}-mile radius. 2. Review verified public leads. 3. Invite your sub crew. Reply STOP to opt out.`;
-        await fetch('/api/send-sms', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            to: formattedPhone,
-            message: welcomeMessage
-          })
-        });
-      }
-    } catch (err) {
-      console.error('Failed to send welcome confirmation:', err);
-    }
-
-    router.push('/dashboard');
-  };
-
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 font-sans p-6 md:p-12 flex flex-col justify-between">
-      <div className="max-w-3xl mx-auto w-full space-y-12">
-        <header className="flex justify-between items-center border-b border-slate-800 pb-5">
+    <main className="min-h-screen bg-slate-950 text-slate-100 font-sans p-5 md:p-10 flex flex-col justify-between">
+      <div className="max-w-6xl mx-auto w-full space-y-14">
+        <header className="flex justify-between items-center border-b border-slate-800/80 pb-4">
           <Logo />
-          <Link href="/pricing" className="text-xs font-bold text-amber-400 bg-amber-950/60 border border-amber-800 px-3.5 py-1.5 rounded-xl transition hover:bg-amber-900/60">
-            Pricing - Zero charge until you win a job through JobAllies!
-          </Link>
-          <Link href="/post-project" className="text-xs font-bold text-blue-400 hover:text-blue-300">
-            Homeowner? Post a Project →
-          </Link>
+          <div className="flex items-center gap-3">
+            <span className="hidden sm:inline-block bg-amber-950/80 border border-amber-800 text-amber-400 text-xs font-bold px-4 py-2 rounded-xl">
+              Pricing - Zero charge until you win a job through JobAllies!
+            </span>
+            {hasUser && (
+              <Link href="/dashboard" className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-black px-5 py-2.5 rounded-xl transition shadow-lg">
+                My Dashboard →
+              </Link>
+            )}
+          </div>
         </header>
 
-        <div className="text-center space-y-4 pt-6">
-          <span className="bg-blue-950 text-blue-400 border border-blue-800 text-xs font-black uppercase tracking-widest px-3.5 py-1 rounded-full">
-            Autonomous Contractor Field & Financial OS
-          </span>
-          <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-tight">
-            <span className="block text-white">Win More Local Jobs.</span>
-            <span className="block text-blue-400">Compare Material Costs.</span>
-            <span className="block text-emerald-400">Quote By Voice in Seconds.</span>
-            <span className="block text-amber-400">Build Your Trusted Network.</span>
-          </h1>
-          <p className="text-slate-400 max-w-lg mx-auto text-sm leading-relaxed">
-            Pulled directly from verified state registries and municipal permit filings. Enter your trade and territory to instantly launch your Pro workspace.
-          </p>
-        </div>
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-2">
+          <div className="lg:col-span-6 space-y-6 text-left">
+            <div className="inline-flex items-center gap-2 bg-blue-950/90 border border-blue-800 text-blue-400 text-xs font-extrabold uppercase tracking-widest px-3.5 py-1.5 rounded-full">
+              <span>⭐</span> The #1 platform for tradespeople
+            </div>
 
-        <form onSubmit={handleStart} className="bg-slate-900 border border-slate-800 p-8 md:p-10 rounded-3xl space-y-6 shadow-2xl">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-2">Your Name</label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. Mike Johnson"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white font-bold focus:outline-none focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-2">Mobile Phone</label>
-              <input
-                type="tel"
-                required
-                placeholder="203-555-0199"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white font-bold focus:outline-none focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-2">Email Address</label>
-              <input
-                type="email"
-                required
-                placeholder="mike@joballies.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white font-bold focus:outline-none focus:border-blue-500"
-              />
+            <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white leading-[1.1]">
+              Get more leads.<br />
+              Quote more quickly.<br />
+              <span className="text-blue-500">Give and receive referrals.</span>
+            </h1>
+
+            <div className="space-y-4 pt-2 border-l-2 border-blue-500 pl-5">
+              <p className="text-base font-bold text-slate-100 italic">
+                “It’s like drinking from a firehose. JobAllies ensures I always have plenty of work.”
+              </p>
+              <p className="text-xs md:text-sm font-medium text-slate-400 leading-relaxed">
+                “I used to spend way too much time trying to win business. Now I have so much business that I refer most of it out (and get paid for those referrals.)”
+              </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-2">Select Your Trade (Alphabetical with Icons)</label>
-              <select
-                value={trade}
-                onChange={(e) => setTrade(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white font-bold focus:outline-none focus:border-blue-500"
-              >
-                {trades.map((t) => (
-                  <option key={t.name} value={t.name}>{t.icon} {t.name}</option>
+          <div className="lg:col-span-6">
+            <QuickStartCard defaultTrade="General Contractor" />
+          </div>
+        </section>
+
+        <section className="space-y-6 pt-6 border-t border-slate-800">
+          <div>
+            <h2 className="text-2xl font-black text-white">Tap Your Trade (Pre-Fills Your Local Workspace)</h2>
+            <p className="text-xs text-slate-400">55 licensed & independent trades supported nationwide.</p>
+          </div>
+
+          {groups.map((groupName) => (
+            <div key={groupName} className="space-y-2.5">
+              <h3 className="text-[11px] font-extrabold uppercase tracking-widest text-blue-400">
+                {groupName}
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
+                {MASTER_TRADES.filter((t) => t.group === groupName).map((t) => (
+                  <Link
+                    key={t.slug}
+                    href={`/trades/${t.slug}`}
+                    className="bg-slate-900 hover:bg-blue-600/20 border border-slate-800 hover:border-blue-500 p-3 rounded-2xl flex items-center gap-2 text-xs font-bold transition text-slate-200 hover:text-white"
+                  >
+                    <span className="text-base">{t.icon}</span>
+                    <span className="truncate">{t.name}</span>
+                  </Link>
                 ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-2">Location / Territory</label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. Weston, CT"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white font-bold focus:outline-none focus:border-blue-500"
-              />
-            </div>
-          </div>
-
-          <div className="bg-slate-950 border border-slate-800 p-5 rounded-2xl space-y-4">
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Trade Area Radius</label>
-                <span className="text-xs font-black text-amber-400 bg-amber-950 px-2.5 py-0.5 rounded-md border border-amber-800">
-                  {radiusMiles} Miles
-                </span>
-              </div>
-              <input
-                type="range"
-                min="5"
-                max="50"
-                step="5"
-                value={radiusMiles}
-                onChange={(e) => setRadiusMiles(Number(e.target.value))}
-                className="w-full accent-amber-500 cursor-pointer mt-2"
-              />
-            </div>
-
-            <div className="border-t border-slate-900 pt-3">
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-amber-400 mb-2">
-                🔔 Notification & Alert Preference (Opt-In)
-              </label>
-              <div className="flex gap-6 text-xs text-slate-200">
-                <label className="flex items-center gap-2 cursor-pointer font-semibold">
-                  <input
-                    type="radio"
-                    name="notificationPref"
-                    checked={notificationPref === 'sms'}
-                    onChange={() => setNotificationPref('sms')}
-                    className="accent-amber-500"
-                  />
-                  Receive Instant SMS Text Alerts
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer font-semibold">
-                  <input
-                    type="radio"
-                    name="notificationPref"
-                    checked={notificationPref === 'email'}
-                    onChange={() => setNotificationPref('email')}
-                    className="accent-amber-500"
-                  />
-                  Receive Email Summaries
-                </label>
               </div>
             </div>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-xl text-sm transition shadow-xl shadow-blue-600/30 tracking-wide"
-          >
-            Launch Pro Workspace & Send Welcome Guide →
-          </button>
-        </form>
+          ))}
+        </section>
       </div>
 
       <SiteFooter />
