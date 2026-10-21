@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 interface LiveContractor {
@@ -15,6 +15,24 @@ interface LiveContractor {
 }
 
 export default function FounderGrowthConsole() {
+  const [registeredUsers, setRegisteredUsers] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function fetchUsers() {
+      try {
+        const res = await fetch('/api/users');
+        const data = await res.json();
+        if (data && data.users) {
+          setRegisteredUsers(data.users);
+        }
+      } catch (err) {
+        console.error('Error fetching registered users:', err);
+      }
+    }
+    fetchUsers();
+    const interval = setInterval(fetchUsers, 5000); // Poll every 5s
+    return () => clearInterval(interval);
+  }, []);
   const [unlocked, setUnlocked] = useState(false);
   const [passcode, setPasscode] = useState('');
   const [activeTab, setActiveTab] = useState<'50-state' | 'email-builder' | 'analytics'>('50-state');
@@ -405,7 +423,7 @@ export default function FounderGrowthConsole() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-2 shadow-xl">
                 <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Total Registered Pros</span>
-                <h3 className="text-3xl font-black text-white">0</h3>
+                <h3 className="text-3xl font-black text-white">{registeredUsers.length}</h3>
                 <p className="text-xs text-slate-500 font-bold">Waiting for first signup</p>
               </div>
               <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-2 shadow-xl">

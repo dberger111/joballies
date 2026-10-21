@@ -43,7 +43,7 @@ export default function QuickStartCard({ defaultTrade = 'General Contractor' }: 
     };
   }, []);
 
-  const handleLaunch = (e: React.FormEvent) => {
+  const handleLaunch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !businessName.trim() || !email.trim() || !phone.trim()) {
       alert('Please fill in your name, business name, email address, and mobile phone number.');
@@ -54,11 +54,22 @@ export default function QuickStartCard({ defaultTrade = 'General Contractor' }: 
       name: name.trim(),
       businessName: businessName.trim(),
       email: email.trim(),
-      phoneOrEmail: phone.trim(),
+      phone: phone.trim(),
       trade,
       location,
-      licenseNumber: 'State Verified',
+      plan: 'Standard ($0 Free)',
     };
+
+    // Register user to central backend server ledger so admin sees signups instantly
+    try {
+      await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userObj),
+      });
+    } catch (err) {
+      console.error('Failed to register user to backend:', err);
+    }
 
     localStorage.setItem('joballies_temp_user', JSON.stringify(userObj));
     localStorage.setItem('joballies_user', JSON.stringify(userObj));
@@ -86,7 +97,7 @@ export default function QuickStartCard({ defaultTrade = 'General Contractor' }: 
             <select
               value={trade}
               onChange={(e) => setTrade(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-5 text-sm md:text-base font-bold font-extrabold text-white focus:border-blue-400 focus:outline-none"
+              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-3 text-xs font-extrabold text-white focus:border-blue-400 focus:outline-none"
             >
               {MASTER_TRADES.map((t) => (
                 <option key={t.slug} value={t.name}>
@@ -105,7 +116,7 @@ export default function QuickStartCard({ defaultTrade = 'General Contractor' }: 
               required
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-5 text-sm md:text-base font-bold font-extrabold text-white focus:border-emerald-400 focus:outline-none"
+              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-3 text-xs font-extrabold text-white focus:border-emerald-400 focus:outline-none"
             />
           </div>
         </div>
@@ -118,10 +129,10 @@ export default function QuickStartCard({ defaultTrade = 'General Contractor' }: 
             <input
               type="text"
               required
-              placeholder="e.g. Mike Johnson"
+              placeholder="e.g. Buddy Bo"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-5 text-sm md:text-base font-bold text-white"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white"
             />
           </div>
           <div>
@@ -131,10 +142,10 @@ export default function QuickStartCard({ defaultTrade = 'General Contractor' }: 
             <input
               type="text"
               required
-              placeholder="e.g. Johnson Construction LLC"
+              placeholder="e.g. Bo Construction LLC"
               value={businessName}
               onChange={(e) => setBusinessName(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-5 text-sm md:text-base font-bold text-white"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white"
             />
           </div>
         </div>
@@ -147,10 +158,10 @@ export default function QuickStartCard({ defaultTrade = 'General Contractor' }: 
             <input
               type="email"
               required
-              placeholder="mike@contractor.com"
+              placeholder="buddy@contractor.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-5 text-sm md:text-base font-bold text-white"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white"
             />
           </div>
           <div>
@@ -163,14 +174,14 @@ export default function QuickStartCard({ defaultTrade = 'General Contractor' }: 
               placeholder="(203) 555-0199"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-5 text-sm md:text-base font-bold text-white"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white"
             />
           </div>
         </div>
 
         <button
           type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-5 rounded-2xl text-sm transition shadow-xl shadow-blue-600/30"
+          className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-sm transition shadow-xl shadow-blue-600/30"
         >
           View Leads & Auto-Created Quotes →
         </button>
