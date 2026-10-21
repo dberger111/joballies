@@ -108,7 +108,6 @@ export default function DashboardPage() {
             <Link href="/"><Logo size="sm"/></Link>
             <div>
               <h1 className="text-xl font-extrabold text-white">JobAllies Pro Command Center</h1>
-              <p className="text-xs text-slate-400">Autonomous Contractor OS • {userProfile.name}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
