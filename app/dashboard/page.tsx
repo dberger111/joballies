@@ -128,18 +128,81 @@ export default function DashboardPage() {
 
         {/* TAB 1: LEADS & FEEDS */}
         {activeTab === 'leads' && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4 shadow-xl">
-              <h4 className="font-extrabold text-white text-sm">Homeowner Direct Leads</h4>
-              <p className="text-xs text-slate-400">Incoming requests in your {userProfile.radiusMiles}-mile territory.</p>
-              <Link className="block w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-xl text-center text-xs transition" href="/quote/sample-quote">
-                Interactive Quote Wizard →
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* CARD 1: HOMEOWNER DIRECT LEADS */}
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4 shadow-xl flex flex-col justify-between">
+              <div className="space-y-3">
+                <span className="text-xs font-extrabold uppercase tracking-wider text-blue-400">Direct Portal Request</span>
+                <h4 className="font-extrabold text-white text-base">Homeowner Direct Leads</h4>
+                <p className="text-xs text-slate-400">Incoming requests in your {userProfile.radiusMiles}-mile territory sourced from the JobAllies Homeowner Request Form.</p>
+                <div className="bg-slate-950 p-4 rounded-2xl space-y-2 text-xs">
+                  <p className="font-bold text-white">Sarah Jenkins (Weston, CT)</p>
+                  <p className="text-slate-300">Kitchen & bathroom rough-in plumbing and electrical support needed.</p>
+                  <p className="text-emerald-400 font-bold">Budget: $6,500 | Source: Homeowner Form</p>
+                </div>
+              </div>
+              <Link className="block w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl text-center text-xs transition shadow" href="/quote/sample-quote">
+                Open Interactive Quote Wizard →
               </Link>
             </div>
 
+            {/* CARD 2: TRADESPERSON DIRECT LEADS (WITH SUBMISSION FORM) */}
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4 shadow-xl flex flex-col justify-between">
+              <div className="space-y-3">
+                <span className="text-xs font-extrabold uppercase tracking-wider text-amber-400">B2B Subcontractor Network</span>
+                <h4 className="font-extrabold text-white text-base">Tradesperson Direct Leads</h4>
+                <p className="text-xs text-slate-400">Requests submitted by fellow tradespeople seeking overflow support.</p>
+                
+                {/* Tradesperson Request Submission Form */}
+                <div className="bg-slate-950 p-4 rounded-2xl space-y-3 text-xs border border-slate-800">
+                  <p className="font-bold text-amber-400">Post a Tradesperson Support Request:</p>
+                  <input 
+                    type="text" 
+                    id="new-trade-scope" 
+                    placeholder="Project scope (e.g. Electrician needed for panel upgrade)" 
+                    className="w-full bg-slate-900 border border-slate-800 p-2 rounded-lg text-white"
+                  />
+                  <button 
+                    onClick={() => {
+                      const input = document.getElementById('new-trade-scope') as HTMLInputElement;
+                      if (input && input.value) {
+                        alert('✓ Tradesperson request successfully broadcasted to local network: ' + input.value);
+                        input.value = '';
+                      } else {
+                        alert('Please enter a project scope.');
+                      }
+                    }}
+                    className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 rounded-lg transition"
+                  >
+                    + Submit Tradesperson Request Form
+                  </button>
+                </div>
+
+                <div className="bg-slate-950 p-3 rounded-xl space-y-1 text-xs">
+                  <p className="font-bold text-white">Active Post: Mike's Framing & Carpentry</p>
+                  <p className="text-slate-300">Need licensed electrician for 2 days rough-in wiring in Westport.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* CARD 3: HOMEOWNER PERMIT FILING LEADS */}
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4 shadow-xl">
-              <h4 className="font-extrabold text-white text-sm">Tradesperson Lead</h4>
-              <p className="text-xs text-slate-400">Verified project postings from other pros.</p>
+              <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">Public Municipal Record</span>
+              <h4 className="font-extrabold text-white text-base">Homeowner Permit Filing Leads</h4>
+              <p className="text-xs text-slate-400">Local building department permit filings initiated directly by homeowners.</p>
+              <div className="bg-slate-950 p-4 rounded-2xl space-y-2 text-xs">
+                <p className="font-bold text-white">Owner-Builder Permit: Solar & Battery Install</p>
+                <p className="text-slate-300">Location: Weston Town Hall Registry • Filed 3 days ago</p>
+                <p className="text-slate-400 text-[11px]">Direct outreach enabled for licensed electrical contractors.</p>
+              </div>
+            </div>
+
+            {/* CARD 4: TRADESPERSON PERMIT FILING LEADS */}
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4 shadow-xl">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-purple-400">Commercial & Pro Filings</span>
+              <h4 className="font-extrabold text-white text-base">Tradesperson Permit Filing Leads</h4>
+              <p className="text-xs text-slate-400">Verified municipal permit filings submitted by other pros over the past 30 days.</p>
               {leads.map(l => (
                 <div key={l.id} className="bg-slate-950 p-4 rounded-xl space-y-3 text-xs">
                   <div className="space-y-1">
@@ -160,22 +223,10 @@ export default function DashboardPage() {
               ))}
             </div>
 
-            <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4 shadow-xl flex flex-col justify-between">
-              <div className="space-y-3">
-                <h4 className="font-extrabold text-white text-sm">Connect Lead Gen Platforms</h4>
-                <p className="text-xs text-slate-400">Sync external leads into JobAllies.</p>
-                <div className="grid grid-cols-2 gap-2 text-xs font-bold">
-                  <a href="https://id.angi.com/realms/ads-user/protocol/openid-connect/auth?client_id=platform-gateway&scope=openid&response_type=code&redirect_uri=https%3A%2F%2Foffice.angi.com%2Fapp%2Flogin%2Foidc%2Fcallback&state=C4NtyHE-s4FemyxjZDwRMw" target="_blank" rel="noopener noreferrer" className="bg-slate-950 hover:bg-slate-800 border border-slate-800 p-2.5 rounded-xl text-orange-400 text-center">Angi Pro ↗</a>
-                  <a href="https://www.thumbtack.com/login" target="_blank" rel="noopener noreferrer" className="bg-slate-950 hover:bg-slate-800 border border-slate-800 p-2.5 rounded-xl text-blue-400 text-center">Thumbtack ↗</a>
-                  <a href="https://pro.homeadvisor.com/" target="_blank" rel="noopener noreferrer" className="bg-slate-950 hover:bg-slate-800 border border-slate-800 p-2.5 rounded-xl text-amber-400 text-center">HomeAdvisor ↗</a>
-                  <a href="https://www.houzz.com/pro" target="_blank" rel="noopener noreferrer" className="bg-slate-950 hover:bg-slate-800 border border-slate-800 p-2.5 rounded-xl text-emerald-400 text-center">Houzz Pro ↗</a>
-                </div>
-              </div>
-            </div>
           </div>
         )}
 
-        {/* TAB 2: TRUSTED CREW */}
+        {/* TAB 2{/* TAB 2: TRUSTED CREW */}
         {activeTab === 'network' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl space-y-6 shadow-xl">
