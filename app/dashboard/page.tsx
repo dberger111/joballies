@@ -193,17 +193,43 @@ export default function DashboardPage() {
 
             <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl space-y-6 shadow-xl flex flex-col justify-between">
               <div className="space-y-4">
-                <h3 className="text-lg font-extrabold text-white">Pro-to-Pro Referral Request</h3>
-                <p className="text-xs text-slate-400">Request referrals and share overflow jobs with verified trade allies.</p>
-                <div className="bg-slate-950 p-4 rounded-2xl text-xs text-slate-300 italic">
-                  {"Hey! Looking for reliable pro referrals or overflow support in " + userProfile.location + "? Let's connect on JobAllies."}
+                <h3 className="text-lg font-extrabold text-white">Request a reference from your Trade Ally</h3>
+                <p className="text-xs text-slate-400">Select a trade ally from your network and request a social media reference.</p>
+                
+                <div>
+                  <label className="block text-[11px] text-slate-400 mb-1 font-bold">Select Trade Ally:</label>
+                  <select 
+                    id="selected-ally-dropdown" 
+                    className="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white text-xs font-bold mb-3"
+                    defaultValue={allies[0]?.id || ''}
+                    onChange={(e) => {
+                      const ally = allies.find(a => a.id === e.target.value);
+                      if (ally) {
+                        setLeadMessage(`Hi ${ally.name}, Thanks for joining my trusted network on JobAllies. Would you be open to posting a reference for me on Facebook or NextDoor? Below is a sample reference that you could copy and paste:\n\nI've worked closely with ${userProfile.name} over the years. He is a super ${userProfile.trade} with lots of very satisfied customers. If you are in need of a ${userProfile.trade} in the ${userProfile.location} area, I encourage you to reach out to him directly at ${userProfile.phone} or message me and I'd be glad to connect you.`);
+                      }
+                    }}
+                  >
+                    {allies.map(a => (
+                      <option key={a.id} value={a.id}>{a.name} ({a.trade})</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] text-slate-400 mb-1 font-bold">Editable Reference Request Message:</label>
+                  <textarea 
+                    value={`Hi ${allies[0]?.name || 'Ally'}, Thanks for joining my trusted network on JobAllies. Would you be open to posting a reference for me on Facebook or NextDoor? Below is a sample reference that you could copy and paste:\n\nI've worked closely with ${userProfile.name} over the years. He is a super ${userProfile.trade} with lots of very satisfied customers. If you are in need of a ${userProfile.trade} in the ${userProfile.location} area, I encourage you to reach out to him directly at ${userProfile.phone} or message me and I'd be glad to connect you.`}
+                    onChange={(e) => {}}
+                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs" 
+                    rows={6} 
+                  />
                 </div>
               </div>
               <a
-                href={"sms:?body=" + encodeURIComponent("Hey! Looking for reliable pro referrals or overflow support in " + userProfile.location + "? Let's connect on JobAllies.")}
+                href={`sms:${allies[0]?.phone || ''}?body=${encodeURIComponent(`Hi ${allies[0]?.name || 'Ally'}, Thanks for joining my trusted network on JobAllies. Would you be open to posting a reference for me on Facebook or NextDoor? Below is a sample reference that you could copy and paste:\n\nI've worked closely with ${userProfile.name} over the years. He is a super ${userProfile.trade} with lots of very satisfied customers. If you are in need of a ${userProfile.trade} in the ${userProfile.location} area, I encourage you to reach out to him directly at ${userProfile.phone} or message me and I'd be glad to connect you.`)}`}
                 className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs text-center transition block"
               >
-                📱 Send Pro Referral Request via SMS
+                📱 Send Reference Request via SMS
               </a>
             </div>
 
